@@ -1,4 +1,5 @@
 ﻿#nullable disable
+
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,7 +12,7 @@ namespace SophieHR.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [AllowAnonymous] // TODO: Remove obviously
+    [Authorize]
     public class CompaniesController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -24,7 +25,7 @@ namespace SophieHR.Api.Controllers
         }
 
         // GET: api/Companies
-        [HttpGet]
+        [HttpGet, Authorize(Roles = "Admin")]
         public async Task<ActionResult<IEnumerable<CompanyDetailNoLogo>>> GetCompanies()
         {
             return _mapper.Map<List<CompanyDetailNoLogo>>(await _context.Companies.ToListAsync());
@@ -34,7 +35,7 @@ namespace SophieHR.Api.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<CompanyDetailDto>> GetCompany(Guid id)
         {
-            var company = await _context.Companies.Include(x=>x.Address).FirstAsync(x=>x.Id == id);
+            var company = await _context.Companies.Include(x => x.Address).FirstAsync(x => x.Id == id);
 
             if (company == null)
             {
@@ -44,14 +45,14 @@ namespace SophieHR.Api.Controllers
             return _mapper.Map<CompanyDetailDto>(company);
         }
 
-        [HttpPost("{id}/upload-logo")]
+        [HttpPost("{id}/upload-logo"), Authorize(Roles = "Admin")]
         [RequestFormLimits(MultipartBodyLengthLimit = 1000000)] // Limit to 1mb logo
         public async Task<IActionResult> UploadLogo(Guid id, IFormFile logo)
         {
             if (logo != null)
             {
                 var company = await _context.Companies.FindAsync(id);
-                if(company == null)
+                if (company == null)
                 {
                     return NotFound($"Unable to find a company with the Id of {id}");
                 }
@@ -72,7 +73,7 @@ namespace SophieHR.Api.Controllers
 
         // PUT: api/Companies/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
+        [HttpPut("{id}"), Authorize(Roles = "Admin")]
         public async Task<IActionResult> PutCompany(Guid id, CompanyDetailNoLogo company)
         {
             if (id != company.Id)
@@ -103,7 +104,7 @@ namespace SophieHR.Api.Controllers
 
         // POST: api/Companies
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
+        [HttpPost, Authorize(Roles = "Admin")]
         public async Task<ActionResult<CompanyDetailDto>> PostCompany(CompanyCreateDto companyDto)
         {
             var company = _mapper.Map<Company>(companyDto);
@@ -114,7 +115,7 @@ namespace SophieHR.Api.Controllers
         }
 
         // DELETE: api/Companies/5
-        [HttpDelete("{id}")]
+        [HttpDelete("{id}"), Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteCompany(Guid id)
         {
             var company = await _context.Companies.FindAsync(id);

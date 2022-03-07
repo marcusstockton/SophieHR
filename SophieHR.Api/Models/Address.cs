@@ -5,6 +5,7 @@
         Company,
         Employee,
     }
+
     public abstract class Address : Base
     {
         public string Line1 { get; set; }

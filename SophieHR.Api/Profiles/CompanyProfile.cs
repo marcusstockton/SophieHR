@@ -14,7 +14,6 @@ namespace SophieHR.Api.Profiles
 
             CreateMap<string, byte[]>().ConvertUsing<Base64Converter>();
             CreateMap<byte[], string>().ConvertUsing<Base64Converter>();
-
         }
 
         private class Base64Converter : ITypeConverter<string, byte[]>, ITypeConverter<byte[], string>
@@ -25,6 +24,5 @@ namespace SophieHR.Api.Profiles
             public string Convert(byte[] source, string destination, ResolutionContext context)
                 => System.Convert.ToBase64String(source);
         }
-
     }
 }

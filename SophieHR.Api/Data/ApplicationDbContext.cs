@@ -10,18 +10,19 @@ namespace SophieHR.Api.Data
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
         }
+
         public DbSet<Company> Companies { get; set; }
         public DbSet<CompanyAddress> CompanyAddresses { get; set; }
         public DbSet<EmployeeAddress> EmployeeAddresses { get; set; }
         public DbSet<Department> Departments { get; set; }
         public DbSet<Employee> Employees { get; set; }
-        
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            builder.Entity<Company>().HasMany(x => x.Employees).WithOne(x => x.Company).HasForeignKey(x => x.CompanyId).OnDelete(DeleteBehavior.Cascade);
             builder.Entity<Company>(b =>
             {
                 b.Property(x => x.Name).IsRequired().HasMaxLength(200);
+                b.HasMany(x => x.Employees).WithOne(x => x.Company).HasForeignKey(x => x.CompanyId).OnDelete(DeleteBehavior.Cascade);
             });
 
             builder.Entity<ApplicationUser>(b =>
@@ -40,24 +41,26 @@ namespace SophieHR.Api.Data
                 b.Property(x => x.Postcode).IsRequired().HasMaxLength(8);
             });
 
-            builder.Entity<Department>(b => {
+            builder.Entity<Department>(b =>
+            {
                 b.Property(x => x.CompanyId).IsRequired();
                 b.Property(x => x.Name).IsRequired().HasMaxLength(100);
-                b.HasOne(x => x.Company).WithMany().OnDelete(DeleteBehavior.Cascade);
+                b.HasOne(x => x.Company).WithMany().HasForeignKey(x => x.CompanyId).OnDelete(DeleteBehavior.Cascade);
             });
 
-            
             builder.Entity<Employee>(b =>
             {
-                b.Property(x=>x.FirstName).IsRequired().HasMaxLength(100);
+                b.Property(x => x.FirstName).IsRequired().HasMaxLength(100);
                 b.Property(x => x.LastName).IsRequired().HasMaxLength(100);
                 b.Property(x => x.HolidayAllowance).IsRequired();
                 b.Property(x => x.StartOfEmployment).IsRequired();
+                b.Property(x => x.MiddleName).HasMaxLength(100);
+                b.Property(x => x.PersonalEmailAddress).HasMaxLength(100);
+                b.Property(x => x.WorkPhoneNumber).HasMaxLength(50);
                 b.Property(x => x.WorkEmailAddress).IsRequired().HasMaxLength(100);
                 b.HasOne(x => x.Company).WithMany(x => x.Employees).HasForeignKey(x => x.CompanyId).OnDelete(DeleteBehavior.Restrict);
                 b.HasOne(x => x.Department).WithMany().HasForeignKey(x => x.DepartmentId).OnDelete(DeleteBehavior.Restrict);
             });
-            
 
             base.OnModelCreating(builder);
         }

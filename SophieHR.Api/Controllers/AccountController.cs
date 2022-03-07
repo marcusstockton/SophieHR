@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using SophieHR.Api.Data;
 using SophieHR.Api.Models;
 using SophieHR.Api.Models.DTOs.User;
 using System.Web.Http.Description;
@@ -26,6 +25,7 @@ namespace SophieHR.Api.Controllers
         }
 
         [HttpPost]
+        [AllowAnonymous]
         [ResponseType(typeof(UserTokens))]
         public async Task<IActionResult> GetToken(UserLogins userLogins)
         {
@@ -55,13 +55,13 @@ namespace SophieHR.Api.Controllers
             }
         }
 
-
         /// <summary>
         /// Registers a new User account
         /// </summary>
         /// <param name="userData"></param>
         /// <returns>JWT Auth token</returns>
         [HttpPost]
+        [AllowAnonymous]
         [Route("RegisterNewUser")]
         [ResponseType(typeof(UserTokens))]
         public async Task<IActionResult> RegisterNewUser(RegisterUserDto userData)
@@ -98,7 +98,7 @@ namespace SophieHR.Api.Controllers
                 }
                 else
                 {
-                    return BadRequest(result.Errors.Select(x=>x.Description).ToList());
+                    return BadRequest(result.Errors.Select(x => x.Description).ToList());
                 }
             }
             catch (Exception ex)

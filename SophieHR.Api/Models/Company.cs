@@ -1,6 +1,6 @@
 ﻿namespace SophieHR.Api.Models
 {
-    public class Company: Base
+    public class Company : Base
     {
         public string Name { get; set; }
         public byte[] Logo { get; set; }

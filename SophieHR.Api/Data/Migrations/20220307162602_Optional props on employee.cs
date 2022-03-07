@@ -4,54 +4,52 @@
 
 namespace SophieHR.Api.Migrations
 {
-    public partial class Updatedtomakefieldsoptional : Migration
+    public partial class Optionalpropsonemployee : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AlterColumn<string>(
-                name: "LogoUrl",
-                table: "Companies",
+                name: "WorkMobileNumber",
+                table: "Employees",
                 type: "nvarchar(max)",
                 nullable: true,
                 oldClrType: typeof(string),
                 oldType: "nvarchar(max)");
 
             migrationBuilder.AlterColumn<string>(
-                name: "Line4",
-                table: "Address",
-                type: "nvarchar(50)",
-                maxLength: 50,
+                name: "PersonalMobileNumber",
+                table: "Employees",
+                type: "nvarchar(max)",
                 nullable: true,
                 oldClrType: typeof(string),
-                oldType: "nvarchar(50)",
-                oldMaxLength: 50);
+                oldType: "nvarchar(max)");
 
             migrationBuilder.AlterColumn<string>(
-                name: "Line3",
-                table: "Address",
-                type: "nvarchar(50)",
-                maxLength: 50,
+                name: "PersonalEmailAddress",
+                table: "Employees",
+                type: "nvarchar(100)",
+                maxLength: 100,
                 nullable: true,
                 oldClrType: typeof(string),
-                oldType: "nvarchar(50)",
-                oldMaxLength: 50);
+                oldType: "nvarchar(100)",
+                oldMaxLength: 100);
 
             migrationBuilder.AlterColumn<string>(
-                name: "Line2",
-                table: "Address",
-                type: "nvarchar(50)",
-                maxLength: 50,
+                name: "MiddleName",
+                table: "Employees",
+                type: "nvarchar(100)",
+                maxLength: 100,
                 nullable: true,
                 oldClrType: typeof(string),
-                oldType: "nvarchar(50)",
-                oldMaxLength: 50);
+                oldType: "nvarchar(100)",
+                oldMaxLength: 100);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AlterColumn<string>(
-                name: "LogoUrl",
-                table: "Companies",
+                name: "WorkMobileNumber",
+                table: "Employees",
                 type: "nvarchar(max)",
                 nullable: false,
                 defaultValue: "",
@@ -60,39 +58,37 @@ namespace SophieHR.Api.Migrations
                 oldNullable: true);
 
             migrationBuilder.AlterColumn<string>(
-                name: "Line4",
-                table: "Address",
-                type: "nvarchar(50)",
-                maxLength: 50,
+                name: "PersonalMobileNumber",
+                table: "Employees",
+                type: "nvarchar(max)",
                 nullable: false,
                 defaultValue: "",
                 oldClrType: typeof(string),
-                oldType: "nvarchar(50)",
-                oldMaxLength: 50,
+                oldType: "nvarchar(max)",
                 oldNullable: true);
 
             migrationBuilder.AlterColumn<string>(
-                name: "Line3",
-                table: "Address",
-                type: "nvarchar(50)",
-                maxLength: 50,
+                name: "PersonalEmailAddress",
+                table: "Employees",
+                type: "nvarchar(100)",
+                maxLength: 100,
                 nullable: false,
                 defaultValue: "",
                 oldClrType: typeof(string),
-                oldType: "nvarchar(50)",
-                oldMaxLength: 50,
+                oldType: "nvarchar(100)",
+                oldMaxLength: 100,
                 oldNullable: true);
 
             migrationBuilder.AlterColumn<string>(
-                name: "Line2",
-                table: "Address",
-                type: "nvarchar(50)",
-                maxLength: 50,
+                name: "MiddleName",
+                table: "Employees",
+                type: "nvarchar(100)",
+                maxLength: 100,
                 nullable: false,
                 defaultValue: "",
                 oldClrType: typeof(string),
-                oldType: "nvarchar(50)",
-                oldMaxLength: 50,
+                oldType: "nvarchar(100)",
+                oldMaxLength: 100,
                 oldNullable: true);
         }
     }
