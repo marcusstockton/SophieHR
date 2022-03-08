@@ -83,9 +83,9 @@ if (app.Environment.IsDevelopment())
     {
         var services = scope.ServiceProvider;
         var context = services.GetRequiredService<ApplicationDbContext>();
-        //await context.Database.EnsureDeletedAsync();
-        //context.Database.Migrate();
-        await DataSeeder.Initialize(services, "P@55w0rd1");
+        await context.Database.EnsureDeletedAsync();
+        context.Database.Migrate();
+        await DataSeeder.Initialize(services);
     }
 }
 

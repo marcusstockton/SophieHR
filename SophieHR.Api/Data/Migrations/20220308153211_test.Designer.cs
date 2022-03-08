@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SophieHR.Api.Data;
 
@@ -11,9 +12,10 @@ using SophieHR.Api.Data;
 namespace SophieHR.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220308153211_test")]
+    partial class test
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -385,9 +387,6 @@ namespace SophieHR.Api.Migrations
                 {
                     b.HasBaseType("SophieHR.Api.Models.ApplicationUser");
 
-                    b.Property<Guid>("AddressId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<Guid>("AvatarId")
                         .HasColumnType("uniqueidentifier");
 
@@ -398,6 +397,9 @@ namespace SophieHR.Api.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<Guid>("DepartmentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("EmployeeAddressId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("EmployeeAvatarId")
@@ -433,13 +435,13 @@ namespace SophieHR.Api.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.HasIndex("AddressId");
-
                     b.HasIndex("AvatarId");
 
                     b.HasIndex("CompanyId");
 
                     b.HasIndex("DepartmentId");
+
+                    b.HasIndex("EmployeeAddressId");
 
                     b.HasDiscriminator().HasValue("Employee");
                 });
@@ -526,12 +528,6 @@ namespace SophieHR.Api.Migrations
 
             modelBuilder.Entity("SophieHR.Api.Models.Employee", b =>
                 {
-                    b.HasOne("SophieHR.Api.Models.EmployeeAddress", "Address")
-                        .WithMany()
-                        .HasForeignKey("AddressId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("SophieHR.Api.Models.EmployeeAvatar", "Avatar")
                         .WithMany()
                         .HasForeignKey("AvatarId")
@@ -548,6 +544,12 @@ namespace SophieHR.Api.Migrations
                         .WithMany()
                         .HasForeignKey("DepartmentId")
                         .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SophieHR.Api.Models.EmployeeAddress", "Address")
+                        .WithMany()
+                        .HasForeignKey("EmployeeAddressId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Address");
