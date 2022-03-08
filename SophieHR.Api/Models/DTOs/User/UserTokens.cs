@@ -9,5 +9,7 @@
         public Guid Id { get; set; }
         public string Email { get; set; }
         public DateTime ExpiredTime { get; set; }
+
+        public string Role { get; set; }
     }
 }

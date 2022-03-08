@@ -14,6 +14,7 @@ namespace SophieHR.Api.JwtHelpers
                     new Claim(ClaimTypes.Name, userAccounts.UserName),
                     new Claim(ClaimTypes.Email, userAccounts.Email),
                     new Claim(ClaimTypes.NameIdentifier, Id.ToString()),
+                    new Claim(ClaimTypes.Role, userAccounts.Role),
                     new Claim(ClaimTypes.Expiration, DateTime.UtcNow.AddDays(1).ToString("MMM ddd dd yyyy HH:mm:ss tt"))
             };
             return claims;
@@ -39,6 +40,7 @@ namespace SophieHR.Api.JwtHelpers
                 var JWToken = new JwtSecurityToken(issuer: jwtSettings.ValidIssuer, audience: jwtSettings.ValidAudience, claims: GetClaims(model, out Id), notBefore: new DateTimeOffset(DateTime.Now).DateTime, expires: new DateTimeOffset(expireTime).DateTime, signingCredentials: new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256));
                 UserToken.Token = new JwtSecurityTokenHandler().WriteToken(JWToken);
                 UserToken.UserName = model.UserName;
+                UserToken.Role = model.Role;
                 UserToken.Id = model.Id;
                 return UserToken;
             }

@@ -33,6 +33,7 @@ namespace SophieHR.Api.Controllers
             {
                 var Token = new UserTokens();
                 var user = await _userManager.FindByNameAsync(userLogins.UserName);
+                var roles = await _userManager.GetRolesAsync(user);
                 var _passwordHasher = new PasswordHasher<ApplicationUser>();
                 if (user != null && _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, userLogins.Password) == PasswordVerificationResult.Success)
                 {
@@ -41,6 +42,7 @@ namespace SophieHR.Api.Controllers
                         Email = user.Email,
                         UserName = user.UserName,
                         Id = user.Id,
+                        Role = roles.First(),
                     }, jwtSettings);
                 }
                 else

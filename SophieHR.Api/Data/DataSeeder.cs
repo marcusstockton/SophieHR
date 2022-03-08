@@ -88,7 +88,6 @@ namespace SophieHR.Api.Data
                 };
                 await _userManager.CreateAsync(adminUser, "P@55w0rd1");
                 await _userManager.AddToRoleAsync(adminUser, "Admin");
-                //await context.SaveChangesAsync();
             }
 
             if (!context.Employees.Any())
@@ -133,12 +132,7 @@ namespace SophieHR.Api.Data
                     WorkPhoneNumber = Faker.Phone.Number(),
                 };
                 company1DeptItManager.UserName = company1DeptItManager.WorkEmailAddress;
-                company1DeptItManager.Email = company1DeptItManager.WorkEmailAddress;
-                await context.AddAsync(company1DeptItManager);
-                await context.SaveChangesAsync();
-                var passwordres = await _userManager.AddPasswordAsync(company1DeptItManager, "P@55w0rd1");
-                var roleres = await _userManager.AddToRoleAsync(company1DeptItManager, "Manager");
-                
+                company1DeptItManager.Email = company1DeptItManager.WorkEmailAddress;                
 
                 var company1DeptItUser = new Employee
                 {
@@ -162,10 +156,7 @@ namespace SophieHR.Api.Data
                 };
                 company1DeptItUser.UserName = company1DeptItUser.WorkEmailAddress;
                 company1DeptItUser.Email = company1DeptItUser.WorkEmailAddress;
-                await context.AddAsync(company1DeptItUser);
-                await context.SaveChangesAsync();
-                await _userManager.AddPasswordAsync(company1DeptItUser, "P@55w0rd1");
-                await _userManager.AddToRoleAsync(company1DeptItUser, "User");
+
 
                 var company1DeptSalesManager = new Employee
                 {
@@ -189,10 +180,6 @@ namespace SophieHR.Api.Data
                 };
                 company1DeptSalesManager.UserName = company1DeptSalesManager.WorkEmailAddress;
                 company1DeptSalesManager.Email = company1DeptSalesManager.WorkEmailAddress;
-                await context.Employees.AddAsync(company1DeptSalesManager);
-                await context.SaveChangesAsync();
-                await _userManager.AddPasswordAsync(company1DeptSalesManager, "P@55w0rd1");
-                await _userManager.AddToRoleAsync(company1DeptSalesManager, "Manager");
 
                 var company1DeptSalesUser = new Employee
                 {
@@ -216,10 +203,6 @@ namespace SophieHR.Api.Data
                 };
                 company1DeptSalesUser.UserName = company1DeptSalesUser.WorkEmailAddress;
                 company1DeptSalesUser.Email = company1DeptSalesUser.WorkEmailAddress;
-                await context.Employees.AddAsync(company1DeptSalesUser);
-                await context.SaveChangesAsync();
-                await _userManager.AddPasswordAsync(company1DeptSalesUser, "P@55w0rd1");
-                await _userManager.AddToRoleAsync(company1DeptSalesUser, "User");
 
 
                 var company2DeptItManager = new Employee
@@ -244,10 +227,7 @@ namespace SophieHR.Api.Data
                 };
                 company2DeptItManager.UserName = company2DeptItManager.WorkEmailAddress;
                 company2DeptItManager.Email = company2DeptItManager.WorkEmailAddress;
-                await context.Employees.AddAsync(company2DeptItManager);
-                await context.SaveChangesAsync();
-                await _userManager.AddPasswordAsync(company2DeptItManager, "P@55w0rd1");
-                await _userManager.AddToRoleAsync(company2DeptItManager, "Manager");
+
 
                 var company2DeptItUser = new Employee
                 {
@@ -271,10 +251,7 @@ namespace SophieHR.Api.Data
                 };
                 company2DeptItUser.UserName = company2DeptItUser.WorkEmailAddress;
                 company2DeptItUser.Email = company2DeptItUser.WorkEmailAddress;
-                await context.Employees.AddAsync(company2DeptItUser);
-                await context.SaveChangesAsync();
-                await _userManager.AddPasswordAsync(company2DeptItUser, "P@55w0rd1");
-                await _userManager.AddToRoleAsync(company2DeptItUser, "User");
+
 
                 var company2DeptMarketingManager = new Employee
                 {
@@ -298,10 +275,6 @@ namespace SophieHR.Api.Data
                 };
                 company2DeptMarketingManager.UserName = company2DeptMarketingManager.WorkEmailAddress;
                 company2DeptMarketingManager.Email = company2DeptMarketingManager.WorkEmailAddress;
-                await context.Employees.AddAsync(company2DeptMarketingManager);
-                await context.SaveChangesAsync();
-                await _userManager.AddPasswordAsync(company2DeptMarketingManager, "P@55w0rd1");
-                await _userManager.AddToRoleAsync(company2DeptMarketingManager, "Manager");
 
                 var company2DepttMarketingUser = new Employee
                 {
@@ -325,12 +298,37 @@ namespace SophieHR.Api.Data
                 };
                 company2DepttMarketingUser.UserName = company2DepttMarketingUser.WorkEmailAddress;
                 company2DepttMarketingUser.Email = company2DepttMarketingUser.WorkEmailAddress;
-                await context.Employees.AddAsync(company2DepttMarketingUser);
+
+
+                await context.AddRangeAsync(company1DeptItManager, company2DepttMarketingUser, company2DeptMarketingManager, company2DeptItUser, 
+                    company2DeptItManager, company1DeptSalesUser, company1DeptSalesManager, company1DeptItUser);
                 await context.SaveChangesAsync();
+
+
+                await _userManager.AddPasswordAsync(company1DeptItManager, "P@55w0rd1");
+                await _userManager.AddToRoleAsync(company1DeptItManager, "Manager");
+
                 await _userManager.AddPasswordAsync(company2DepttMarketingUser, "P@55w0rd1");
                 await _userManager.AddToRoleAsync(company2DepttMarketingUser, "User");
 
-                await context.SaveChangesAsync();
+                await _userManager.AddPasswordAsync(company2DeptMarketingManager, "P@55w0rd1");
+                await _userManager.AddToRoleAsync(company2DeptMarketingManager, "Manager");
+
+                await _userManager.AddPasswordAsync(company2DeptItUser, "P@55w0rd1");
+                await _userManager.AddToRoleAsync(company2DeptItUser, "User");
+
+                await _userManager.AddPasswordAsync(company2DeptItManager, "P@55w0rd1");
+                await _userManager.AddToRoleAsync(company2DeptItManager, "Manager");
+
+                await _userManager.AddPasswordAsync(company1DeptSalesUser, "P@55w0rd1");
+                await _userManager.AddToRoleAsync(company1DeptSalesUser, "User");
+
+                await _userManager.AddPasswordAsync(company1DeptSalesManager, "P@55w0rd1");
+                await _userManager.AddToRoleAsync(company1DeptSalesManager, "Manager");
+
+                await _userManager.AddPasswordAsync(company1DeptItUser, "P@55w0rd1");
+                await _userManager.AddToRoleAsync(company1DeptItUser, "User");
+
             }
         }
     }
