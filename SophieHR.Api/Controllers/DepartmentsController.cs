@@ -32,14 +32,14 @@ namespace SophieHR.Api.Controllers
             return _mapper.Map<List<DepartmentDetailDto>>(await _context.Departments.ToListAsync());
         }
 
-        [HttpGet("{companyId}"), Authorize(Roles = "Admin, Manager")]
+        [HttpGet("get-departments-by-companyid/{companyId}"), Authorize(Roles = "Admin, Manager")]
         public async Task<ActionResult<IEnumerable<DepartmentDetailDto>>> GetDepartmentsByCompanyId(Guid companyId)
         {
             return _mapper.Map<List<DepartmentDetailDto>>(await _context.Departments.Where(x => x.CompanyId == companyId).ToListAsync());
         }
 
         // GET: api/Departments/5
-        [HttpGet("{id}")]
+        [HttpGet("get-department-by-id/{id}")]
         public async Task<ActionResult<DepartmentDetailDto>> GetDepartment(Guid id)
         {
             var department = await _context.Departments.FindAsync(id);

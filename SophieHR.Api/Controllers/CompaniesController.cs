@@ -74,13 +74,15 @@ namespace SophieHR.Api.Controllers
         // PUT: api/Companies/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}"), Authorize(Roles = "Admin")]
-        public async Task<IActionResult> PutCompany(Guid id, CompanyDetailNoLogo company)
+        public async Task<IActionResult> PutCompany(Guid id, CompanyDetailNoLogo companyDetail)
         {
-            if (id != company.Id)
+            if (id != companyDetail.Id)
             {
                 return BadRequest();
             }
-
+            var originalCompany = await _context.Companies.FindAsync(id);
+            var company = _mapper.Map(companyDetail, originalCompany);
+            _context.Companies.Attach(company);
             _context.Entry(company).State = EntityState.Modified;
 
             try
