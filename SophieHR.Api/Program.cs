@@ -43,7 +43,7 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("CorsPolicy",
-        builder => builder.AllowAnyOrigin()
+        builder => builder.WithOrigins("http://localhost:4200")
         .AllowAnyMethod()
         .AllowAnyHeader());
 });
@@ -89,7 +89,7 @@ if (app.Environment.IsDevelopment())
     //    await DataSeeder.Initialize(services);
     //}
 }
-
+app.UseCors("CorsPolicy");
 app.UseHttpsRedirection();
 
 app.UseAuthentication();

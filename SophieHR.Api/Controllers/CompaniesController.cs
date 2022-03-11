@@ -35,7 +35,10 @@ namespace SophieHR.Api.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<CompanyDetailDto>> GetCompany(Guid id)
         {
-            var company = await _context.Companies.Include(x => x.Address).FirstAsync(x => x.Id == id);
+            var company = await _context.Companies
+                .Include(x => x.Address)
+                .AsNoTracking()
+                .FirstAsync(x => x.Id == id);
 
             if (company == null)
             {
@@ -81,6 +84,10 @@ namespace SophieHR.Api.Controllers
                 return BadRequest();
             }
             var originalCompany = await _context.Companies.FindAsync(id);
+            if (originalCompany == null)
+            {
+                return NotFound($"Unable to find a company with the Id of {id}");
+            }
             var company = _mapper.Map(companyDetail, originalCompany);
             _context.Companies.Attach(company);
             _context.Entry(company).State = EntityState.Modified;
