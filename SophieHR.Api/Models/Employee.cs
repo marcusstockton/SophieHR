@@ -8,7 +8,7 @@
         public string WorkPhoneNumber { get; set; }
         public string? WorkMobileNumber { get; set; }
         public string? PersonalMobileNumber { get; set; }
-        
+
         public double HolidayAllowance { get; set; }
         public DateTime DateOfBirth { get; set; }
         public DateTime StartOfEmployment { get; set; }
@@ -20,6 +20,5 @@
         public virtual Department Department { get; set; }
         public virtual Company Company { get; set; }
         public virtual EmployeeAvatar Avatar { get; set; }
-        
     }
 }

@@ -26,7 +26,7 @@ namespace SophieHR.Api.Controllers
         }
 
         // GET: api/Departments
-        [HttpGet, Authorize(Roles ="Admin")]
+        [HttpGet, Authorize(Roles = "Admin")]
         public async Task<ActionResult<IEnumerable<DepartmentDetailDto>>> GetDepartments()
         {
             return _mapper.Map<List<DepartmentDetailDto>>(await _context.Departments.ToListAsync());

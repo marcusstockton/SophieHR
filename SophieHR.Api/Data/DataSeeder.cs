@@ -38,7 +38,7 @@ namespace SophieHR.Api.Data
                         Logo = logo2,
                         Address = new CompanyAddress { Line1 = "Flat 1", Line2 = "12", Line3 = "Eastern Way", Postcode = "EX22EX", County = "Devon" }
                     });
-               
+
                 await context.SaveChangesAsync();
             }
             if (!context.Departments.Any())
@@ -80,7 +80,8 @@ namespace SophieHR.Api.Data
             if (!context.Users.Any())
             {
                 _logger.LogInformation("Creating some admin users");
-                var adminUser = new ApplicationUser {
+                var adminUser = new ApplicationUser
+                {
                     UserName = "admin@hr.com",
                     Email = "admin@hr.com",
                     FirstName = "Marcus",
@@ -93,8 +94,8 @@ namespace SophieHR.Api.Data
             if (!context.Employees.Any())
             {
                 _logger.LogInformation("Creating some employees");
-                var companyList = context.Companies.OrderBy(x=>x.Id).ToList();
-                
+                var companyList = context.Companies.OrderBy(x => x.Id).ToList();
+
                 var company1deptSales = await context.Departments.Where(x => x.Company == companyList.First() && x.Name == "Sales").FirstAsync();
                 var company1deptIT = await context.Departments.Where(x => x.Company == companyList.First() && x.Name == "IT").FirstAsync();
                 var company2deptMarketing = await context.Departments.Where(x => x.Company == companyList.Last() && x.Name == "Marketing").FirstAsync();
@@ -128,11 +129,11 @@ namespace SophieHR.Api.Data
                     HolidayAllowance = Faker.RandomNumber.Next(15, 35),
                     WorkEmailAddress = Faker.Internet.Email(),
                     StartOfEmployment = new DateTime(2019, 6, 16),
-                    
+
                     WorkPhoneNumber = Faker.Phone.Number(),
                 };
                 company1DeptItManager.UserName = company1DeptItManager.WorkEmailAddress;
-                company1DeptItManager.Email = company1DeptItManager.WorkEmailAddress;                
+                company1DeptItManager.Email = company1DeptItManager.WorkEmailAddress;
 
                 var company1DeptItUser = new Employee
                 {
@@ -156,7 +157,6 @@ namespace SophieHR.Api.Data
                 };
                 company1DeptItUser.UserName = company1DeptItUser.WorkEmailAddress;
                 company1DeptItUser.Email = company1DeptItUser.WorkEmailAddress;
-
 
                 var company1DeptSalesManager = new Employee
                 {
@@ -204,7 +204,6 @@ namespace SophieHR.Api.Data
                 company1DeptSalesUser.UserName = company1DeptSalesUser.WorkEmailAddress;
                 company1DeptSalesUser.Email = company1DeptSalesUser.WorkEmailAddress;
 
-
                 var company2DeptItManager = new Employee
                 {
                     Company = companyList.Last(),
@@ -228,7 +227,6 @@ namespace SophieHR.Api.Data
                 company2DeptItManager.UserName = company2DeptItManager.WorkEmailAddress;
                 company2DeptItManager.Email = company2DeptItManager.WorkEmailAddress;
 
-
                 var company2DeptItUser = new Employee
                 {
                     Company = companyList.Last(),
@@ -251,7 +249,6 @@ namespace SophieHR.Api.Data
                 };
                 company2DeptItUser.UserName = company2DeptItUser.WorkEmailAddress;
                 company2DeptItUser.Email = company2DeptItUser.WorkEmailAddress;
-
 
                 var company2DeptMarketingManager = new Employee
                 {
@@ -299,11 +296,9 @@ namespace SophieHR.Api.Data
                 company2DepttMarketingUser.UserName = company2DepttMarketingUser.WorkEmailAddress;
                 company2DepttMarketingUser.Email = company2DepttMarketingUser.WorkEmailAddress;
 
-
-                await context.AddRangeAsync(company1DeptItManager, company2DepttMarketingUser, company2DeptMarketingManager, company2DeptItUser, 
+                await context.AddRangeAsync(company1DeptItManager, company2DepttMarketingUser, company2DeptMarketingManager, company2DeptItUser,
                     company2DeptItManager, company1DeptSalesUser, company1DeptSalesManager, company1DeptItUser);
                 await context.SaveChangesAsync();
-
 
                 await _userManager.AddPasswordAsync(company1DeptItManager, "P@55w0rd1");
                 await _userManager.AddToRoleAsync(company1DeptItManager, "Manager");
@@ -328,7 +323,6 @@ namespace SophieHR.Api.Data
 
                 await _userManager.AddPasswordAsync(company1DeptItUser, "P@55w0rd1");
                 await _userManager.AddToRoleAsync(company1DeptItUser, "User");
-
             }
         }
     }
