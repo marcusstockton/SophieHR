@@ -37,6 +37,7 @@ namespace SophieHR.Api.Controllers
         {
             var company = await _context.Companies
                 .Include(x => x.Address)
+                .Include(x=>x.Employees)
                 .AsNoTracking()
                 .FirstAsync(x => x.Id == id);
 

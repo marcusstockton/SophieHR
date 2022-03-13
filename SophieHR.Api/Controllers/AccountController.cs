@@ -53,7 +53,7 @@ namespace SophieHR.Api.Controllers
             }
             catch (Exception ex)
             {
-                throw;
+                return BadRequest("Invalid Username or password");
             }
         }
 

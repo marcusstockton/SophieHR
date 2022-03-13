@@ -7,6 +7,7 @@
         public DateTime UpdatedDate { get; set; }
         public string Name { get; set; }
         public string? Logo { get; set; }
+        public int EmployeeCount { get; set; }
         public CompanyAddress Address { get; set; }
     }
 }
