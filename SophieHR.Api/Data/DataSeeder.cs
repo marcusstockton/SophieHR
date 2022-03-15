@@ -146,6 +146,7 @@ namespace SophieHR.Api.Data
                     HolidayAllowance = Faker.RandomNumber.Next(15, 35),
                     WorkEmailAddress = Faker.Internet.Email(),
                     StartOfEmployment = new DateTime(2019, 6, 16),
+                    Manager = company1DeptItManager,
                     Address = new EmployeeAddress
                     {
                         Line1 = Faker.RandomNumber.Next(0, 100).ToString(),
@@ -192,6 +193,7 @@ namespace SophieHR.Api.Data
                     HolidayAllowance = Faker.RandomNumber.Next(15, 35),
                     WorkEmailAddress = Faker.Internet.Email(),
                     StartOfEmployment = new DateTime(2019, 6, 16),
+                    Manager = company1DeptSalesManager,
                     Address = new EmployeeAddress
                     {
                         Line1 = Faker.RandomNumber.Next(0, 100).ToString(),
@@ -238,6 +240,7 @@ namespace SophieHR.Api.Data
                     HolidayAllowance = Faker.RandomNumber.Next(15, 35),
                     WorkEmailAddress = Faker.Internet.Email(),
                     StartOfEmployment = new DateTime(2019, 6, 16),
+                    Manager = company2DeptItManager,
                     Address = new EmployeeAddress
                     {
                         Line1 = Faker.RandomNumber.Next(0, 100).ToString(),
@@ -284,6 +287,7 @@ namespace SophieHR.Api.Data
                     HolidayAllowance = Faker.RandomNumber.Next(15, 35),
                     WorkEmailAddress = Faker.Internet.Email(),
                     StartOfEmployment = new DateTime(2019, 6, 16),
+                    Manager = company2DeptMarketingManager,
                     Address = new EmployeeAddress
                     {
                         Line1 = Faker.RandomNumber.Next(0, 100).ToString(),

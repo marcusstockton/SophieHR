@@ -1,8 +1,13 @@
-﻿namespace SophieHR.Api.Models
+﻿using SophieHR.Api.Models;
+
+namespace SophieHR.Api.Models.DTOs.Employee
 {
-    public class Employee : ApplicationUser
+    public class EmployeeDetailDto
     {
+        public Guid Id { get; set; }
+        public string FirstName { get; set; }
         public string? MiddleName { get; set; }
+        public string LastName { get; set; }
         public string WorkEmailAddress { get; set; }
         public string? PersonalEmailAddress { get; set; }
         public string WorkPhoneNumber { get; set; }
@@ -12,12 +17,11 @@
         public DateTime DateOfBirth { get; set; }
         public DateTime StartOfEmployment { get; set; }
         public EmployeeAddress Address { get; set; }
-        public Employee? Manager { get; set; }
+        //public Employee? Manager { get; set; }
         public Guid DepartmentId { get; set; }
         public Guid CompanyId { get; set; }
         public Guid EmployeeAvatarId { get; set; }
-        public virtual Department Department { get; set; }
-        public virtual Company Company { get; set; }
-        public virtual EmployeeAvatar Avatar { get; set; }
+        //public virtual Department Department { get; set; }
+        //public virtual Company Company { get; set; }
     }
 }

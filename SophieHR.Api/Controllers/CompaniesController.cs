@@ -39,6 +39,16 @@ namespace SophieHR.Api.Controllers
                 .Include(x => x.Address)
                 .Include(x=>x.Employees)
                 .AsNoTracking()
+                .Select(x=> new CompanyDetailDto
+                {
+                    Address = x.Address,
+                    CreatedDate = x.CreatedDate,
+                    EmployeeCount = x.Employees.Count(),
+                    Id = x.Id,
+                    Logo = Convert.ToBase64String(x.Logo),
+                    Name = x.Name,
+                    UpdatedDate = x.UpdatedDate
+                })
                 .FirstAsync(x => x.Id == id);
 
             if (company == null)
@@ -46,7 +56,7 @@ namespace SophieHR.Api.Controllers
                 return NotFound();
             }
 
-            return _mapper.Map<CompanyDetailDto>(company);
+            return Ok(company);
         }
 
         [HttpPost("{id}/upload-logo"), Authorize(Roles = "Admin")]

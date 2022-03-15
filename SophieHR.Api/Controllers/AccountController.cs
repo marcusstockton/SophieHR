@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using SophieHR.Api.Models;
 using SophieHR.Api.Models.DTOs.User;
+using SophieHR.Api.Services;
 using System.Web.Http.Description;
 
 namespace SophieHR.Api.Controllers
@@ -16,12 +17,14 @@ namespace SophieHR.Api.Controllers
         private readonly JwtSettings jwtSettings;
         private readonly UserManager<ApplicationUser> _userManager;
         public readonly IMapper _mapper;
+        private readonly IEmailSender _emailSender;
 
-        public AccountController(JwtSettings jwtSettings, UserManager<ApplicationUser> userManager, IMapper mapper)
+        public AccountController(JwtSettings jwtSettings, UserManager<ApplicationUser> userManager, IMapper mapper, IEmailSender emailSender)
         {
             this.jwtSettings = jwtSettings;
             _userManager = userManager;
             _mapper = mapper;
+            _emailSender = emailSender;
         }
 
         [HttpPost]
@@ -33,9 +36,13 @@ namespace SophieHR.Api.Controllers
             {
                 var Token = new UserTokens();
                 var user = await _userManager.FindByNameAsync(userLogins.UserName);
+                if(user == null)
+                {
+                    return NotFound("Invalid Username or password");
+                }
                 var roles = await _userManager.GetRolesAsync(user);
                 var _passwordHasher = new PasswordHasher<ApplicationUser>();
-                if (user != null && _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, userLogins.Password) == PasswordVerificationResult.Success)
+                if (_passwordHasher.VerifyHashedPassword(user, user.PasswordHash, userLogins.Password) == PasswordVerificationResult.Success)
                 {
                     Token = JwtHelpers.JwtHelpers.GenTokenkey(new UserTokens()
                     {
@@ -62,11 +69,8 @@ namespace SophieHR.Api.Controllers
         /// </summary>
         /// <param name="userData"></param>
         /// <returns>JWT Auth token</returns>
-        [HttpPost]
-        [AllowAnonymous]
-        [Route("RegisterNewUser")]
-        [ResponseType(typeof(UserTokens))]
-        public async Task<IActionResult> RegisterNewUser(RegisterUserDto userData)
+        [HttpPost, Route("RegisterNewAdminUser"), Authorize(Roles = "Admin"), ResponseType(typeof(UserTokens))]
+        public async Task<IActionResult> RegisterNewAdminUser(RegisterUserDto userData)
         {
             if (!ModelState.IsValid)
             {
@@ -77,7 +81,7 @@ namespace SophieHR.Api.Controllers
                 Email = userData.EmailAddress,
                 FirstName = userData.FirstName,
                 LastName = userData.LastName,
-                UserName = userData.EmailAddress
+                UserName = userData.EmailAddress,
             };
             var existingUser = await _userManager.FindByEmailAsync(user.Email);
             if (existingUser != null)
@@ -95,7 +99,7 @@ namespace SophieHR.Api.Controllers
                         UserName = user.UserName,
                         Id = user.Id,
                     }, jwtSettings);
-
+                    await _emailSender.SendEmailAsync( user.Email, "New User Registered", "You have had a user registered with this email address. Gratz!");
                     return Ok(token);
                 }
                 else
@@ -113,14 +117,19 @@ namespace SophieHR.Api.Controllers
         /// Get List of UserAccounts
         /// </summary>
         /// <returns>List Of UserAccounts</returns>
-        [HttpGet]
+        [HttpGet("GetListOfUsers")]
         [ResponseType(typeof(List<UserDto>))]
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [Authorize(Roles = "Admin, Manager")]
         public IActionResult GetList()
         {
-            var users = _userManager.Users.ToList();
-
-            return Ok(_mapper.Map<List<UserDto>>(users));
+            var users = _userManager.Users.AsEnumerable();
+            if (User.IsInRole("Manager"))
+            {
+                // Only retrieve employees the manager can access:
+                
+            }
+            
+            return Ok(_mapper.Map<List<UserDto>>(users.ToList()));
         }
     }
 }
