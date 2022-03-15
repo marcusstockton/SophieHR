@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using SophieHR.Api.Models;
 using SophieHR.Api.Models.DTOs.Employee;
+using SophieHR.Api.Models.DTOs.Employee.EmployeeAvatar;
 
 namespace SophieHR.Api.Profiles
 {
@@ -11,7 +12,8 @@ namespace SophieHR.Api.Profiles
             CreateMap<Employee, EmployeeDetailDto>().ReverseMap();
             CreateMap<EmployeeListDto, Employee>().ReverseMap();
             CreateMap<EmployeeCreateDto, Employee>().ReverseMap();
-
+            CreateMap<EmployeeAvatarDetail, EmployeeAvatar>().ReverseMap();
+            
             CreateMap<string?, byte[]?>().ConvertUsing<Base64Converter>();
             CreateMap<byte[]?, string?>().ConvertUsing<Base64Converter>();
         }

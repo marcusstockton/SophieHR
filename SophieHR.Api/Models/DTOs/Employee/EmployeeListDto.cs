@@ -20,7 +20,7 @@ namespace SophieHR.Api.Models.DTOs.Employee
         public EmployeeAddress Address { get; set; }
         public Guid DepartmentId { get; set; }
         public Guid CompanyId { get; set; }
-        public DepartmentDetailDto Department { get; set; }
-        public CompanyDetailDto Company { get; set; }
+        public DepartmentIdNameDto Department { get; set; }
+        public CompanyIdNameDto Company { get; set; }
     }
 }

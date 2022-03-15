@@ -1,6 +1,7 @@
 ﻿using SophieHR.Api.Models;
 using SophieHR.Api.Models.DTOs.Company;
 using SophieHR.Api.Models.DTOs.Department;
+using SophieHR.Api.Models.DTOs.Employee.EmployeeAvatar;
 
 namespace SophieHR.Api.Models.DTOs.Employee
 {
@@ -21,10 +22,8 @@ namespace SophieHR.Api.Models.DTOs.Employee
         public DateTime StartOfEmployment { get; set; }
         public EmployeeAddress Address { get; set; }
         public Guid? ManagerId { get; set; }
-        public Guid DepartmentId { get; set; }
-        public Guid CompanyId { get; set; }
-        public string? AvatarBase64 { get; set; }
-        public DepartmentDetailDto Department { get; set; }
-        public CompanyDetailDto Company { get; set; }
+        public EmployeeAvatarDetail? Avatar { get; set; }
+        public DepartmentIdNameDto? Department { get; set; }
+        public CompanyIdNameDto Company { get; set; }
     }
 }

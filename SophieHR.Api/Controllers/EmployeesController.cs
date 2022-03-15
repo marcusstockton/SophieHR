@@ -10,6 +10,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SophieHR.Api.Data;
 using SophieHR.Api.Models;
+using SophieHR.Api.Models.DTOs.Company;
+using SophieHR.Api.Models.DTOs.Department;
 using SophieHR.Api.Models.DTOs.Employee;
 
 namespace SophieHR.Api.Controllers
@@ -55,32 +57,14 @@ namespace SophieHR.Api.Controllers
                 .Include(x => x.Avatar)
                 .Include(x=>x.Address)
                 .Include(x=>x.Department)
-                .Select(x => new EmployeeDetailDto
-                {
-                    Address = x.Address,
-                    AvatarBase64 = x.Avatar != null ? Convert.ToBase64String(x.Avatar.Avatar) : null,
-                    CompanyId = x.CompanyId,
-                    DateOfBirth = x.DateOfBirth,
-                    Department = new Models.DTOs.Department.DepartmentDetailDto { Id = x.Department.Id, Name = x.Department.Name },
-                    FirstName = x.FirstName,
-                    HolidayAllowance = x.HolidayAllowance,
-                    Id = x.Id,
-                    LastName = x.LastName,
-                    MiddleName = x.MiddleName,
-                    PersonalEmailAddress = x.PersonalEmailAddress,
-                    PersonalMobileNumber = x.PersonalMobileNumber,
-                    StartOfEmployment = x.StartOfEmployment,
-                    WorkEmailAddress = x.WorkEmailAddress,
-                    WorkMobileNumber = x.WorkMobileNumber,
-                    WorkPhoneNumber = x.WorkPhoneNumber
-                }).SingleOrDefaultAsync(x => User.IsInRole("User")? x.UserName == User.Identity.Name : x.Id == id); // If user is user role, return their record only
+                .Include(x=>x.Company)
+                .SingleOrDefaultAsync(x => User.IsInRole("User")? x.UserName == User.Identity.Name : x.Id == id); // If user is user role, return their record only
 
             if (employee == null)
             {
                 return NotFound();
             }
-
-            return Ok(employee);
+            return Ok(_mapper.Map<EmployeeDetailDto>(employee));
         }
 
         [HttpPost("{id}/upload-avatar"), Authorize(Roles = "Admin, Manager")]
