@@ -74,7 +74,6 @@ namespace SophieHR.Api.Data
                 await _roleManager.CreateAsync(new IdentityRole<Guid> { Name = "Admin" });
                 await _roleManager.CreateAsync(new IdentityRole<Guid> { Name = "Manager" });
                 await _roleManager.CreateAsync(new IdentityRole<Guid> { Name = "User" });
-                //await context.SaveChangesAsync();
             }
 
             if (!context.Users.Any())

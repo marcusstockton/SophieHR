@@ -39,11 +39,11 @@ namespace SophieHR.Api.Controllers
         [HttpGet("list-of-managers-for-company/{companyId}")]
         public async Task<ActionResult<IEnumerable<EmployeeListDto>>> GetManagersForCompanyId(Guid companyId)
         {
-            var managers = await _context.Employees.Where(x => x.CompanyId == companyId).ToListAsync();
+            var managers = _context.Employees.Where(x => x.CompanyId == companyId);
 
-            var managerRole = await _context.Roles.FirstAsync(x => x.Name == "Manager");
-            var userroles = _context.UserRoles.Where(x => x.RoleId == managerRole.Id && managers.Select(x => x.Id).Contains(x.UserId)).Select(x=>x.UserId).ToList();
-            var managerList = managers.Where(x => userroles.Contains(x.Id));
+            var managerRoleId = _context.Roles.Single(x => x.Name == "Manager").Id;
+            var userroles = await _context.UserRoles.Where(x => x.RoleId == managerRoleId && managers.Select(x => x.Id).Contains(x.UserId)).Select(x=>x.UserId).ToListAsync();
+            var managerList = managers.Where(x => userroles.Contains(x.Id)).ToListAsync();
             return Ok(_mapper.Map<IEnumerable<EmployeeListDto>>(managerList));
         }
 
@@ -51,14 +51,62 @@ namespace SophieHR.Api.Controllers
         [HttpGet("get-by-id/{id}"), Authorize(Roles = "Admin, Manager, User")]
         public async Task<ActionResult<EmployeeDetailDto>> GetEmployee(Guid id)
         {
-            var employee = await _context.Employees.FindAsync(id);
+            var employee = await _context.Employees
+                .Include(x => x.Avatar)
+                .Include(x=>x.Address)
+                .Include(x=>x.Department)
+                .Select(x => new EmployeeDetailDto
+                {
+                    Address = x.Address,
+                    AvatarBase64 = x.Avatar != null ? Convert.ToBase64String(x.Avatar.Avatar) : null,
+                    CompanyId = x.CompanyId,
+                    DateOfBirth = x.DateOfBirth,
+                    Department = new Models.DTOs.Department.DepartmentDetailDto { Id = x.Department.Id, Name = x.Department.Name },
+                    FirstName = x.FirstName,
+                    HolidayAllowance = x.HolidayAllowance,
+                    Id = x.Id,
+                    LastName = x.LastName,
+                    MiddleName = x.MiddleName,
+                    PersonalEmailAddress = x.PersonalEmailAddress,
+                    PersonalMobileNumber = x.PersonalMobileNumber,
+                    StartOfEmployment = x.StartOfEmployment,
+                    WorkEmailAddress = x.WorkEmailAddress,
+                    WorkMobileNumber = x.WorkMobileNumber,
+                    WorkPhoneNumber = x.WorkPhoneNumber
+                }).SingleOrDefaultAsync(x => User.IsInRole("User")? x.UserName == User.Identity.Name : x.Id == id); // If user is user role, return their record only
 
             if (employee == null)
             {
                 return NotFound();
             }
 
-            return Ok(_mapper.Map< EmployeeDetailDto>(employee));
+            return Ok(employee);
+        }
+
+        [HttpPost("{id}/upload-avatar"), Authorize(Roles = "Admin, Manager")]
+        [RequestFormLimits(MultipartBodyLengthLimit = 5000000)] // Limit to 5mb logo
+        public async Task<IActionResult> UploadAvatar(Guid id, IFormFile avatar)
+        {
+            if (avatar != null)
+            {
+                var employee = await _context.Employees.FindAsync(id);
+                if (employee == null)
+                {
+                    return NotFound($"Unable to find a employee with the Id of {id}");
+                }
+                
+                using (var memoryStream = new MemoryStream())
+                {
+                    await avatar.CopyToAsync(memoryStream);
+                    byte[] bytes = memoryStream.ToArray();
+
+                    employee.Avatar = new EmployeeAvatar { Avatar = bytes };
+                    _context.Employees.Update(employee);
+                    await _context.SaveChangesAsync();
+                }
+            }
+
+            return NoContent();
         }
 
         // PUT: api/Employees/5

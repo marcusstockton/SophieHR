@@ -16,6 +16,7 @@ namespace SophieHR.Api.Data
         public DbSet<EmployeeAddress> EmployeeAddresses { get; set; }
         public DbSet<Department> Departments { get; set; }
         public DbSet<Employee> Employees { get; set; }
+        public DbSet<EmployeeAvatar> EmployeeAvatars { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

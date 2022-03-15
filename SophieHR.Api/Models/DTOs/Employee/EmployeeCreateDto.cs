@@ -14,11 +14,7 @@
         public DateTime DateOfBirth { get; set; }
         public DateTime StartOfEmployment { get; set; }
         public EmployeeAddress Address { get; set; }
-        //public Employee? Manager { get; set; }
         public Guid DepartmentId { get; set; }
         public Guid CompanyId { get; set; }
-        public Guid EmployeeAvatarId { get; set; }
-        //public virtual Department Department { get; set; }
-        //public virtual Company Company { get; set; }
     }
 }
