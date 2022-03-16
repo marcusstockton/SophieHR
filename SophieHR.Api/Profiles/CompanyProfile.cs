@@ -19,10 +19,10 @@ namespace SophieHR.Api.Profiles
 
         private class Base64Converter : ITypeConverter<string?, byte[]?>, ITypeConverter<byte[]?, string?>
         {
-            public byte[] Convert(string? source, byte[]? destination, ResolutionContext context)
+            public byte[]? Convert(string? source, byte[]? destination, ResolutionContext context)
                 => string.IsNullOrEmpty(source) ? null : System.Convert.FromBase64String(source);
 
-            public string Convert(byte[]? source, string? destination, ResolutionContext context)
+            public string? Convert(byte[]? source, string? destination, ResolutionContext context)
                 => source != null && source.Length > 0 ? System.Convert.ToBase64String(source) : null;
         }
     }

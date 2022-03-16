@@ -45,7 +45,7 @@ namespace SophieHR.Api.Controllers
                     CreatedDate = x.CreatedDate,
                     EmployeeCount = x.Employees.Count(),
                     Id = x.Id,
-                    Logo = Convert.ToBase64String(x.Logo),
+                    Logo = x.Logo != null ? Convert.ToBase64String(x.Logo) : null,
                     Name = x.Name,
                     UpdatedDate = x.UpdatedDate
                 })

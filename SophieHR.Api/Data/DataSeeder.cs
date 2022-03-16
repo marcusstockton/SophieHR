@@ -126,7 +126,7 @@ namespace SophieHR.Api.Data
                     },
                     DateOfBirth = Faker.Identification.DateOfBirth(),
                     HolidayAllowance = Faker.RandomNumber.Next(15, 35),
-                    WorkEmailAddress = Faker.Internet.Email(),
+                    WorkEmailAddress = "bert@carter.ca",
                     StartOfEmployment = new DateTime(2019, 6, 16),
 
                     WorkPhoneNumber = Faker.Phone.Number(),
@@ -143,7 +143,7 @@ namespace SophieHR.Api.Data
                     LastName = Faker.Name.Last(),
                     DateOfBirth = Faker.Identification.DateOfBirth(),
                     HolidayAllowance = Faker.RandomNumber.Next(15, 35),
-                    WorkEmailAddress = Faker.Internet.Email(),
+                    WorkEmailAddress = "destany@okon.ca",
                     StartOfEmployment = new DateTime(2019, 6, 16),
                     Manager = company1DeptItManager,
                     Address = new EmployeeAddress

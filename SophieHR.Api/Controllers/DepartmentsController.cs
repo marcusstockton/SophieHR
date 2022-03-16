@@ -88,6 +88,10 @@ namespace SophieHR.Api.Controllers
         [HttpPost, Authorize(Roles = "Admin, Manager", AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<ActionResult<DepartmentDetailDto>> PostDepartment(DepartmentCreateDto departmentCreateDto)
         {
+            if(!_context.Companies.Any(x=>x.Id == departmentCreateDto.CompanyId))
+            {
+                return BadRequest("Please select an existing company");
+            }
             var department = _mapper.Map<Department>(departmentCreateDto);
             _context.Departments.Add(department);
             await _context.SaveChangesAsync();

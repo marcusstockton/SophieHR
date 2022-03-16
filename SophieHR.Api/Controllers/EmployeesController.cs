@@ -45,7 +45,7 @@ namespace SophieHR.Api.Controllers
 
             var managerRoleId = _context.Roles.Single(x => x.Name == "Manager").Id;
             var userroles = await _context.UserRoles.Where(x => x.RoleId == managerRoleId && managers.Select(x => x.Id).Contains(x.UserId)).Select(x=>x.UserId).ToListAsync();
-            var managerList = managers.Where(x => userroles.Contains(x.Id)).ToListAsync();
+            var managerList = await managers.Where(x => userroles.Contains(x.Id)).ToListAsync();
             return Ok(_mapper.Map<IEnumerable<EmployeeListDto>>(managerList));
         }
 
