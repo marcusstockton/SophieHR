@@ -21,14 +21,16 @@ namespace SophieHR.Api.Controllers
         private readonly ApplicationDbContext _context;
         public readonly IMapper _mapper;
         private readonly IEmailSender _emailSender;
+        private readonly ILogger<AccountController> _logger;
 
-        public AccountController(JwtSettings jwtSettings, UserManager<ApplicationUser> userManager, ApplicationDbContext context, IMapper mapper, IEmailSender emailSender)
+        public AccountController(JwtSettings jwtSettings, UserManager<ApplicationUser> userManager, ApplicationDbContext context, IMapper mapper, IEmailSender emailSender, ILogger<AccountController> logger)
         {
             this.jwtSettings = jwtSettings;
             _userManager = userManager;
             _context = context;
             _mapper = mapper;
             _emailSender = emailSender;
+            _logger = logger;
         }
 
         [HttpPost]
@@ -42,6 +44,7 @@ namespace SophieHR.Api.Controllers
                 var user = await _userManager.FindByNameAsync(userLogins.UserName);
                 if(user == null)
                 {
+                    _logger.LogWarning("Someone is trying to log in with an account that doesn't exist: {username}", userLogins.UserName);
                     return NotFound("Invalid Username or password");
                 }
                 var roles = await _userManager.GetRolesAsync(user);
@@ -60,12 +63,14 @@ namespace SophieHR.Api.Controllers
                 }
                 else
                 {
+                    _logger.LogWarning("Attempt made to log in to valid username {username} with bad password {password}", user.UserName, userLogins.Password);
                     return BadRequest("Invalid Username or password");
                 }
                 return Ok(Token);
             }
             catch (Exception ex)
             {
+                _logger.LogError("An Exception was thrown {ex}", ex);
                 return BadRequest("Invalid Username or password");
             }
         }
