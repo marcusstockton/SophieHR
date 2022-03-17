@@ -9,7 +9,8 @@
         public Guid Id { get; set; }
         public string Email { get; set; }
         public DateTime ExpiredTime { get; set; }
-        public Guid? CompanyId { get; set; }
         public string Role { get; set; }
+        public Guid? DepartmentId { get; internal set; }
+        public Guid? CompanyId { get; set; }
     }
 }

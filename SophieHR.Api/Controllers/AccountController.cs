@@ -51,14 +51,16 @@ namespace SophieHR.Api.Controllers
                 var _passwordHasher = new PasswordHasher<ApplicationUser>();
                 if (_passwordHasher.VerifyHashedPassword(user, user.PasswordHash, userLogins.Password) == PasswordVerificationResult.Success)
                 {
-                    var companyId = await _context.Employees.Where(x => x.Id == user.Id).Select(x => x.CompanyId).FirstOrDefaultAsync();
+                    var userExtra = await _context.Employees.Where(x => x.Id == user.Id).Select(x => new { CompanyId = x.CompanyId, DepartmentId = x.DepartmentId }).FirstOrDefaultAsync();
+                    
                     Token = JwtHelpers.JwtHelpers.GenTokenkey(new UserTokens()
                     {
                         Email = user.Email,
                         UserName = user.UserName,
                         Id = user.Id,
                         Role = roles.First(),
-                        CompanyId = companyId
+                        CompanyId = userExtra.CompanyId,
+                        DepartmentId = userExtra.DepartmentId
                     }, jwtSettings);
                 }
                 else
