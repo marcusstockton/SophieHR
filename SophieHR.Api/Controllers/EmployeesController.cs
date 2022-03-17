@@ -49,6 +49,13 @@ namespace SophieHR.Api.Controllers
             return Ok(_mapper.Map<IEnumerable<EmployeeListDto>>(managerList));
         }
 
+        [HttpGet("list-of-employees-for-manager/{managerId}")]
+        public async Task<ActionResult<IEnumerable<EmployeeListDto>>> GetEmployeesForManager(Guid managerId)
+        {
+            var employees = await _context.Employees.Where(x => x.Manager.Id == managerId).ToListAsync();
+            return Ok(_mapper.Map<IEnumerable<EmployeeListDto>>(employees));
+        }
+
         // GET: api/Employees/5
         [HttpGet("get-by-id/{id}"), Authorize(Roles = "Admin, Manager, User")]
         public async Task<ActionResult<EmployeeDetailDto>> GetEmployee(Guid id)

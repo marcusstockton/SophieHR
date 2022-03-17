@@ -43,6 +43,7 @@ namespace SophieHR.Api.JwtHelpers
                 UserToken.Email = model.Email;
                 UserToken.Role = model.Role;
                 UserToken.Id = model.Id;
+                UserToken.CompanyId = model.CompanyId;
                 return UserToken;
             }
             catch (Exception)

@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using SophieHR.Api.Data;
 using SophieHR.Api.Models;
 using SophieHR.Api.Models.DTOs.User;
 using SophieHR.Api.Services;
@@ -16,13 +18,15 @@ namespace SophieHR.Api.Controllers
     {
         private readonly JwtSettings jwtSettings;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ApplicationDbContext _context;
         public readonly IMapper _mapper;
         private readonly IEmailSender _emailSender;
 
-        public AccountController(JwtSettings jwtSettings, UserManager<ApplicationUser> userManager, IMapper mapper, IEmailSender emailSender)
+        public AccountController(JwtSettings jwtSettings, UserManager<ApplicationUser> userManager, ApplicationDbContext context, IMapper mapper, IEmailSender emailSender)
         {
             this.jwtSettings = jwtSettings;
             _userManager = userManager;
+            _context = context;
             _mapper = mapper;
             _emailSender = emailSender;
         }
@@ -44,12 +48,14 @@ namespace SophieHR.Api.Controllers
                 var _passwordHasher = new PasswordHasher<ApplicationUser>();
                 if (_passwordHasher.VerifyHashedPassword(user, user.PasswordHash, userLogins.Password) == PasswordVerificationResult.Success)
                 {
+                    var companyId = await _context.Employees.Where(x => x.Id == user.Id).Select(x => x.CompanyId).FirstOrDefaultAsync();
                     Token = JwtHelpers.JwtHelpers.GenTokenkey(new UserTokens()
                     {
                         Email = user.Email,
                         UserName = user.UserName,
                         Id = user.Id,
                         Role = roles.First(),
+                        CompanyId = companyId
                     }, jwtSettings);
                 }
                 else
