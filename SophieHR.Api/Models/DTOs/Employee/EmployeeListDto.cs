@@ -9,6 +9,7 @@ namespace SophieHR.Api.Models.DTOs.Employee
         public string FirstName { get; set; }
         public string? MiddleName { get; set; }
         public string LastName { get; set; }
+        public string JobTitle { get; set; }
         public string WorkEmailAddress { get; set; }
         public string? PersonalEmailAddress { get; set; }
         public string WorkPhoneNumber { get; set; }
