@@ -126,7 +126,6 @@ namespace SophieHR.Api.Data
 
                 // Add some employees
 
-                // ToDo - Re-write all of this seeder to use the Faker/Bogus style..
                 var Company1deptITManagers = new Faker<Employee>("en_GB")
                     .RuleFor(bp => bp.FirstName, f => f.Name.FirstName())
                     .RuleFor(bp => bp.LastName, f => f.Name.LastName())
@@ -149,7 +148,7 @@ namespace SophieHR.Api.Data
                     .RuleFor(bp => bp.HolidayAllowance, f => f.Random.Number(28, 50))
                     .RuleFor(bp => bp.PhoneNumber, f => f.Phone.PhoneNumber())
                     .RuleFor(bp => bp.Avatar, f => new EmployeeAvatar { Avatar = f.PickRandom(demoImages) })
-                    .FinishWith((f, bp) => Console.WriteLine($"Employee created. Id={bp.Id}"));
+                    .FinishWith((f, bp) => _logger.LogInformation($"Manager created for company {company1.Name} and department {company1deptIT.Name}. Id={bp.Id}"));
 
                 var comp1deptITEmployeeManagers = Company1deptITManagers.Generate(2);
                 await context.Employees.AddRangeAsync(comp1deptITEmployeeManagers);
@@ -177,38 +176,70 @@ namespace SophieHR.Api.Data
                     .RuleFor(bp => bp.Manager, f => f.PickRandom(comp1deptITEmployeeManagers))
                     .RuleFor(bp => bp.HolidayAllowance, f => f.Random.Number(28, 50))
                     .RuleFor(bp => bp.PhoneNumber, f => f.Phone.PhoneNumber())
-                    .FinishWith((f, bp) => Console.WriteLine($"Employee created. Id={bp.Id}"));
+                    .FinishWith((f, bp) => _logger.LogInformation($"Employee created for company {company1.Name} and department {company1deptIT.Name}. Id={bp.Id}"));
 
                 var comp1deptITEmployeeUsers = Company1deptITEmployees.Generate(10);
-
                 await context.Employees.AddRangeAsync(comp1deptITEmployeeUsers);
+
+                var Company1deptSalesManagers = new Faker<Employee>("en_GB")
+                    .RuleFor(bp => bp.FirstName, f => f.Name.FirstName())
+                    .RuleFor(bp => bp.LastName, f => f.Name.LastName())
+                    .RuleFor(bp => bp.CompanyId, f => company1.Id)
+                    .RuleFor(bp => bp.StartOfEmployment, (f, u) => f.Date.Recent(4600))
+                    .RuleFor(bp => bp.DepartmentId, f => company1deptSales.Id)
+                    .RuleFor(bp => bp.Address, f => new EmployeeAddress
+                    {
+                        County = f.Address.County(),
+                        Line1 = f.Address.BuildingNumber() + f.Address.StreetName,
+                        Line2 = f.Address.SecondaryAddress(),
+                        Line3 = f.Address.StreetSuffix(),
+                        Postcode = f.Address.ZipCode()
+                    })
+                    .RuleFor(bp => bp.DateOfBirth, f => f.Person.DateOfBirth)
+                    .RuleFor(bp => bp.WorkEmailAddress, (f, u) => f.Internet.Email(u.FirstName, u.LastName))
+                    .RuleFor(bp => bp.UserName, (f, u) => f.Internet.Email(u.FirstName, u.LastName))
+                    .RuleFor(bp => bp.Email, (f, u) => f.Internet.Email(u.FirstName, u.LastName))
+                    .RuleFor(bp => bp.JobTitle, f => f.Name.JobTitle() + " Manager")
+                    .RuleFor(bp => bp.HolidayAllowance, f => f.Random.Number(28, 50))
+                    .RuleFor(bp => bp.PhoneNumber, f => f.Phone.PhoneNumber())
+                    .RuleFor(bp => bp.Avatar, f => new EmployeeAvatar { Avatar = f.PickRandom(demoImages) })
+                    .FinishWith((f, bp) => _logger.LogInformation($"Manager created for company {company1.Name} and department {company1deptSales.Name}. Id={bp.Id}"));
+
+                var comp1deptSalesEmployeeManagers = Company1deptSalesManagers.Generate(2);
+                await context.Employees.AddRangeAsync(comp1deptSalesEmployeeManagers);
+
+                var company1deptSalesUsers = new Faker<Employee>("en_GB")
+                    .RuleFor(bp => bp.FirstName, f => f.Name.FirstName())
+                    .RuleFor(bp => bp.LastName, f => f.Name.LastName())
+                    .RuleFor(bp => bp.CompanyId, f => company1.Id)
+                    .RuleFor(bp => bp.StartOfEmployment, (f, u) => f.Date.Recent(4600))
+                    .RuleFor(bp => bp.DepartmentId, f => company1deptSales.Id)
+                    .RuleFor(bp => bp.Address, f => new EmployeeAddress
+                    {
+                        County = f.Address.County(),
+                        Line1 = f.Address.BuildingNumber(),
+                        Line2 = f.Address.StreetName(),
+                        Line3 = f.Address.StreetSuffix(),
+                        Postcode = f.Address.ZipCode()
+                    })
+                    .RuleFor(bp => bp.DateOfBirth, f => f.Person.DateOfBirth)
+                    .RuleFor(bp => bp.WorkEmailAddress, (f, u) => f.Internet.Email(u.FirstName, u.LastName))
+                    .RuleFor(bp => bp.UserName, (f, u) => f.Internet.Email(u.FirstName, u.LastName))
+                    .RuleFor(bp => bp.Email, (f, u) => f.Internet.Email(u.FirstName, u.LastName))
+                    .RuleFor(bp => bp.JobTitle, f => f.Name.JobTitle())
+                    .RuleFor(bp => bp.Avatar, f => new EmployeeAvatar { Avatar = f.PickRandom(demoImages) })
+                    .RuleFor(bp => bp.Manager, f => f.PickRandom(comp1deptSalesEmployeeManagers))
+                    .RuleFor(bp => bp.HolidayAllowance, f => f.Random.Number(28, 50))
+                    .RuleFor(bp => bp.PhoneNumber, f => f.Phone.PhoneNumber())
+                    .FinishWith((f, bp) => _logger.LogInformation($"Employee created for company {company1.Name} and department {company1deptSales.Name}. Id={bp.Id}"));
+
+                var company1deptSalesEmployees = company1deptSalesUsers.Generate(5);
+                await context.Employees.AddRangeAsync(company1deptSalesEmployees);
+
                 try
                 {
                     await context.SaveChangesAsync();
 
-                    //await _userManager.AddPasswordAsync(company1DeptItManager, "P@55w0rd1");
-                    //await _userManager.AddToRoleAsync(company1DeptItManager, "Manager");
-
-                    //await _userManager.AddPasswordAsync(company2DepttMarketingUser, "P@55w0rd1");
-                    //await _userManager.AddToRoleAsync(company2DepttMarketingUser, "User");
-
-                    //await _userManager.AddPasswordAsync(company2DeptMarketingManager, "P@55w0rd1");
-                    //await _userManager.AddToRoleAsync(company2DeptMarketingManager, "Manager");
-
-                    //await _userManager.AddPasswordAsync(company2DeptItUser, "P@55w0rd1");
-                    //await _userManager.AddToRoleAsync(company2DeptItUser, "User");
-
-                    //await _userManager.AddPasswordAsync(company2DeptItManager, "P@55w0rd1");
-                    //await _userManager.AddToRoleAsync(company2DeptItManager, "Manager");
-
-                    //await _userManager.AddPasswordAsync(company1DeptSalesUser, "P@55w0rd1");
-                    //await _userManager.AddToRoleAsync(company1DeptSalesUser, "User");
-
-                    //await _userManager.AddPasswordAsync(company1DeptSalesManager, "P@55w0rd1");
-                    //await _userManager.AddToRoleAsync(company1DeptSalesManager, "Manager");
-
-                    //await _userManager.AddPasswordAsync(company1DeptItUser, "P@55w0rd1");
-                    //await _userManager.AddToRoleAsync(company1DeptItUser, "User");
                     foreach (var user in comp1deptITEmployeeManagers)
                     {
                         await _userManager.AddPasswordAsync(user, "P@55w0rd1");

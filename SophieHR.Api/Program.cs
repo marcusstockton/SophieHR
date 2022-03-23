@@ -84,14 +84,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 
-    using (var scope = app.Services.CreateScope())
-    {
-        var services = scope.ServiceProvider;
-        var context = services.GetRequiredService<ApplicationDbContext>();
-        await context.Database.EnsureDeletedAsync();
-        context.Database.Migrate();
-        await DataSeeder.Initialize(services);
-    }
+    //using (var scope = app.Services.CreateScope())
+    //{
+    //    var services = scope.ServiceProvider;
+    //    var context = services.GetRequiredService<ApplicationDbContext>();
+    //    await context.Database.EnsureDeletedAsync();
+    //    context.Database.Migrate();
+    //    await DataSeeder.Initialize(services);
+    //}
 }
 app.UseCors("CorsPolicy");
 app.UseHttpsRedirection();
