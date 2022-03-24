@@ -18,6 +18,7 @@ namespace SophieHR.Api.Models.DTOs.Employee
         public string? WorkMobileNumber { get; set; }
         public string? PersonalMobileNumber { get; set; }
         public double HolidayAllowance { get; set; }
+        public string JobTitle { get; set; }
         public DateTime DateOfBirth { get; set; }
         public DateTime StartOfEmployment { get; set; }
         public EmployeeAddress Address { get; set; }

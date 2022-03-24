@@ -126,115 +126,11 @@ namespace SophieHR.Api.Data
 
                 // Add some employees
 
-                var Company1deptITManagers = new Faker<Employee>("en_GB")
-                    .RuleFor(bp => bp.FirstName, f => f.Name.FirstName())
-                    .RuleFor(bp => bp.LastName, f => f.Name.LastName())
-                    .RuleFor(bp => bp.CompanyId, f => company1.Id)
-                    .RuleFor(bp => bp.StartOfEmployment, (f, u) => f.Date.Recent(4600))
-                    .RuleFor(bp => bp.DepartmentId, f => company1deptIT.Id)
-                    .RuleFor(bp => bp.Address, f => new EmployeeAddress
-                    {
-                        County = f.Address.County(),
-                        Line1 = f.Address.BuildingNumber() + f.Address.StreetName,
-                        Line2 = f.Address.SecondaryAddress(),
-                        Line3 = f.Address.StreetSuffix(),
-                        Postcode = f.Address.ZipCode()
-                    })
-                    .RuleFor(bp => bp.DateOfBirth, f => f.Person.DateOfBirth)
-                    .RuleFor(bp => bp.WorkEmailAddress, (f, u) => f.Internet.Email(u.FirstName, u.LastName))
-                    .RuleFor(bp => bp.UserName, (f, u) => f.Internet.Email(u.FirstName, u.LastName))
-                    .RuleFor(bp => bp.Email, (f, u) => f.Internet.Email(u.FirstName, u.LastName))
-                    .RuleFor(bp => bp.JobTitle, f => f.Name.JobTitle() + " Manager")
-                    .RuleFor(bp => bp.HolidayAllowance, f => f.Random.Number(28, 50))
-                    .RuleFor(bp => bp.PhoneNumber, f => f.Phone.PhoneNumber())
-                    .RuleFor(bp => bp.Avatar, f => new EmployeeAvatar { Avatar = f.PickRandom(demoImages) })
-                    .FinishWith((f, bp) => _logger.LogInformation($"Manager created for company {company1.Name} and department {company1deptIT.Name}. Id={bp.Id}"));
+                List<Employee> comp1deptITEmployeeManagers = await CreateManagers(context, _logger, company1, company1deptIT, demoImages);
+                List<Employee> comp1deptITEmployeeUsers = await CreateUsers(context, _logger, company1, company1deptIT, demoImages, comp1deptITEmployeeManagers);
 
-                var comp1deptITEmployeeManagers = Company1deptITManagers.Generate(2);
-                await context.Employees.AddRangeAsync(comp1deptITEmployeeManagers);
-                
-                var Company1deptITEmployees = new Faker<Employee>("en_GB")
-                    .RuleFor(bp => bp.FirstName, f => f.Name.FirstName())
-                    .RuleFor(bp => bp.LastName, f => f.Name.LastName())
-                    .RuleFor(bp => bp.CompanyId, f => company1.Id)
-                    .RuleFor(bp => bp.StartOfEmployment, (f, u) => f.Date.Recent(4600))
-                    .RuleFor(bp => bp.DepartmentId, f => company1deptIT.Id)
-                    .RuleFor(bp => bp.Address, f => new EmployeeAddress
-                    {
-                        County = f.Address.County(),
-                        Line1 = f.Address.BuildingNumber(),
-                        Line2 = f.Address.StreetName(),
-                        Line3 = f.Address.StreetSuffix(),
-                        Postcode = f.Address.ZipCode()
-                    })
-                    .RuleFor(bp => bp.DateOfBirth, f => f.Person.DateOfBirth)
-                    .RuleFor(bp => bp.WorkEmailAddress, (f, u) => f.Internet.Email(u.FirstName, u.LastName))
-                    .RuleFor(bp => bp.UserName, (f, u) => f.Internet.Email(u.FirstName, u.LastName))
-                    .RuleFor(bp => bp.Email, (f, u) => f.Internet.Email(u.FirstName, u.LastName))
-                    .RuleFor(bp => bp.JobTitle, f => f.Name.JobTitle())
-                    .RuleFor(bp => bp.Avatar, f => new EmployeeAvatar { Avatar = f.PickRandom(demoImages) })
-                    .RuleFor(bp => bp.Manager, f => f.PickRandom(comp1deptITEmployeeManagers))
-                    .RuleFor(bp => bp.HolidayAllowance, f => f.Random.Number(28, 50))
-                    .RuleFor(bp => bp.PhoneNumber, f => f.Phone.PhoneNumber())
-                    .FinishWith((f, bp) => _logger.LogInformation($"Employee created for company {company1.Name} and department {company1deptIT.Name}. Id={bp.Id}"));
-
-                var comp1deptITEmployeeUsers = Company1deptITEmployees.Generate(10);
-                await context.Employees.AddRangeAsync(comp1deptITEmployeeUsers);
-
-                var Company1deptSalesManagers = new Faker<Employee>("en_GB")
-                    .RuleFor(bp => bp.FirstName, f => f.Name.FirstName())
-                    .RuleFor(bp => bp.LastName, f => f.Name.LastName())
-                    .RuleFor(bp => bp.CompanyId, f => company1.Id)
-                    .RuleFor(bp => bp.StartOfEmployment, (f, u) => f.Date.Recent(4600))
-                    .RuleFor(bp => bp.DepartmentId, f => company1deptSales.Id)
-                    .RuleFor(bp => bp.Address, f => new EmployeeAddress
-                    {
-                        County = f.Address.County(),
-                        Line1 = f.Address.BuildingNumber() + f.Address.StreetName,
-                        Line2 = f.Address.SecondaryAddress(),
-                        Line3 = f.Address.StreetSuffix(),
-                        Postcode = f.Address.ZipCode()
-                    })
-                    .RuleFor(bp => bp.DateOfBirth, f => f.Person.DateOfBirth)
-                    .RuleFor(bp => bp.WorkEmailAddress, (f, u) => f.Internet.Email(u.FirstName, u.LastName))
-                    .RuleFor(bp => bp.UserName, (f, u) => f.Internet.Email(u.FirstName, u.LastName))
-                    .RuleFor(bp => bp.Email, (f, u) => f.Internet.Email(u.FirstName, u.LastName))
-                    .RuleFor(bp => bp.JobTitle, f => f.Name.JobTitle() + " Manager")
-                    .RuleFor(bp => bp.HolidayAllowance, f => f.Random.Number(28, 50))
-                    .RuleFor(bp => bp.PhoneNumber, f => f.Phone.PhoneNumber())
-                    .RuleFor(bp => bp.Avatar, f => new EmployeeAvatar { Avatar = f.PickRandom(demoImages) })
-                    .FinishWith((f, bp) => _logger.LogInformation($"Manager created for company {company1.Name} and department {company1deptSales.Name}. Id={bp.Id}"));
-
-                var comp1deptSalesEmployeeManagers = Company1deptSalesManagers.Generate(2);
-                await context.Employees.AddRangeAsync(comp1deptSalesEmployeeManagers);
-
-                var company1deptSalesUsers = new Faker<Employee>("en_GB")
-                    .RuleFor(bp => bp.FirstName, f => f.Name.FirstName())
-                    .RuleFor(bp => bp.LastName, f => f.Name.LastName())
-                    .RuleFor(bp => bp.CompanyId, f => company1.Id)
-                    .RuleFor(bp => bp.StartOfEmployment, (f, u) => f.Date.Recent(4600))
-                    .RuleFor(bp => bp.DepartmentId, f => company1deptSales.Id)
-                    .RuleFor(bp => bp.Address, f => new EmployeeAddress
-                    {
-                        County = f.Address.County(),
-                        Line1 = f.Address.BuildingNumber(),
-                        Line2 = f.Address.StreetName(),
-                        Line3 = f.Address.StreetSuffix(),
-                        Postcode = f.Address.ZipCode()
-                    })
-                    .RuleFor(bp => bp.DateOfBirth, f => f.Person.DateOfBirth)
-                    .RuleFor(bp => bp.WorkEmailAddress, (f, u) => f.Internet.Email(u.FirstName, u.LastName))
-                    .RuleFor(bp => bp.UserName, (f, u) => f.Internet.Email(u.FirstName, u.LastName))
-                    .RuleFor(bp => bp.Email, (f, u) => f.Internet.Email(u.FirstName, u.LastName))
-                    .RuleFor(bp => bp.JobTitle, f => f.Name.JobTitle())
-                    .RuleFor(bp => bp.Avatar, f => new EmployeeAvatar { Avatar = f.PickRandom(demoImages) })
-                    .RuleFor(bp => bp.Manager, f => f.PickRandom(comp1deptSalesEmployeeManagers))
-                    .RuleFor(bp => bp.HolidayAllowance, f => f.Random.Number(28, 50))
-                    .RuleFor(bp => bp.PhoneNumber, f => f.Phone.PhoneNumber())
-                    .FinishWith((f, bp) => _logger.LogInformation($"Employee created for company {company1.Name} and department {company1deptSales.Name}. Id={bp.Id}"));
-
-                var company1deptSalesEmployees = company1deptSalesUsers.Generate(5);
-                await context.Employees.AddRangeAsync(company1deptSalesEmployees);
+                List<Employee> comp1deptSalesEmployeeManagers = await CreateManagers(context, _logger, company1, company1deptSales, demoImages);
+                List<Employee> comp1deptSalesEmployeeUsers = await CreateUsers(context, _logger, company1, company1deptSales, demoImages, comp1deptSalesEmployeeManagers);
 
                 try
                 {
@@ -250,15 +146,91 @@ namespace SophieHR.Api.Data
                         await _userManager.AddPasswordAsync(user, "P@55w0rd1");
                         await _userManager.AddToRoleAsync(user, "User");
                     }
+
+                    foreach (var user in comp1deptSalesEmployeeManagers)
+                    {
+                        await _userManager.AddPasswordAsync(user, "P@55w0rd1");
+                        await _userManager.AddToRoleAsync(user, "Manager");
+                    }
+                    foreach (var user in comp1deptSalesEmployeeUsers)
+                    {
+                        await _userManager.AddPasswordAsync(user, "P@55w0rd1");
+                        await _userManager.AddToRoleAsync(user, "Manager");
+                    }
+
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine(ex);
                     throw;
                 }
-                
-                
+
+
             }
+        }
+
+        private static async Task<List<Employee>> CreateUsers(ApplicationDbContext context, ILogger<DataSeeder> _logger, Company company1, Department company1deptIT, List<byte[]> demoImages, List<Employee> comp1deptITEmployeeManagers)
+        {
+            var Company1deptITEmployees = new Faker<Employee>("en_GB")
+                                .RuleFor(bp => bp.FirstName, f => f.Name.FirstName())
+                                .RuleFor(bp => bp.LastName, f => f.Name.LastName())
+                                .RuleFor(bp => bp.CompanyId, f => company1.Id)
+                                .RuleFor(bp => bp.StartOfEmployment, (f, u) => f.Date.Recent(4600))
+                                .RuleFor(bp => bp.DepartmentId, f => company1deptIT.Id)
+                                .RuleFor(bp => bp.Address, f => new EmployeeAddress
+                                {
+                                    County = f.Address.County(),
+                                    Line1 = f.Address.BuildingNumber(),
+                                    Line2 = f.Address.StreetName(),
+                                    Line3 = f.Address.StreetSuffix(),
+                                    Postcode = f.Address.ZipCode()
+                                })
+                                .RuleFor(bp => bp.DateOfBirth, f => f.Person.DateOfBirth)
+                                .RuleFor(bp => bp.WorkEmailAddress, (f, u) => f.Internet.Email(u.FirstName, u.LastName))
+                                .RuleFor(bp => bp.UserName, (f, u) => f.Internet.Email(u.FirstName, u.LastName))
+                                .RuleFor(bp => bp.Email, (f, u) => f.Internet.Email(u.FirstName, u.LastName))
+                                .RuleFor(bp => bp.JobTitle, f => f.Name.JobTitle())
+                                .RuleFor(bp => bp.Avatar, f => new EmployeeAvatar { Avatar = f.PickRandom(demoImages) })
+                                .RuleFor(bp => bp.Manager, f => f.PickRandom(comp1deptITEmployeeManagers))
+                                .RuleFor(bp => bp.HolidayAllowance, f => f.Random.Number(28, 50))
+                                .RuleFor(bp => bp.PhoneNumber, f => f.Phone.PhoneNumber())
+                                .FinishWith((f, bp) => _logger.LogInformation($"Employee created for company {company1.Name} and department {company1deptIT.Name}. Id={bp.Id}"));
+
+            var num = Faker.RandomNumber.Next(3, 15);
+            var users = Company1deptITEmployees.Generate(num);
+            await context.Employees.AddRangeAsync(users);
+            return users;
+        }
+
+        private static async Task<List<Employee>> CreateManagers(ApplicationDbContext context, ILogger<DataSeeder> _logger, Company company1, Department company1deptIT, List<byte[]> demoImages)
+        {
+            var Company1deptITManagers = new Faker<Employee>("en_GB")
+                                .RuleFor(bp => bp.FirstName, f => f.Name.FirstName())
+                                .RuleFor(bp => bp.LastName, f => f.Name.LastName())
+                                .RuleFor(bp => bp.CompanyId, f => company1.Id)
+                                .RuleFor(bp => bp.StartOfEmployment, (f, u) => f.Date.Recent(4600))
+                                .RuleFor(bp => bp.DepartmentId, f => company1deptIT.Id)
+                                .RuleFor(bp => bp.Address, f => new EmployeeAddress
+                                {
+                                    County = f.Address.County(),
+                                    Line1 = f.Address.BuildingNumber() + f.Address.StreetName,
+                                    Line2 = f.Address.SecondaryAddress(),
+                                    Line3 = f.Address.StreetSuffix(),
+                                    Postcode = f.Address.ZipCode()
+                                })
+                                .RuleFor(bp => bp.DateOfBirth, f => f.Person.DateOfBirth)
+                                .RuleFor(bp => bp.WorkEmailAddress, (f, u) => f.Internet.Email(u.FirstName, u.LastName))
+                                .RuleFor(bp => bp.UserName, (f, u) => f.Internet.Email(u.FirstName, u.LastName))
+                                .RuleFor(bp => bp.Email, (f, u) => f.Internet.Email(u.FirstName, u.LastName))
+                                .RuleFor(bp => bp.JobTitle, f => f.Name.JobTitle() + " Manager")
+                                .RuleFor(bp => bp.HolidayAllowance, f => f.Random.Number(28, 50))
+                                .RuleFor(bp => bp.PhoneNumber, f => f.Phone.PhoneNumber())
+                                .RuleFor(bp => bp.Avatar, f => new EmployeeAvatar { Avatar = f.PickRandom(demoImages) })
+                                .FinishWith((f, bp) => _logger.LogInformation($"Manager created for company {company1.Name} and department {company1deptIT.Name}. Id={bp.Id}"));
+
+            var comp1deptITEmployeeManagers = Company1deptITManagers.Generate(2);
+            await context.Employees.AddRangeAsync(comp1deptITEmployeeManagers);
+            return comp1deptITEmployeeManagers;
         }
     }
 }
