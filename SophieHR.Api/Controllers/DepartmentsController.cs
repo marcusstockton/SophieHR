@@ -85,7 +85,7 @@ namespace SophieHR.Api.Controllers
 
         // POST: api/Departments
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost, Authorize(Roles = "Admin, Manager", AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPost, Authorize(Roles = "Admin, Manager")]
         public async Task<ActionResult<DepartmentDetailDto>> PostDepartment(DepartmentCreateDto departmentCreateDto)
         {
             if(!_context.Companies.Any(x=>x.Id == departmentCreateDto.CompanyId))
@@ -100,7 +100,7 @@ namespace SophieHR.Api.Controllers
         }
 
         // DELETE: api/Departments/5
-        [HttpDelete("{id}"), Authorize(Roles = "Admin, Manager", AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpDelete("{id}"), Authorize(Roles = "Admin, Manager")]
         public async Task<IActionResult> DeleteDepartment(Guid id)
         {
             var department = await _context.Departments.FindAsync(id);

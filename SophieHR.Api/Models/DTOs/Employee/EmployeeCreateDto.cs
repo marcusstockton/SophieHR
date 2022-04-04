@@ -2,6 +2,8 @@
 {
     public class EmployeeCreateDto
     {
+        public string Title { get; set; }
+        public string Gender { get; set; }
         public string FirstName { get; set; }
         public string? MiddleName { get; set; }
         public string LastName { get; set; }
@@ -16,5 +18,7 @@
         public EmployeeAddress Address { get; set; }
         public Guid DepartmentId { get; set; }
         public Guid CompanyId { get; set; }
+        public string? PassportNumber { get; set; }
+        public string? NationalInsuranceNumber { get; set; }
     }
 }

@@ -8,6 +8,8 @@ namespace SophieHR.Api.Models.DTOs.Employee
     public class EmployeeDetailDto
     {
         public Guid Id { get; set; }
+        public string Title { get; set; }
+        public string Gender { get; set; }
         public string UserName { get; set; }
         public string FirstName { get; set; }
         public string? MiddleName { get; set; }
@@ -17,6 +19,7 @@ namespace SophieHR.Api.Models.DTOs.Employee
         public string WorkPhoneNumber { get; set; }
         public string? WorkMobileNumber { get; set; }
         public string? PersonalMobileNumber { get; set; }
+        public string? PhoneNumber { get; set; }
         public double HolidayAllowance { get; set; }
         public string JobTitle { get; set; }
         public DateTime DateOfBirth { get; set; }
@@ -26,5 +29,7 @@ namespace SophieHR.Api.Models.DTOs.Employee
         public EmployeeAvatarDetail? Avatar { get; set; }
         public DepartmentIdNameDto? Department { get; set; }
         public CompanyIdNameDto Company { get; set; }
+        public string? PassportNumber { get; set; }
+        public string? NationalInsuranceNumber { get; set; }
     }
 }

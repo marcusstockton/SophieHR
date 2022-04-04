@@ -59,8 +59,8 @@ namespace SophieHR.Api.Controllers
                         UserName = user.UserName,
                         Id = user.Id,
                         Role = roles.First(),
-                        CompanyId = userExtra.CompanyId,
-                        DepartmentId = userExtra.DepartmentId
+                        CompanyId = userExtra?.CompanyId,
+                        DepartmentId = userExtra?.DepartmentId
                     }, jwtSettings);
                 }
                 else
@@ -135,14 +135,25 @@ namespace SophieHR.Api.Controllers
         [Authorize(Roles = "Admin, Manager")]
         public IActionResult GetList()
         {
-            var users = _userManager.Users.AsEnumerable();
+            var users = _context.Employees.AsEnumerable();
             if (User.IsInRole("Manager"))
             {
                 // Only retrieve employees the manager can access:
-                
+                var managerId = _userManager.GetUserId(User);
+                users = users.Where(x => x.Manager.Id == Guid.Parse(managerId));
             }
             
             return Ok(_mapper.Map<List<UserDto>>(users.ToList()));
+        }
+
+        [HttpGet("GetListOfManagers")] // ToDo - delete!
+        [ResponseType(typeof(List<string>))]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetListOfManagersAsync()
+        {
+            var managers = await _userManager.GetUsersInRoleAsync("Manager");
+
+            return Ok(_mapper.Map<List<string>>(managers.Select(x=>x.UserName).ToList()));
         }
     }
 }

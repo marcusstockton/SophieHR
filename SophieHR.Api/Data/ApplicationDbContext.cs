@@ -64,6 +64,10 @@ namespace SophieHR.Api.Data
                 b.Property(x => x.PersonalEmailAddress).HasMaxLength(100);
                 b.Property(x => x.WorkPhoneNumber).HasMaxLength(50);
                 b.Property(x => x.WorkEmailAddress).IsRequired().HasMaxLength(100);
+                b.Property(x => x.PassportNumber).HasMaxLength(9);
+                b.Property(x => x.NationalInsuranceNumber).HasMaxLength(9);
+                b.Property(x => x.Title).HasConversion<string>().HasMaxLength(10);
+                b.Property(x => x.Gender).HasConversion<string>().HasMaxLength(10);
                 b.HasOne(x => x.Avatar).WithOne(x => x.Employee).HasForeignKey<EmployeeAvatar>(x => x.EmployeeId);
                 b.HasOne(x => x.Company).WithMany(x => x.Employees).HasForeignKey(x => x.CompanyId).OnDelete(DeleteBehavior.Restrict);
                 b.HasOne(x => x.Department).WithMany().HasForeignKey(x => x.DepartmentId).OnDelete(DeleteBehavior.Restrict);
