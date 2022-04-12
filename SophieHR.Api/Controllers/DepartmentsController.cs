@@ -1,16 +1,18 @@
 ﻿#nullable disable
 
 using AutoMapper;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SophieHR.Api.Data;
 using SophieHR.Api.Models;
 using SophieHR.Api.Models.DTOs.Department;
+using System.Web.Http.Description;
+using ApiExplorerSettingsAttribute = Microsoft.AspNetCore.Mvc.ApiExplorerSettingsAttribute;
 
 namespace SophieHR.Api.Controllers
 {
+    [ApiExplorerSettings(GroupName = "v1")]
     [Route("api/[controller]")]
     [Authorize]
     [ApiController]
@@ -18,28 +20,30 @@ namespace SophieHR.Api.Controllers
     {
         private readonly ApplicationDbContext _context;
         public readonly IMapper _mapper;
+        private readonly ILogger<DepartmentsController> _logger;
 
-        public DepartmentsController(ApplicationDbContext context, IMapper mapper)
+        public DepartmentsController(ApplicationDbContext context, IMapper mapper, ILogger<DepartmentsController> logger)
         {
             _context = context;
             _mapper = mapper;
+            _logger = logger;
         }
 
         // GET: api/Departments
-        [HttpGet, Authorize(Roles = "Admin")]
+        [HttpGet, Authorize(Roles = "Admin"), ResponseType(typeof(IEnumerable<DepartmentDetailDto>))]
         public async Task<ActionResult<IEnumerable<DepartmentDetailDto>>> GetDepartments()
         {
             return _mapper.Map<List<DepartmentDetailDto>>(await _context.Departments.ToListAsync());
         }
 
-        [HttpGet("get-departments-by-companyid/{companyId}"), Authorize(Roles = "Admin, Manager")]
+        [HttpGet("get-departments-by-companyid/{companyId}"), Authorize(Roles = "Admin, Manager"), ResponseType(typeof(IEnumerable<DepartmentDetailDto>))]
         public async Task<ActionResult<IEnumerable<DepartmentDetailDto>>> GetDepartmentsByCompanyId(Guid companyId)
         {
             return _mapper.Map<List<DepartmentDetailDto>>(await _context.Departments.Where(x => x.CompanyId == companyId).ToListAsync());
         }
 
         // GET: api/Departments/5
-        [HttpGet("get-department-by-id/{id}")]
+        [HttpGet("get-department-by-id/{id}"), ResponseType(typeof(ActionResult<DepartmentDetailDto>))]
         public async Task<ActionResult<DepartmentDetailDto>> GetDepartment(Guid id)
         {
             var department = await _context.Departments.FindAsync(id);
@@ -88,7 +92,7 @@ namespace SophieHR.Api.Controllers
         [HttpPost, Authorize(Roles = "Admin, Manager")]
         public async Task<ActionResult<DepartmentDetailDto>> PostDepartment(DepartmentCreateDto departmentCreateDto)
         {
-            if(!_context.Companies.Any(x=>x.Id == departmentCreateDto.CompanyId))
+            if (!_context.Companies.Any(x => x.Id == departmentCreateDto.CompanyId))
             {
                 return BadRequest("Please select an existing company");
             }

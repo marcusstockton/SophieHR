@@ -1,5 +1,4 @@
-﻿using SophieHR.Api.Models;
-using SophieHR.Api.Models.DTOs.Company;
+﻿using SophieHR.Api.Models.DTOs.Company;
 using SophieHR.Api.Models.DTOs.Department;
 using SophieHR.Api.Models.DTOs.Employee.EmployeeAvatar;
 

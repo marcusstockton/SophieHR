@@ -1,33 +1,30 @@
 ﻿#nullable disable
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SophieHR.Api.Data;
 using SophieHR.Api.Models;
-using SophieHR.Api.Models.DTOs.Company;
-using SophieHR.Api.Models.DTOs.Department;
 using SophieHR.Api.Models.DTOs.Employee;
 
 namespace SophieHR.Api.Controllers
 {
+    [ApiExplorerSettings(GroupName = "v1")]
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles ="Admin, Manager")]
+    [Authorize(Roles = "Admin, Manager")]
     public class EmployeesController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
         public readonly IMapper _mapper;
+        private readonly ILogger<EmployeesController> _logger;
 
-        public EmployeesController(ApplicationDbContext context, IMapper mapper)
+        public EmployeesController(ApplicationDbContext context, IMapper mapper, ILogger<EmployeesController> logger)
         {
             _context = context;
             _mapper = mapper;
+            _logger = logger;
         }
 
         // GET: api/Employees
@@ -41,10 +38,11 @@ namespace SophieHR.Api.Controllers
         [HttpGet("list-of-managers-for-company/{companyId}")]
         public async Task<ActionResult<IEnumerable<EmployeeListDto>>> GetManagersForCompanyId(Guid companyId)
         {
+            _logger.LogInformation($"Getting managers for company id {companyId}");
             var managers = _context.Employees.Where(x => x.CompanyId == companyId);
 
             var managerRoleId = _context.Roles.Single(x => x.Name == "Manager").Id;
-            var userroles = await _context.UserRoles.Where(x => x.RoleId == managerRoleId && managers.Select(x => x.Id).Contains(x.UserId)).Select(x=>x.UserId).ToListAsync();
+            var userroles = await _context.UserRoles.Where(x => x.RoleId == managerRoleId && managers.Select(x => x.Id).Contains(x.UserId)).Select(x => x.UserId).ToListAsync();
             var managerList = await managers.Where(x => userroles.Contains(x.Id)).ToListAsync();
             return Ok(_mapper.Map<IEnumerable<EmployeeListDto>>(managerList));
         }
@@ -52,6 +50,7 @@ namespace SophieHR.Api.Controllers
         [HttpGet("list-of-employees-for-manager/{managerId}")]
         public async Task<ActionResult<IEnumerable<EmployeeListDto>>> GetEmployeesForManager(Guid managerId)
         {
+            _logger.LogInformation($"Getting employees for manager id {managerId}");
             var employees = await _context.Employees.Where(x => x.Manager.Id == managerId).ToListAsync();
             return Ok(_mapper.Map<IEnumerable<EmployeeListDto>>(employees));
         }
@@ -60,15 +59,17 @@ namespace SophieHR.Api.Controllers
         [HttpGet("get-by-id/{id}"), Authorize(Roles = "Admin, Manager, User")]
         public async Task<ActionResult<EmployeeDetailDto>> GetEmployee(Guid id)
         {
+            _logger.LogInformation($"Getting employees by id {id}");
             var employee = await _context.Employees
                 .Include(x => x.Avatar)
-                .Include(x=>x.Address)
-                .Include(x=>x.Department)
-                .Include(x=>x.Company)
-                .SingleOrDefaultAsync(x => User.IsInRole("User")? x.UserName == User.Identity.Name : x.Id == id); // If user is user role, return their record only
+                .Include(x => x.Address)
+                .Include(x => x.Department)
+                .Include(x => x.Company)
+                .SingleOrDefaultAsync(x => User.IsInRole("User") ? x.UserName == User.Identity.Name : x.Id == id); // If user is user role, return their record only
 
             if (employee == null)
             {
+                _logger.LogInformation($"No employee found by id {id}");
                 return NotFound();
             }
             return Ok(_mapper.Map<EmployeeDetailDto>(employee));
@@ -78,14 +79,16 @@ namespace SophieHR.Api.Controllers
         [RequestFormLimits(MultipartBodyLengthLimit = 5000000)] // Limit to 5mb logo
         public async Task<IActionResult> UploadAvatar(Guid id, IFormFile avatar)
         {
+            _logger.LogInformation($"Uploading avatar for employee id {id}");
             if (avatar != null)
             {
                 var employee = await _context.Employees.FindAsync(id);
                 if (employee == null)
                 {
+                    _logger.LogWarning($"Unable to find a employee with the Id of {id}");
                     return NotFound($"Unable to find a employee with the Id of {id}");
                 }
-                
+
                 using (var memoryStream = new MemoryStream())
                 {
                     await avatar.CopyToAsync(memoryStream);

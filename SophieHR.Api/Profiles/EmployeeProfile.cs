@@ -13,7 +13,7 @@ namespace SophieHR.Api.Profiles
             CreateMap<EmployeeListDto, Employee>().ReverseMap();
             CreateMap<EmployeeCreateDto, Employee>().ReverseMap();
             CreateMap<EmployeeAvatarDetail, EmployeeAvatar>().ReverseMap();
-            
+
             CreateMap<string?, byte[]?>().ConvertUsing<Base64Converter>();
             CreateMap<byte[]?, string?>().ConvertUsing<Base64Converter>();
         }

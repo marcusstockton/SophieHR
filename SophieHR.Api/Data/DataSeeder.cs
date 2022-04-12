@@ -1,8 +1,8 @@
 ﻿using Bogus;
+using Bogus.Extensions.UnitedKingdom;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SophieHR.Api.Models;
-using Bogus.Extensions.UnitedKingdom;
 
 namespace SophieHR.Api.Data
 {
@@ -163,15 +163,12 @@ namespace SophieHR.Api.Data
                         await _userManager.AddPasswordAsync(user, "P@55w0rd1");
                         await _userManager.AddToRoleAsync(user, "User");
                     }
-
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine(ex);
                     throw;
                 }
-
-
             }
         }
 
@@ -185,7 +182,7 @@ namespace SophieHR.Api.Data
                 .RuleFor(bp => bp.CompanyId, f => company1.Id)
                 .RuleFor(bp => bp.StartOfEmployment, (f, u) => f.Date.Recent(4600))
                 .RuleFor(bp => bp.DepartmentId, f => company1deptIT.Id)
-                .RuleFor(bp => bp.NationalInsuranceNumber, f=> f.Finance.Nino().Replace(" ", ""))
+                .RuleFor(bp => bp.NationalInsuranceNumber, f => f.Finance.Nino().Replace(" ", ""))
                 .RuleFor(bp => bp.PassportNumber, f => DateTime.UtcNow.Ticks.ToString().Substring(9))
                 .RuleFor(bp => bp.Address, f => new EmployeeAddress
                 {

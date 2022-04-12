@@ -18,10 +18,13 @@ namespace SophieHR.Api.Models
         public DateTime StartOfEmployment { get; set; }
         public EmployeeAddress Address { get; set; }
         public Employee? Manager { get; set; }
+
         [RegularExpression(@"^[0-9]{10}GBR[0-9]{7}[U,M,F]{1}[0-9]{9}$")]
         public string PassportNumber { get; set; }
+
         [RegularExpression(@"^\s*[a-zA-Z]{2}(?:\s*\d\s*){6}[a-zA-Z]?\s*$")]
         public string NationalInsuranceNumber { get; set; }
+
         public Guid DepartmentId { get; set; }
         public Guid CompanyId { get; set; }
         public Guid EmployeeAvatarId { get; set; }
@@ -34,15 +37,16 @@ namespace SophieHR.Api.Models
     {
         Mr,
         Mrs,
-        Miss, 
-        Ms, 
-        Mx, 
-        Sir, 
-        Dr, 
-        Cllr, 
+        Miss,
+        Ms,
+        Mx,
+        Sir,
+        Dr,
+        Cllr,
         Lady,
         Lord
     }
+
     public enum Gender
     {
         Male,
