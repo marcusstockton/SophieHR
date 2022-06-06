@@ -41,7 +41,7 @@ namespace SophieHR.Api.Controllers
         {
             try
             {
-                _logger.LogInformation($"{nameof(AccountController)} Finding user with username {userLogins.UserName}");
+                _logger.LogInformation($"{nameof(AccountController)} > {nameof(GetToken)} Finding user with username {userLogins.UserName}");
                 var Token = new UserTokens();
                 var user = await _userManager.FindByNameAsync(userLogins.UserName);
                 if (user == null)
@@ -90,7 +90,7 @@ namespace SophieHR.Api.Controllers
         [HttpPost, Route("RegisterNewAdminUser"), Authorize(Roles = "Admin"), ResponseType(typeof(UserTokens))]
         public async Task<IActionResult> RegisterNewAdminUser(RegisterUserDto userData)
         {
-            _logger.LogInformation($"{nameof(AccountController)} Registering New Admin User");
+            _logger.LogInformation($"{nameof(AccountController)} > {nameof(RegisterNewAdminUser)} Registering New Admin User");
             if (!ModelState.IsValid)
             {
                 _logger.LogError($"{nameof(AccountController)} Invalid form data passed in.");

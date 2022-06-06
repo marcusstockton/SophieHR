@@ -33,12 +33,15 @@ namespace SophieHR.Api.Controllers
         [HttpGet, Authorize(Roles = "Admin"), ResponseType(typeof(IEnumerable<DepartmentDetailDto>))]
         public async Task<ActionResult<IEnumerable<DepartmentDetailDto>>> GetDepartments()
         {
+            _logger.LogInformation($"{nameof(DepartmentsController)} > {nameof(GetDepartments)} getting Departments");
             return _mapper.Map<List<DepartmentDetailDto>>(await _context.Departments.ToListAsync());
         }
 
         [HttpGet("get-departments-by-companyid/{companyId}"), Authorize(Roles = "Admin, Manager"), ResponseType(typeof(IEnumerable<DepartmentDetailDto>))]
         public async Task<ActionResult<IEnumerable<DepartmentDetailDto>>> GetDepartmentsByCompanyId(Guid companyId)
         {
+            _logger.LogInformation($"{nameof(DepartmentsController)} > {nameof(GetDepartmentsByCompanyId)} getting Departments for company {companyId}");
+
             return _mapper.Map<List<DepartmentDetailDto>>(await _context.Departments.Where(x => x.CompanyId == companyId).ToListAsync());
         }
 
@@ -46,10 +49,12 @@ namespace SophieHR.Api.Controllers
         [HttpGet("get-department-by-id/{id}"), ResponseType(typeof(ActionResult<DepartmentDetailDto>))]
         public async Task<ActionResult<DepartmentDetailDto>> GetDepartment(Guid id)
         {
+            _logger.LogInformation($"{nameof(DepartmentsController)} > {nameof(GetDepartment)} getting Department by id {id}");
             var department = await _context.Departments.FindAsync(id);
 
             if (department == null)
             {
+                _logger.LogError($"{nameof(DepartmentsController)} > {nameof(GetDepartment)} failed...Unable to find department by Id {id}");
                 return NotFound();
             }
 
@@ -61,8 +66,10 @@ namespace SophieHR.Api.Controllers
         [HttpPut("{id}"), Authorize(Roles = "Admin, Manager")]
         public async Task<IActionResult> PutDepartment(Guid id, DepartmentDetailDto departmentDetail)
         {
+            _logger.LogInformation($"{nameof(DepartmentsController)} > {nameof(PutDepartment)} updating Department {departmentDetail.Name} against companyid {departmentDetail.CompanyId}");
             if (id != departmentDetail.Id)
             {
+                _logger.LogError($"{nameof(DepartmentsController)} > {nameof(PutDepartment)} failed...Id's don't match");
                 return BadRequest();
             }
             var department = _mapper.Map<Department>(departmentDetail);
@@ -92,6 +99,7 @@ namespace SophieHR.Api.Controllers
         [HttpPost, Authorize(Roles = "Admin, Manager")]
         public async Task<ActionResult<DepartmentDetailDto>> PostDepartment(DepartmentCreateDto departmentCreateDto)
         {
+            _logger.LogInformation($"{nameof(DepartmentsController)} > {nameof(PostDepartment)} creating Department {departmentCreateDto.Name} against companyid {departmentCreateDto.CompanyId}");
             if (!_context.Companies.Any(x => x.Id == departmentCreateDto.CompanyId))
             {
                 return BadRequest("Please select an existing company");
@@ -107,9 +115,12 @@ namespace SophieHR.Api.Controllers
         [HttpDelete("{id}"), Authorize(Roles = "Admin, Manager")]
         public async Task<IActionResult> DeleteDepartment(Guid id)
         {
+            _logger.LogInformation($"{nameof(DepartmentsController)} > {nameof(DeleteDepartment)} deleting Department id {id}");
+
             var department = await _context.Departments.FindAsync(id);
             if (department == null)
             {
+                _logger.LogError($"{nameof(DepartmentsController)} > {nameof(DeleteDepartment)} failed...Unable to find department by Id {id}");
                 return NotFound();
             }
 

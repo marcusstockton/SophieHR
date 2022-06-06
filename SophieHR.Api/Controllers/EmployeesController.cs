@@ -31,6 +31,7 @@ namespace SophieHR.Api.Controllers
         [HttpGet("get-by-company/{companyId}")]
         public async Task<ActionResult<IEnumerable<EmployeeListDto>>> GetEmployeesForCompanyId(Guid companyId)
         {
+            _logger.LogInformation($"{nameof(EmployeesController)} > {nameof(GetEmployeesForCompanyId)} getting employees for company {companyId}");
             var employeeList = await _context.Employees
                 .Include(x=>x.Department)
                 .Where(x => x.CompanyId == companyId)
@@ -42,7 +43,7 @@ namespace SophieHR.Api.Controllers
         [HttpGet("list-of-managers-for-company/{companyId}")]
         public async Task<ActionResult<IEnumerable<EmployeeListDto>>> GetManagersForCompanyId(Guid companyId)
         {
-            _logger.LogInformation($"Getting managers for company id {companyId}");
+            _logger.LogInformation($"{nameof(EmployeesController)} > {nameof(GetManagersForCompanyId)} Getting managers for company id {companyId}");
             var managers = _context.Employees.Where(x => x.CompanyId == companyId);
 
             var managerRoleId = _context.Roles.Single(x => x.Name == "Manager").Id;
@@ -62,7 +63,7 @@ namespace SophieHR.Api.Controllers
         [HttpGet("list-of-employees-for-manager/{managerId}")]
         public async Task<ActionResult<IEnumerable<EmployeeListDto>>> GetEmployeesForManager(Guid managerId)
         {
-            _logger.LogInformation($"Getting employees for manager id {managerId}");
+            _logger.LogInformation($"{nameof(EmployeesController)} > {nameof(GetEmployeesForManager)} Getting employees for manager id {managerId}");
             var employees = await _context.Employees
                 .Where(x => x.Manager.Id == managerId)
                 .ToListAsync();
@@ -74,7 +75,7 @@ namespace SophieHR.Api.Controllers
         [HttpGet("get-by-id/{id}"), Authorize(Roles = "Admin, Manager, User")]
         public async Task<ActionResult<EmployeeDetailDto>> GetEmployee(Guid id)
         {
-            _logger.LogInformation($"Getting employees by id {id}");
+            _logger.LogInformation($"{nameof(EmployeesController)} > {nameof(GetEmployee)} Getting employees by id {id}");
             var employee = await _context.Employees
                 .Include(x => x.Avatar)
                 .Include(x => x.Address)
@@ -95,7 +96,7 @@ namespace SophieHR.Api.Controllers
         [RequestFormLimits(MultipartBodyLengthLimit = 5000000)] // Limit to 5mb logo
         public async Task<IActionResult> UploadAvatar(Guid id, IFormFile avatar)
         {
-            _logger.LogInformation($"Uploading avatar for employee id {id}");
+            _logger.LogInformation($"{nameof(EmployeesController)} > {nameof(UploadAvatar)} Uploading avatar for employee id {id}");
             if (avatar != null)
             {
                 var employee = await _context.Employees.FindAsync(id);
@@ -124,6 +125,7 @@ namespace SophieHR.Api.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutEmployee(Guid id, EmployeeDetailDto employeeDetail)
         {
+            _logger.LogInformation($"{nameof(EmployeesController)} > {nameof(PutEmployee)} Updating employee {employeeDetail}");
             if (id != employeeDetail.Id)
             {
                 return BadRequest();
@@ -161,6 +163,8 @@ namespace SophieHR.Api.Controllers
         [HttpPost]
         public async Task<ActionResult<EmployeeDetailDto>> PostEmployee(EmployeeCreateDto employeeDto)
         {
+            _logger.LogInformation($"{nameof(EmployeesController)} > {nameof(PostEmployee)} creating employee {employeeDto}");
+
             var employee = _mapper.Map<Employee>(employeeDto);
             _context.Employees.Add(employee);
             await _context.SaveChangesAsync();
@@ -172,6 +176,8 @@ namespace SophieHR.Api.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteEmployee(Guid id)
         {
+            _logger.LogInformation($"{nameof(EmployeesController)} > {nameof(DeleteEmployee)} deleting employee {id}");
+
             var employee = await _context.Employees.FindAsync(id);
             if (employee == null)
             {
@@ -187,6 +193,7 @@ namespace SophieHR.Api.Controllers
         [ResponseCache(Duration = 60, Location = ResponseCacheLocation.Any, NoStore = false)]
         public ActionResult<List<string>> GetTitles()
         {
+            _logger.LogInformation($"{nameof(EmployeesController)} > {nameof(GetTitles)} getting titles");
             return Ok(Enum.GetNames(typeof(Title)).ToList());
         }
 
