@@ -2,7 +2,7 @@
 using SophieHR.Api.Models;
 using SophieHR.Api.Models.DTOs.Employee;
 using SophieHR.Api.Models.DTOs.Employee.EmployeeAvatar;
-
+#nullable enable
 namespace SophieHR.Api.Profiles
 {
     public class EmployeeProfile : Profile

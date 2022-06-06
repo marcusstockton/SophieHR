@@ -96,6 +96,7 @@ namespace SophieHR.Api.Data
                 if (entityEntry.State == EntityState.Added)
                 {
                     ((Base)entityEntry.Entity).CreatedDate = DateTime.Now;
+                    ((Base)entityEntry.Entity).UpdatedDate = DateTime.Now;
                 }
             }
 
@@ -120,6 +121,7 @@ namespace SophieHR.Api.Data
                 if (entityEntry.State == EntityState.Added)
                 {
                     ((Base)entityEntry.Entity).CreatedDate = DateTime.Now;
+                    ((Base)entityEntry.Entity).UpdatedDate = DateTime.Now;
                 }
             }
 

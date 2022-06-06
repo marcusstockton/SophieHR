@@ -53,7 +53,10 @@ namespace SophieHR.Api.Controllers
                 if (_passwordHasher.VerifyHashedPassword(user, user.PasswordHash, userLogins.Password) == PasswordVerificationResult.Success)
                 {
                     _logger.LogInformation($"{nameof(AccountController)} User authentication passed. Generating JWT Payload...");
-                    var userExtra = await _context.Employees.Where(x => x.Id == user.Id).Select(x => new { CompanyId = x.CompanyId, DepartmentId = x.DepartmentId }).FirstOrDefaultAsync();
+                    var userExtra = await _context.Employees
+                        .Where(x => x.Id == user.Id)
+                        .Select(x => new { CompanyId = x.CompanyId, DepartmentId = x.DepartmentId })
+                        .FirstOrDefaultAsync();
 
                     Token = JwtHelpers.JwtHelpers.GenTokenkey(new UserTokens()
                     {

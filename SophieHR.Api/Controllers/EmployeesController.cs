@@ -2,6 +2,7 @@
 
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SophieHR.Api.Data;
@@ -19,12 +20,14 @@ namespace SophieHR.Api.Controllers
         private readonly ApplicationDbContext _context;
         public readonly IMapper _mapper;
         private readonly ILogger<EmployeesController> _logger;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public EmployeesController(ApplicationDbContext context, IMapper mapper, ILogger<EmployeesController> logger)
+        public EmployeesController(ApplicationDbContext context, IMapper mapper, ILogger<EmployeesController> logger, UserManager<ApplicationUser> userManager)
         {
             _context = context;
             _mapper = mapper;
             _logger = logger;
+            _userManager = userManager;
         }
 
         // GET: api/Employees
@@ -166,7 +169,10 @@ namespace SophieHR.Api.Controllers
             _logger.LogInformation($"{nameof(EmployeesController)} > {nameof(PostEmployee)} creating employee {employeeDto}");
 
             var employee = _mapper.Map<Employee>(employeeDto);
-            _context.Employees.Add(employee);
+            //_context.Employees.Add(employee);
+
+            await _userManager.CreateAsync(employee, "P@55w0rd1");
+            await _userManager.AddToRoleAsync(employee, "User");
             await _context.SaveChangesAsync();
 
             return NoContent();
@@ -183,8 +189,8 @@ namespace SophieHR.Api.Controllers
             {
                 return NotFound();
             }
-
-            _context.Employees.Remove(employee);
+            await _userManager.DeleteAsync(employee);
+            //_context.Employees.Remove(employee);
             await _context.SaveChangesAsync();
 
             return NoContent();

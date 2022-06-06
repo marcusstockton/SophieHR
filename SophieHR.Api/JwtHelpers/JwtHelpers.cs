@@ -35,9 +35,15 @@ namespace SophieHR.Api.JwtHelpers
                 // Get secret key
                 var key = System.Text.Encoding.ASCII.GetBytes(jwtSettings.IssuerSigningKey);
                 Guid Id = Guid.Empty;
-                DateTime expireTime = DateTime.UtcNow.AddDays(1);
-                UserToken.ExpiryTime = expireTime.TimeOfDay;
-                var JWToken = new JwtSecurityToken(issuer: jwtSettings.ValidIssuer, audience: jwtSettings.ValidAudience, claims: GetClaims(model, out Id), notBefore: new DateTimeOffset(DateTime.Now).DateTime, expires: new DateTimeOffset(expireTime).DateTime, signingCredentials: new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256));
+                DateTime expireTime = DateTime.UtcNow.AddHours(11);
+                UserToken.ExpiredTime = expireTime;
+                var JWToken = new JwtSecurityToken(
+                    issuer: jwtSettings.ValidIssuer, 
+                    audience: jwtSettings.ValidAudience, 
+                    claims: GetClaims(model, out Id), 
+                    notBefore: new DateTimeOffset(DateTime.Now).DateTime, 
+                    expires: new DateTimeOffset(expireTime).DateTime,
+                    signingCredentials: new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256));
                 UserToken.Token = new JwtSecurityTokenHandler().WriteToken(JWToken);
                 UserToken.UserName = model.UserName;
                 UserToken.Email = model.Email;
