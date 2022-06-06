@@ -16,9 +16,11 @@
         public DateTime DateOfBirth { get; set; }
         public DateTime StartOfEmployment { get; set; }
         public EmployeeAddress Address { get; set; }
-        public Guid DepartmentId { get; set; }
+        public Guid? DepartmentId { get; set; }
         public Guid CompanyId { get; set; }
         public string? PassportNumber { get; set; }
         public string? NationalInsuranceNumber { get; set; }
+        public string? ManagerId { get; set; }
+        public string JobTitle { get; set; }
     }
 }

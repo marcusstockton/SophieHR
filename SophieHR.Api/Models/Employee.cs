@@ -16,6 +16,7 @@ namespace SophieHR.Api.Models
         public double HolidayAllowance { get; set; }
         public DateTime DateOfBirth { get; set; }
         public DateTime StartOfEmployment { get; set; }
+        public DateTime? EndOfEmployment { get; set; }
         public EmployeeAddress Address { get; set; }
         public Employee? Manager { get; set; }
 
@@ -25,7 +26,7 @@ namespace SophieHR.Api.Models
         [RegularExpression(@"^\s*[a-zA-Z]{2}(?:\s*\d\s*){6}[a-zA-Z]?\s*$")]
         public string NationalInsuranceNumber { get; set; }
 
-        public Guid DepartmentId { get; set; }
+        public Guid? DepartmentId { get; set; }
         public Guid CompanyId { get; set; }
         public Guid EmployeeAvatarId { get; set; }
         public virtual Department Department { get; set; }

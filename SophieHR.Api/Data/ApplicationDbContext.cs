@@ -24,12 +24,14 @@ namespace SophieHR.Api.Data
             {
                 b.Property(x => x.Name).IsRequired().HasMaxLength(200);
                 b.HasMany(x => x.Employees).WithOne(x => x.Company).HasForeignKey(x => x.CompanyId).OnDelete(DeleteBehavior.Cascade);
+                b.HasIndex(nameof(Company.Id), nameof(Company.Name)).IsUnique();
             });
 
             builder.Entity<ApplicationUser>(b =>
             {
                 b.Property(x => x.FirstName).HasMaxLength(50);
                 b.Property(x => x.LastName).HasMaxLength(50);
+                b.HasIndex(nameof(ApplicationUser.Id), nameof(ApplicationUser.Email), nameof(ApplicationUser.UserName));
             });
 
             builder.Entity<Address>(b =>
@@ -47,6 +49,7 @@ namespace SophieHR.Api.Data
                 b.Property(x => x.CompanyId).IsRequired();
                 b.Property(x => x.Name).IsRequired().HasMaxLength(100);
                 b.HasOne(x => x.Company).WithMany().HasForeignKey(x => x.CompanyId).OnDelete(DeleteBehavior.Cascade);
+                b.HasIndex(nameof(Department.Id), nameof(Department.Name));
             });
 
             builder.Entity<EmployeeAvatar>(b =>

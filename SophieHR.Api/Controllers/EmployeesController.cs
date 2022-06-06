@@ -31,7 +31,11 @@ namespace SophieHR.Api.Controllers
         [HttpGet("get-by-company/{companyId}")]
         public async Task<ActionResult<IEnumerable<EmployeeListDto>>> GetEmployeesForCompanyId(Guid companyId)
         {
-            var employeeList = await _context.Employees.Where(x => x.CompanyId == companyId).ToListAsync();
+            var employeeList = await _context.Employees
+                .Include(x=>x.Department)
+                .Where(x => x.CompanyId == companyId)
+                .ToListAsync();
+
             return Ok(_mapper.Map<IEnumerable<EmployeeListDto>>(employeeList));
         }
 
@@ -42,8 +46,16 @@ namespace SophieHR.Api.Controllers
             var managers = _context.Employees.Where(x => x.CompanyId == companyId);
 
             var managerRoleId = _context.Roles.Single(x => x.Name == "Manager").Id;
-            var userroles = await _context.UserRoles.Where(x => x.RoleId == managerRoleId && managers.Select(x => x.Id).Contains(x.UserId)).Select(x => x.UserId).ToListAsync();
-            var managerList = await managers.Where(x => userroles.Contains(x.Id)).ToListAsync();
+            var userroles = await _context.UserRoles
+                .Where(x => x.RoleId == managerRoleId && managers.Select(x => x.Id)
+                .Contains(x.UserId))
+                .Select(x => x.UserId)
+                .ToListAsync();
+
+            var managerList = await managers
+                .Where(x => userroles.Contains(x.Id))
+                .ToListAsync();
+
             return Ok(_mapper.Map<IEnumerable<EmployeeListDto>>(managerList));
         }
 
@@ -51,7 +63,10 @@ namespace SophieHR.Api.Controllers
         public async Task<ActionResult<IEnumerable<EmployeeListDto>>> GetEmployeesForManager(Guid managerId)
         {
             _logger.LogInformation($"Getting employees for manager id {managerId}");
-            var employees = await _context.Employees.Where(x => x.Manager.Id == managerId).ToListAsync();
+            var employees = await _context.Employees
+                .Where(x => x.Manager.Id == managerId)
+                .ToListAsync();
+
             return Ok(_mapper.Map<IEnumerable<EmployeeListDto>>(employees));
         }
 
@@ -65,6 +80,7 @@ namespace SophieHR.Api.Controllers
                 .Include(x => x.Address)
                 .Include(x => x.Department)
                 .Include(x => x.Company)
+                .Include(x => x.Manager)
                 .SingleOrDefaultAsync(x => User.IsInRole("User") ? x.UserName == User.Identity.Name : x.Id == id); // If user is user role, return their record only
 
             if (employee == null)
@@ -149,7 +165,7 @@ namespace SophieHR.Api.Controllers
             _context.Employees.Add(employee);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetEmployee", new { id = employee.Id }, employee);
+            return NoContent();
         }
 
         // DELETE: api/Employees/5
@@ -167,10 +183,18 @@ namespace SophieHR.Api.Controllers
 
             return NoContent();
         }
+        [HttpGet("GetTitles")]
+        [ResponseCache(Duration = 60, Location = ResponseCacheLocation.Any, NoStore = false)]
+        public ActionResult<List<string>> GetTitles()
+        {
+            return Ok(Enum.GetNames(typeof(Title)).ToList());
+        }
 
         private bool EmployeeExists(Guid id)
         {
             return _context.Employees.Any(e => e.Id == id);
         }
+
+
     }
 }

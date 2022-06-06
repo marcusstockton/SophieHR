@@ -1,12 +1,9 @@
 ﻿#nullable disable
 
-using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using SophieHR.Api.Data;
-using SophieHR.Api.Models;
 using SophieHR.Api.Models.DTOs.Company;
+using SophieHR.Api.Services;
 
 namespace SophieHR.Api.Controllers
 {
@@ -16,49 +13,40 @@ namespace SophieHR.Api.Controllers
     [Authorize]
     public class CompaniesController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
-        public readonly IMapper _mapper;
         private readonly ILogger<CompaniesController> _logger;
+        private readonly ICompanyService _companyService;
 
-        public CompaniesController(ApplicationDbContext context, IMapper mapper, ILogger<CompaniesController> logger)
+        public CompaniesController(ILogger<CompaniesController> logger, ICompanyService companyService)
         {
-            _context = context;
-            _mapper = mapper;
             _logger = logger;
+            _companyService = companyService;
         }
 
         // GET: api/Companies
         [HttpGet, Authorize(Roles = "Admin")]
         public async Task<ActionResult<IEnumerable<CompanyDetailNoLogo>>> GetCompanies()
         {
-            _logger.LogInformation("Getting companies for admin user");
-            return _mapper.Map<List<CompanyDetailNoLogo>>(await _context.Companies.ToListAsync());
+            _logger.LogInformation($"{nameof(CompaniesController)} Getting companies for admin user");
+            return Ok(await _companyService.GetAllCompaniesNoLogoAsync());
+        }
+
+        [HttpGet("GetCompanyNamesForSelect"), Authorize(Roles = "Admin, Manager")]
+        public async Task<ActionResult<IEnumerable<KeyValuePair<Guid, string>>>> GetCompanyNames()
+        {
+            _logger.LogInformation($"{nameof(CompaniesController)} Getting company names");
+            return Ok(await _companyService.GetCompanyNamesAsync(User.Identity.Name, User.IsInRole("Manager")));
         }
 
         // GET: api/Companies/5
         [HttpGet("{id}")]
         public async Task<ActionResult<CompanyDetailDto>> GetCompany(Guid id)
         {
-            _logger.LogInformation($"Getting company with id {id}");
-            var company = await _context.Companies
-                .Include(x => x.Address)
-                .Include(x => x.Employees)
-                .AsNoTracking()
-                .Select(x => new CompanyDetailDto
-                {
-                    Address = x.Address,
-                    CreatedDate = x.CreatedDate,
-                    EmployeeCount = x.Employees.Count(),
-                    Id = x.Id,
-                    Logo = x.Logo != null ? Convert.ToBase64String(x.Logo) : null,
-                    Name = x.Name,
-                    UpdatedDate = x.UpdatedDate
-                })
-                .FirstAsync(x => x.Id == id);
+            _logger.LogInformation($"{nameof(CompaniesController)} Getting company with id {id}");
+            var company = await _companyService.GetCompanyByIdNoTrackingAsync(id);
 
             if (company == null)
             {
-                _logger.LogWarning($"Unable to find company with id {id}");
+                _logger.LogWarning($"{nameof(CompaniesController)} Unable to find company with id {id}");
                 return NotFound();
             }
 
@@ -69,28 +57,13 @@ namespace SophieHR.Api.Controllers
         [RequestFormLimits(MultipartBodyLengthLimit = 1000000)] // Limit to 1mb logo
         public async Task<IActionResult> UploadLogo(Guid id, IFormFile logo)
         {
-            _logger.LogInformation($"Uploading logo for company with id {id}");
-            if (logo != null)
+            _logger.LogInformation($"{nameof(CompaniesController)} Uploading logo for company with id {id}");
+            var response = await _companyService.UploadLogoForCompanyAsync(id, logo);
+            if (response.IsSuccessStatusCode)
             {
-                var company = await _context.Companies.FindAsync(id);
-                if (company == null)
-                {
-                    _logger.LogWarning($"Unable to find company with id {id}");
-                    return NotFound($"Unable to find a company with the Id of {id}");
-                }
-
-                // Resize the image to be 256 * 256...
-                using (var memoryStream = new MemoryStream())
-                {
-                    await logo.CopyToAsync(memoryStream);
-                    byte[] bytes = memoryStream.ToArray();
-
-                    company.Logo = bytes;
-                    await _context.SaveChangesAsync();
-                }
+                return Ok(response);
             }
-
-            return NoContent();
+            return BadRequest(response);
         }
 
         // PUT: api/Companies/5
@@ -98,39 +71,22 @@ namespace SophieHR.Api.Controllers
         [HttpPut("{id}"), Authorize(Roles = "Admin")]
         public async Task<IActionResult> PutCompany(Guid id, CompanyDetailNoLogo companyDetail)
         {
-            _logger.LogInformation($"Updating company with id {id}");
+            _logger.LogInformation($"{nameof(CompaniesController)} Updating company with id {id}");
             if (id != companyDetail.Id)
             {
-                _logger.LogWarning($"Id's don't match");
+                _logger.LogWarning($"{nameof(CompaniesController)} Id's don't match");
                 return BadRequest();
             }
-            var originalCompany = await _context.Companies.FindAsync(id);
-            if (originalCompany == null)
+            var result = await _companyService.UpdateCompanyAsync(id, companyDetail);
+            if (result.IsSuccessStatusCode)
             {
-                _logger.LogWarning($"Unable to find original company with id {id}");
-                return NotFound($"Unable to find a company with the Id of {id}");
+                return Ok(result);
             }
-            var company = _mapper.Map(companyDetail, originalCompany);
-            _context.Companies.Attach(company);
-            _context.Entry(company).State = EntityState.Modified;
-
-            try
+            else
             {
-                await _context.SaveChangesAsync();
+                return BadRequest(result);
             }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!CompanyExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
+            
         }
 
         // POST: api/Companies
@@ -138,35 +94,26 @@ namespace SophieHR.Api.Controllers
         [HttpPost, Authorize(Roles = "Admin")]
         public async Task<ActionResult<CompanyDetailDto>> PostCompany(CompanyCreateDto companyDto)
         {
-            _logger.LogInformation($"Creating a new company with name {companyDto.Name}");
-            var company = _mapper.Map<Company>(companyDto);
-            _context.Companies.Add(company);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetCompany", new { id = company.Id }, company);
+            _logger.LogInformation($"{nameof(CompaniesController)} Creating a new company with name {companyDto.Name}");
+            var result = await _companyService.CreateNewCompanyAsync(companyDto);
+            if (result.IsSuccessStatusCode)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
         }
 
         // DELETE: api/Companies/5
         [HttpDelete("{id}"), Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteCompany(Guid id)
         {
-            _logger.LogInformation($"Deleting company with id {id}");
-            var company = await _context.Companies.FindAsync(id);
-            if (company == null)
+            _logger.LogInformation($"{nameof(CompaniesController)} Deleting company with id {id}");
+            var result = await _companyService.DeleteCompanyAsync(id);
+            if (result.IsSuccessStatusCode)
             {
-                _logger.LogWarning($"Unable to find company with id {id}");
-                return NotFound();
+                return Ok(result);
             }
-
-            _context.Companies.Remove(company);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
-
-        private bool CompanyExists(Guid id)
-        {
-            return _context.Companies.Any(e => e.Id == id);
+            return BadRequest(result);
         }
     }
 }

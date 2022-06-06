@@ -1,7 +1,10 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using NSwag;
+using NSwag.Generation.Processors.Security;
 using SophieHR.Api.Data;
 using SophieHR.Api.Extensions;
 using SophieHR.Api.Models;
@@ -12,34 +15,33 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddJWTTokenServices(builder.Configuration);
 builder.Services.TryAddTransient<IEmailSender, EmailService>();
+builder.Services.TryAddTransient<ICompanyService, CompanyService>();
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 
-builder.Services.AddSwaggerGen(options =>
+// Register the Swagger services
+builder.Services.AddOpenApiDocument(document =>
 {
-    options.OperationFilter<SwaggerFileOperationFilter>();
-    options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    document.Title = "SophieHR";
+    document.Version = "1.0";
+    document.AddSecurity("JWT", Enumerable.Empty<string>(), new OpenApiSecurityScheme
     {
+        Type = OpenApiSecuritySchemeType.ApiKey,
         Name = "Authorization",
-        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
-        Scheme = "Bearer",
-        BearerFormat = "JWT",
-        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-        Description = "JWT Authorization header using the Bearer scheme."
+        In = OpenApiSecurityApiKeyLocation.Header,
+        Description = "Type into the textbox: Bearer {your JWT token}."
     });
-    options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement {
-        {
-            new Microsoft.OpenApi.Models.OpenApiSecurityScheme {
-                    Reference = new Microsoft.OpenApi.Models.OpenApiReference {
-                        Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
-                            Id = "Bearer"
-                    }
-                },
-                new string[] {}
-        }
-    });
+
+    document.OperationProcessors.Add(
+        new AspNetCoreOperationSecurityScopeProcessor("JWT"));
+}
+);
+
+builder.Services.AddAuthentication(option =>
+{
+    option.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    option.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 });
 
 builder.Services.AddCors(options =>
@@ -80,9 +82,6 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-
     //using (var scope = app.Services.CreateScope())
     //{
     //    var services = scope.ServiceProvider;
@@ -92,6 +91,11 @@ if (app.Environment.IsDevelopment())
     //    await DataSeeder.Initialize(services);
     //}
 }
+
+// Register the Swagger generator and the Swagger UI middlewares
+app.UseOpenApi();
+app.UseSwaggerUi3();
+
 app.UseCors("CorsPolicy");
 app.UseHttpsRedirection();
 

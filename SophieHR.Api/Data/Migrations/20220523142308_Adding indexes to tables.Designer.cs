@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SophieHR.Api.Data;
 
@@ -11,9 +12,10 @@ using SophieHR.Api.Data;
 namespace SophieHR.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220523142308_Adding indexes to tables")]
+    partial class Addingindexestotables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -401,14 +403,11 @@ namespace SophieHR.Api.Migrations
                     b.Property<DateTime>("DateOfBirth")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid?>("DepartmentId")
+                    b.Property<Guid>("DepartmentId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("EmployeeAvatarId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("EndOfEmployment")
-                        .HasColumnType("datetime2");
 
                     b.Property<string>("Gender")
                         .IsRequired()
@@ -578,7 +577,8 @@ namespace SophieHR.Api.Migrations
                     b.HasOne("SophieHR.Api.Models.Department", "Department")
                         .WithMany()
                         .HasForeignKey("DepartmentId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("SophieHR.Api.Models.Employee", "Manager")
                         .WithMany()
