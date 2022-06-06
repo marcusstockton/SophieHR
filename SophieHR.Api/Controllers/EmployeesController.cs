@@ -28,19 +28,19 @@ namespace SophieHR.Api.Controllers
         }
 
         // GET: api/Employees
-        [HttpGet("get-by-company/{companyId}")]
+        [HttpGet("get-by-company/{companyId}"), Produces(typeof(IEnumerable<EmployeeListDto>))]
         public async Task<ActionResult<IEnumerable<EmployeeListDto>>> GetEmployeesForCompanyId(Guid companyId)
         {
             _logger.LogInformation($"{nameof(EmployeesController)} > {nameof(GetEmployeesForCompanyId)} getting employees for company {companyId}");
             var employeeList = await _context.Employees
-                .Include(x=>x.Department)
+                .Include(x => x.Department)
                 .Where(x => x.CompanyId == companyId)
                 .ToListAsync();
 
             return Ok(_mapper.Map<IEnumerable<EmployeeListDto>>(employeeList));
         }
 
-        [HttpGet("list-of-managers-for-company/{companyId}")]
+        [HttpGet("list-of-managers-for-company/{companyId}"), Produces(typeof(IEnumerable<EmployeeListDto>))]
         public async Task<ActionResult<IEnumerable<EmployeeListDto>>> GetManagersForCompanyId(Guid companyId)
         {
             _logger.LogInformation($"{nameof(EmployeesController)} > {nameof(GetManagersForCompanyId)} Getting managers for company id {companyId}");
@@ -60,7 +60,7 @@ namespace SophieHR.Api.Controllers
             return Ok(_mapper.Map<IEnumerable<EmployeeListDto>>(managerList));
         }
 
-        [HttpGet("list-of-employees-for-manager/{managerId}")]
+        [HttpGet("list-of-employees-for-manager/{managerId}"), Produces(typeof(IEnumerable<EmployeeListDto>))]
         public async Task<ActionResult<IEnumerable<EmployeeListDto>>> GetEmployeesForManager(Guid managerId)
         {
             _logger.LogInformation($"{nameof(EmployeesController)} > {nameof(GetEmployeesForManager)} Getting employees for manager id {managerId}");
@@ -72,7 +72,7 @@ namespace SophieHR.Api.Controllers
         }
 
         // GET: api/Employees/5
-        [HttpGet("get-by-id/{id}"), Authorize(Roles = "Admin, Manager, User")]
+        [HttpGet("get-by-id/{id}"), Authorize(Roles = "Admin, Manager, User"), Produces(typeof(EmployeeListDto))]
         public async Task<ActionResult<EmployeeDetailDto>> GetEmployee(Guid id)
         {
             _logger.LogInformation($"{nameof(EmployeesController)} > {nameof(GetEmployee)} Getting employees by id {id}");
@@ -92,7 +92,7 @@ namespace SophieHR.Api.Controllers
             return Ok(_mapper.Map<EmployeeDetailDto>(employee));
         }
 
-        [HttpPost("{id}/upload-avatar"), Authorize(Roles = "Admin, Manager")]
+        [HttpPost("{id}/upload-avatar"), Authorize(Roles = "Admin, Manager"), ProducesResponseType(StatusCodes.Status204NoContent), ProducesResponseType(StatusCodes.Status404NotFound)]
         [RequestFormLimits(MultipartBodyLengthLimit = 5000000)] // Limit to 5mb logo
         public async Task<IActionResult> UploadAvatar(Guid id, IFormFile avatar)
         {
@@ -122,7 +122,7 @@ namespace SophieHR.Api.Controllers
 
         // PUT: api/Employees/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
+        [HttpPut("{id}"), ProducesResponseType(StatusCodes.Status204NoContent), ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> PutEmployee(Guid id, EmployeeDetailDto employeeDetail)
         {
             _logger.LogInformation($"{nameof(EmployeesController)} > {nameof(PutEmployee)} Updating employee {employeeDetail}");
@@ -160,7 +160,7 @@ namespace SophieHR.Api.Controllers
 
         // POST: api/Employees
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
+        [HttpPost, ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<ActionResult<EmployeeDetailDto>> PostEmployee(EmployeeCreateDto employeeDto)
         {
             _logger.LogInformation($"{nameof(EmployeesController)} > {nameof(PostEmployee)} creating employee {employeeDto}");
@@ -173,7 +173,7 @@ namespace SophieHR.Api.Controllers
         }
 
         // DELETE: api/Employees/5
-        [HttpDelete("{id}")]
+        [HttpDelete("{id}"), ProducesResponseType(StatusCodes.Status204NoContent), ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteEmployee(Guid id)
         {
             _logger.LogInformation($"{nameof(EmployeesController)} > {nameof(DeleteEmployee)} deleting employee {id}");
@@ -189,7 +189,7 @@ namespace SophieHR.Api.Controllers
 
             return NoContent();
         }
-        [HttpGet("GetTitles")]
+        [HttpGet("GetTitles"), Produces(typeof(List<string>))]
         [ResponseCache(Duration = 60, Location = ResponseCacheLocation.Any, NoStore = false)]
         public ActionResult<List<string>> GetTitles()
         {

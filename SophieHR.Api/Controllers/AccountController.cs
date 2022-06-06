@@ -7,7 +7,6 @@ using SophieHR.Api.Data;
 using SophieHR.Api.Models;
 using SophieHR.Api.Models.DTOs.Employee;
 using SophieHR.Api.Services;
-using System.Web.Http.Description;
 using ApiExplorerSettingsAttribute = Microsoft.AspNetCore.Mvc.ApiExplorerSettingsAttribute;
 
 namespace SophieHR.Api.Controllers
@@ -36,7 +35,6 @@ namespace SophieHR.Api.Controllers
 
         [HttpPost]
         [AllowAnonymous]
-        [ResponseType(typeof(UserTokens))]
         public async Task<IActionResult> GetToken(UserLogins userLogins)
         {
             try
@@ -87,7 +85,7 @@ namespace SophieHR.Api.Controllers
         /// </summary>
         /// <param name="userData"></param>
         /// <returns>JWT Auth token</returns>
-        [HttpPost, Route("RegisterNewAdminUser"), Authorize(Roles = "Admin"), ResponseType(typeof(UserTokens))]
+        [HttpPost, Route("RegisterNewAdminUser"), Authorize(Roles = "Admin"), Produces(typeof(UserTokens))]
         public async Task<IActionResult> RegisterNewAdminUser(RegisterUserDto userData)
         {
             _logger.LogInformation($"{nameof(AccountController)} > {nameof(RegisterNewAdminUser)} Registering New Admin User");
@@ -139,7 +137,7 @@ namespace SophieHR.Api.Controllers
         /// </summary>
         /// <returns>List Of UserAccounts</returns>
         [HttpGet("GetListOfUsers")]
-        [ResponseType(typeof(List<EmployeeListDto>))]
+        [Produces(typeof(List<EmployeeListDto>))]
         [Authorize(Roles = "Admin, Manager")]
         public IActionResult GetList()
         {
@@ -155,7 +153,7 @@ namespace SophieHR.Api.Controllers
         }
 
         [HttpGet("GetListOfManagers")] // ToDo - delete!
-        [ResponseType(typeof(List<string>))]
+        [Produces(typeof(List<string>))]
         [AllowAnonymous]
         public async Task<IActionResult> GetListOfManagersAsync()
         {

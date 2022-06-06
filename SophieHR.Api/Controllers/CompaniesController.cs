@@ -23,14 +23,14 @@ namespace SophieHR.Api.Controllers
         }
 
         // GET: api/Companies
-        [HttpGet, Authorize(Roles = "Admin")]
+        [HttpGet, Authorize(Roles = "Admin"), Produces(typeof(IEnumerable<CompanyDetailNoLogo>))]
         public async Task<ActionResult<IEnumerable<CompanyDetailNoLogo>>> GetCompanies()
         {
             _logger.LogInformation($"{nameof(CompaniesController)} Getting companies for admin user");
             return Ok(await _companyService.GetAllCompaniesNoLogoAsync());
         }
 
-        [HttpGet("GetCompanyNamesForSelect"), Authorize(Roles = "Admin, Manager")]
+        [HttpGet("GetCompanyNamesForSelect"), Authorize(Roles = "Admin, Manager"), Produces(typeof(IEnumerable<KeyValuePair<Guid, string>>))]
         public async Task<ActionResult<IEnumerable<KeyValuePair<Guid, string>>>> GetCompanyNames()
         {
             _logger.LogInformation($"{nameof(CompaniesController)} Getting company names");
@@ -38,7 +38,7 @@ namespace SophieHR.Api.Controllers
         }
 
         // GET: api/Companies/5
-        [HttpGet("{id}")]
+        [HttpGet("{id}"), Produces(typeof(CompanyDetailDto)), ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<CompanyDetailDto>> GetCompany(Guid id)
         {
             _logger.LogInformation($"{nameof(CompaniesController)} Getting company with id {id}");
