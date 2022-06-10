@@ -17,6 +17,7 @@ namespace SophieHR.Api.Data
         public DbSet<Department> Departments { get; set; }
         public DbSet<Employee> Employees { get; set; }
         public DbSet<EmployeeAvatar> EmployeeAvatars { get; set; }
+        public DbSet<Note> Notes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -57,6 +58,12 @@ namespace SophieHR.Api.Data
                 b.HasOne(x => x.Employee).WithOne(x => x.Avatar).HasForeignKey<Employee>(x => x.EmployeeAvatarId);
             });
 
+            builder.Entity<Note>(b =>
+            {
+                b.Property(x => x.Title).HasMaxLength(250);
+                b.Property(x => x.NoteType).IsRequired();
+            });
+
             builder.Entity<Employee>(b =>
             {
                 b.Property(x => x.FirstName).IsRequired().HasMaxLength(100);
@@ -74,6 +81,7 @@ namespace SophieHR.Api.Data
                 b.HasOne(x => x.Avatar).WithOne(x => x.Employee).HasForeignKey<EmployeeAvatar>(x => x.EmployeeId);
                 b.HasOne(x => x.Company).WithMany(x => x.Employees).HasForeignKey(x => x.CompanyId).OnDelete(DeleteBehavior.Restrict);
                 b.HasOne(x => x.Department).WithMany().HasForeignKey(x => x.DepartmentId).OnDelete(DeleteBehavior.Restrict);
+                //b.HasMany<Notes>().WithOne().HasForeignKey(x => x.EmployeeId);
             });
 
             base.OnModelCreating(builder);

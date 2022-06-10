@@ -32,6 +32,7 @@ namespace SophieHR.Api.Models
         public virtual Department Department { get; set; }
         public virtual Company Company { get; set; }
         public virtual EmployeeAvatar Avatar { get; set; }
+        public virtual ICollection<Note> Notes { get; set; }
     }
 
     public enum Title

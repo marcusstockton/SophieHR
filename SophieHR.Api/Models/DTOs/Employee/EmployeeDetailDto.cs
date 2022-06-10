@@ -23,6 +23,7 @@ namespace SophieHR.Api.Models.DTOs.Employee
         public string JobTitle { get; set; }
         public DateTime DateOfBirth { get; set; }
         public DateTime StartOfEmployment { get; set; }
+        public DateTime? EndOfEmployment { get; set; }
         public EmployeeAddress Address { get; set; }
         public Guid? ManagerId { get; set; }
         public EmployeeAvatarDetail? Avatar { get; set; }

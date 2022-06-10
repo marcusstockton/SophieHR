@@ -34,7 +34,7 @@ namespace SophieHR.Api.Controllers
         }
 
         [HttpPost]
-        [AllowAnonymous]
+        [AllowAnonymous, Produces(typeof(UserTokens)), ProducesResponseType(StatusCodes.Status404NotFound), ProducesResponseType(StatusCodes.Status400BadRequest),]
         public async Task<IActionResult> GetToken(UserLogins userLogins)
         {
             try

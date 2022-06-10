@@ -95,7 +95,8 @@ namespace SophieHR.Api.Controllers
 
         // POST: api/Departments
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost, Authorize(Roles = "Admin, Manager"), ProducesResponseType(StatusCodes.Status201Created), ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [HttpPost, Authorize(Roles = "Admin, Manager")]
+        [ProducesResponseType(StatusCodes.Status201Created), ProducesResponseType(typeof(BadRequestResult), StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<DepartmentDetailDto>> PostDepartment(DepartmentCreateDto departmentCreateDto)
         {
             _logger.LogInformation($"{nameof(DepartmentsController)} > {nameof(PostDepartment)} creating Department {departmentCreateDto.Name} against companyid {departmentCreateDto.CompanyId}");
@@ -103,11 +104,16 @@ namespace SophieHR.Api.Controllers
             {
                 return BadRequest("Please select an existing company");
             }
+            if(_context.Departments.Where(x=>x.CompanyId == departmentCreateDto.CompanyId && x.Name == departmentCreateDto.Name).Any())
+            {
+                return BadRequest("A Department with this name already exists!");
+            }
             var department = _mapper.Map<Department>(departmentCreateDto);
             _context.Departments.Add(department);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetDepartment", new { id = department.Id }, _mapper.Map<DepartmentDetailDto>(department));
+            var dept = _mapper.Map<DepartmentDetailDto>(department);
+            return CreatedAtAction(nameof(GetDepartment), new { id = department.Id }, dept);
         }
 
         // DELETE: api/Departments/5

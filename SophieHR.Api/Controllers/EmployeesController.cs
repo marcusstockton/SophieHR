@@ -189,6 +189,7 @@ namespace SophieHR.Api.Controllers
             {
                 return NotFound();
             }
+
             await _userManager.DeleteAsync(employee);
             //_context.Employees.Remove(employee);
             await _context.SaveChangesAsync();

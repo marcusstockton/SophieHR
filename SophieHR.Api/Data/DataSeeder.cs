@@ -175,6 +175,10 @@ namespace SophieHR.Api.Data
 
         private static async Task<List<Employee>> CreateUsers(ApplicationDbContext context, ILogger<DataSeeder> _logger, Company company1, Department company1deptIT, List<byte[]> demoImages, List<Employee> comp1deptITEmployeeManagers)
         {
+            var notesFaker = new Faker<Note>("en_GB")
+                .RuleFor(x => x.CreatedDate, f => f.Date.Recent())
+                .RuleFor(x => x.Content, f => f.Lorem.Paragraph());
+
             var Company1deptITEmployees = new Faker<Employee>("en_GB")
                 .RuleFor(bp => bp.Gender, f => f.PickRandom<Gender>())
                 .RuleFor(bp => bp.Title, f => f.PickRandom<Title>())
@@ -185,6 +189,7 @@ namespace SophieHR.Api.Data
                 .RuleFor(bp => bp.DepartmentId, f => company1deptIT.Id)
                 .RuleFor(bp => bp.NationalInsuranceNumber, f => f.Finance.Nino().Replace(" ", ""))
                 .RuleFor(bp => bp.PassportNumber, f => DateTime.UtcNow.Ticks.ToString().Substring(9))
+                .RuleFor(bp => bp.Notes, f=> notesFaker.Generate(2))
                 .RuleFor(bp => bp.Address, f => new EmployeeAddress
                 {
                     County = f.Address.County(),
@@ -222,6 +227,7 @@ namespace SophieHR.Api.Data
                 .RuleFor(bp => bp.CompanyId, f => company1.Id)
                 .RuleFor(bp => bp.StartOfEmployment, (f, u) => f.Date.Recent(4600))
                 .RuleFor(bp => bp.DepartmentId, f => company1deptIT.Id)
+                
                 .RuleFor(bp => bp.Address, f => new EmployeeAddress
                 {
                     County = f.Address.County(),
