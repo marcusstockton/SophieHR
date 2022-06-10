@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SophieHR.Api.Data;
 using SophieHR.Api.Models;
+using SophieHR.Api.Models.DTOs.Notes;
 
 namespace SophieHR.Api.Controllers
 {
@@ -22,37 +23,39 @@ namespace SophieHR.Api.Controllers
         }
 
         // GET: api/Notes
-        [HttpGet("get-notes-for-employee/{employeeId}")]
-        public async Task<ActionResult<IEnumerable<Note>>> GetNotesForEmployee(Guid employeeId)
+        [HttpGet("get-notes-for-employee/{employeeId}"), Produces(typeof(IEnumerable<NoteDetailDto>))]
+        public async Task<ActionResult<IEnumerable<NoteDetailDto>>> GetNotesForEmployee(Guid employeeId)
         {
-            return await _context.Notes.Where(x=>x.EmployeeId == employeeId).ToListAsync();
+            var notes = await _context.Notes.Where(x=>x.EmployeeId == employeeId).ToListAsync();
+
+            return Ok(_mapper.Map<IEnumerable<NoteDetailDto>>(notes));
         }
 
         // GET: api/Notes/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Note>> GetNote(Guid id)
+        public async Task<ActionResult<NoteDetailDto>> GetNote(Guid id)
         {
-            var notes = await _context.Notes.FindAsync(id);
+            var note = await _context.Notes.FindAsync(id);
 
-            if (notes == null)
+            if (note == null)
             {
                 return NotFound();
             }
 
-            return notes;
+            return _mapper.Map<NoteDetailDto>(note);
         }
 
         // PUT: api/Notes/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutNotes(Guid id, Note notes)
+        public async Task<IActionResult> PutNotes(Guid id, NoteDetailDto noteDto)
         {
-            if (id != notes.Id)
+            if (id != noteDto.Id)
             {
                 return BadRequest();
             }
-
-            _context.Entry(notes).State = EntityState.Modified;
+            var note = _mapper.Map<Note>(noteDto);
+            _context.Entry(note).State = EntityState.Modified;
 
             try
             {
@@ -76,14 +79,14 @@ namespace SophieHR.Api.Controllers
         // POST: api/Notes
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost("{employeeId}")]
-        public async Task<ActionResult<Note>> PostNotes([FromBody]Note noteInput, [FromRoute]Guid employeeId)
+        public async Task<ActionResult<NoteDetailDto>> PostNotes([FromBody]NoteCreateDto noteInput, [FromRoute]Guid employeeId)
         {
             var note = _mapper.Map<Note>(noteInput);
             note.EmployeeId = employeeId;
             _context.Notes.Add(note);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetNotes", new { id = note.Id }, note);
+            return CreatedAtAction("GetNote", new { id = note.Id }, note);
         }
 
         // DELETE: api/Notes/5
@@ -100,6 +103,16 @@ namespace SophieHR.Api.Controllers
             await _context.SaveChangesAsync();
 
             return NoContent();
+        }
+
+        [HttpGet("GetNoteTypes"), Produces(typeof(Dictionary<int, string>))]
+        [ResponseCache(Duration = 60, Location = ResponseCacheLocation.Any, NoStore = false)]
+        public ActionResult<Dictionary<int,string>> GetNoteTypes()
+        {
+            var dict = Enum.GetValues(typeof(NoteType))
+               .Cast<NoteType>()
+               .ToDictionary(t => (int)t, t => t.ToString());
+            return Ok(dict);
         }
 
         private bool NotesExists(Guid id)
