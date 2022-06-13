@@ -7,6 +7,7 @@ using SophieHR.Api.Data;
 using SophieHR.Api.Models;
 using SophieHR.Api.Models.DTOs.Employee;
 using SophieHR.Api.Services;
+using System.Security.Claims;
 using ApiExplorerSettingsAttribute = Microsoft.AspNetCore.Mvc.ApiExplorerSettingsAttribute;
 
 namespace SophieHR.Api.Controllers
@@ -142,14 +143,22 @@ namespace SophieHR.Api.Controllers
         [HttpGet("GetListOfUsers")]
         [Produces(typeof(List<EmployeeListDto>))]
         [Authorize(Roles = "Admin, Manager")]
-        public IActionResult GetList()
+        public async Task<IActionResult> GetListAsync()
         {
             var users = _context.Employees.AsEnumerable();
             if (User.IsInRole("Manager"))
             {
                 // Only retrieve employees the manager can access:
+
+                var user1 = _userManager.GetUserId(User);
+
+                var us3 = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+                var sw1 = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                var use = await _userManager.FindByEmailAsync(User.Identity.Name);
+
                 var managerId = _userManager.GetUserId(User);
-                users = users.Where(x => x.Manager.Id == Guid.Parse(managerId));
+                //users = users.Where(x => x.Manager != null && x.Manager?.Id == managerId);
             }
 
             return Ok(_mapper.Map<List<EmployeeListDto>>(users.ToList()));

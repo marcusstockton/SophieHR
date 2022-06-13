@@ -4,9 +4,9 @@ using SophieHR.Api.Models.DTOs.Address;
 
 namespace SophieHR.Api.Profiles
 {
-    public class AddresProfile : Profile
+    public class AddressProfile : Profile
     {
-        public AddresProfile()
+        public AddressProfile()
         {
             //CreateMap<CompanyAddress, Address>().ReverseMap();
             //CreateMap<EmployeeAddress, Address>().ReverseMap();

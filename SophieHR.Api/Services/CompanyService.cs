@@ -77,6 +77,10 @@ namespace SophieHR.Api.Services
 
         public async Task<HttpResponseMessage> UpdateCompanyAsync(Guid id, CompanyDetailNoLogo companyDetail)
         {
+            if(companyDetail.Id != id)
+            {
+                return new HttpResponseMessage(System.Net.HttpStatusCode.NotFound) { Content = new StringContent($"Id's do not match!") };
+            }
             var originalCompany = await _context.Companies.FindAsync(id);
             if (originalCompany == null)
             {
