@@ -16,6 +16,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddJWTTokenServices(builder.Configuration);
 builder.Services.TryAddTransient<IEmailSender, EmailService>();
 builder.Services.TryAddTransient<ICompanyService, CompanyService>();
+builder.Services.TryAddTransient<IDepartmentService, DepartmentService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
