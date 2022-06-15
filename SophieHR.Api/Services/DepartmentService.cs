@@ -1,23 +1,26 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SophieHR.Api.Data;
 using SophieHR.Api.Models;
-using SophieHR.Api.Models.DTOs.Department;
 
 namespace SophieHR.Api.Services
 {
     public interface IDepartmentService
     {
         Task<ICollection<Department>> GetDepartmentsForCompanyId(Guid companyId);
-        Task<Department> GetDepartmentById(Guid departmentId);
-        Task<Department> UpdateDepartment(Guid id, Department departmentDetail);
-        Task<Department> CreateDepartment(Department departmentCreate);
-        Task DeleteDepartment(Guid id);
 
+        Task<Department> GetDepartmentById(Guid departmentId);
+
+        Task<Department> UpdateDepartment(Guid id, Department departmentDetail);
+
+        Task<Department> CreateDepartment(Department departmentCreate);
+
+        Task DeleteDepartment(Guid id);
     }
 
     public class DepartmentService : IDepartmentService
     {
         private readonly ApplicationDbContext _context;
+
         public DepartmentService(ApplicationDbContext context)
         {
             _context = context;
@@ -42,7 +45,7 @@ namespace SophieHR.Api.Services
         public async Task DeleteDepartment(Guid id)
         {
             var department = await _context.Departments.FindAsync(id);
-            if (department != null) 
+            if (department != null)
             {
                 _context.Departments.Remove(department);
                 await _context.SaveChangesAsync();
@@ -68,7 +71,7 @@ namespace SophieHR.Api.Services
                 await _context.SaveChangesAsync();
                 return departmentDetail;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw;
             }

@@ -21,7 +21,7 @@ namespace SophieHR.Api.Services
 
         public async Task SendEmailAsync(string email, string subject, string htmlMessage)
         {
-            _logger.LogInformation("Sending email to {EmailAddress}", email);
+            _logger.LogInformation($"{nameof(SendEmailAsync)} Sending email to {{EmailAddress}}", email);
             MailMessage mail = new MailMessage();
             //set the addresses
             mail.From = new MailAddress("admin@eezeeWeb.com");
@@ -50,7 +50,7 @@ namespace SophieHR.Api.Services
             await Task.Run(() =>
             {
                 // Fire up smtp4dev:
-                var desktop = System.Environment.GetFolderPath(System.Environment.SpecialFolder.Desktop);
+                var desktop = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
                 Process p = new Process();
                 var fileName = Path.Combine(desktop, "SMTP4Dev.bat");
                 p.StartInfo = new ProcessStartInfo(fileName);

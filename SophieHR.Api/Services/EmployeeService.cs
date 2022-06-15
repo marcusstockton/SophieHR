@@ -11,21 +11,31 @@ namespace SophieHR.Api.Services
     public interface IEmployeeService
     {
         Task<ICollection<EmployeeListDto>> GetEmployeesForCompanyId(Guid companyId);
+
         Task<ICollection<EmployeeListDto>> GetManagersForCompanyId(Guid companyId);
+
         Task<ICollection<EmployeeListDto>> GetEmployeesForManager(Guid managerId);
+
         Task<EmployeeDetailDto> GetEmployeeById(Guid employeeId, ClaimsPrincipal user);
+
         Task UploadAvatarToEmployee(Guid id, IFormFile avatar);
+
         Task UpdateEmployee(EmployeeDetailDto employeeDto);
+
         Task CreateEmployee(EmployeeCreateDto employeeDto);
+
         Task DeleteEmployee(Guid employeeId);
+
         ICollection<string> GetTitles();
     }
+
     public class EmployeeService : IEmployeeService
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IMapper _mapper;
         private readonly ILogger<CompanyService> _logger;
+
         public EmployeeService(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IMapper mapper, ILogger<CompanyService> logger)
         {
             _context = context;
@@ -36,20 +46,19 @@ namespace SophieHR.Api.Services
 
         public async Task CreateEmployee(EmployeeCreateDto employeeDto)
         {
+            _logger.LogInformation($"{nameof(CreateEmployee)} called.");
             var employee = _mapper.Map<Employee>(employeeDto);
 
             employee.UserName = employeeDto.WorkEmailAddress;
             var newEmployee = await _context.Employees.AddAsync(employee);
-            //await _context.SaveChangesAsync();
-            //
             await _userManager.CreateAsync(employee, "P@55w0rd1");
-            
             await _userManager.AddToRoleAsync(employee, "User");
             await _context.SaveChangesAsync();
         }
 
         public async Task DeleteEmployee(Guid employeeId)
         {
+            _logger.LogInformation($"{nameof(DeleteEmployee)} called.");
             var employee = await _context.Employees.FindAsync(employeeId);
             if (employee == null)
             {
@@ -62,6 +71,7 @@ namespace SophieHR.Api.Services
 
         public async Task<EmployeeDetailDto> GetEmployeeById(Guid employeeId, ClaimsPrincipal user)
         {
+            _logger.LogInformation($"{nameof(GetEmployeeById)} called.");
             var employee = await _context.Employees
                .Include(x => x.Avatar)
                .Include(x => x.Address)
@@ -75,6 +85,7 @@ namespace SophieHR.Api.Services
 
         public async Task<ICollection<EmployeeListDto>> GetEmployeesForCompanyId(Guid companyId)
         {
+            _logger.LogInformation($"{nameof(GetEmployeesForCompanyId)} called.");
             var employeeList = await _context.Employees
                 .Include(x => x.Department)
                 .Where(x => x.CompanyId == companyId)
@@ -84,8 +95,9 @@ namespace SophieHR.Api.Services
 
         public async Task<ICollection<EmployeeListDto>> GetEmployeesForManager(Guid managerId)
         {
+            _logger.LogInformation($"{nameof(GetEmployeesForManager)} called.");
             var employees = await _context.Employees
-                .Include(x=>x.Department)
+                .Include(x => x.Department)
                 .Where(x => x.Manager.Id == managerId)
                 .ToListAsync();
 
@@ -94,6 +106,7 @@ namespace SophieHR.Api.Services
 
         public async Task<ICollection<EmployeeListDto>> GetManagersForCompanyId(Guid companyId)
         {
+            _logger.LogInformation($"{nameof(GetManagersForCompanyId)} called.");
             var managers = _context.Employees.Where(x => x.CompanyId == companyId);
 
             var managerRoleId = _context.Roles.Single(x => x.Name == "Manager").Id;
@@ -112,11 +125,13 @@ namespace SophieHR.Api.Services
 
         public ICollection<string> GetTitles()
         {
+            _logger.LogInformation($"{nameof(GetTitles)} called.");
             return Enum.GetNames(typeof(Title)).ToList();
         }
 
         public async Task UpdateEmployee(EmployeeDetailDto employeeDto)
         {
+            _logger.LogInformation($"{nameof(UpdateEmployee)} called.");
             var originalEmployee = await _context.Employees.FindAsync(employeeDto.Id);
             if (originalEmployee == null)
             {
@@ -130,6 +145,7 @@ namespace SophieHR.Api.Services
 
         public async Task UploadAvatarToEmployee(Guid id, IFormFile avatar)
         {
+            _logger.LogInformation($"{nameof(UploadAvatarToEmployee)} called.");
             var employee = await _context.Employees.FindAsync(id);
             if (employee == null)
             {

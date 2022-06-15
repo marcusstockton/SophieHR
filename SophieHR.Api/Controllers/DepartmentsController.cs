@@ -74,7 +74,7 @@ namespace SophieHR.Api.Controllers
         public async Task<ActionResult<DepartmentDetailDto>> PostDepartment(DepartmentCreateDto departmentCreateDto)
         {
             _logger.LogInformation($"{nameof(DepartmentsController)} > {nameof(PostDepartment)} creating Department {departmentCreateDto.Name} against companyid {departmentCreateDto.CompanyId}");
-            
+
             var department = _mapper.Map<Department>(departmentCreateDto);
             await _context.CreateDepartment(department);
 
@@ -89,7 +89,7 @@ namespace SophieHR.Api.Controllers
             _logger.LogInformation($"{nameof(DepartmentsController)} > {nameof(DeleteDepartment)} deleting Department id {id}");
 
             await _context.DeleteDepartment(id);
-            
+
             return NoContent();
         }
     }

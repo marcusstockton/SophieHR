@@ -86,7 +86,6 @@ namespace SophieHR.Api.Controllers
             {
                 return BadRequest(result);
             }
-            
         }
 
         // POST: api/Companies

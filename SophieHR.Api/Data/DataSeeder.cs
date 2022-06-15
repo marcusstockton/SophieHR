@@ -49,7 +49,6 @@ namespace SophieHR.Api.Data
                 var companies = companyFaker.Generate(15);
                 await context.Companies.AddRangeAsync(companies);
 
-
                 var departmentFaker = new Faker<Department>("en_GB")
                     .RuleFor(x => x.Name, f => f.Name.JobArea())
                     .RuleFor(x => x.Company, f => f.PickRandom(companies));
@@ -84,7 +83,6 @@ namespace SophieHR.Api.Data
                 }
                 );
             await context.SaveChangesAsync();
-
 
             if (!context.Roles.Any())
             {
@@ -189,7 +187,7 @@ namespace SophieHR.Api.Data
                 .RuleFor(bp => bp.DepartmentId, f => company1deptIT.Id)
                 .RuleFor(bp => bp.NationalInsuranceNumber, f => f.Finance.Nino().Replace(" ", ""))
                 .RuleFor(bp => bp.PassportNumber, f => DateTime.UtcNow.Ticks.ToString().Substring(9))
-                .RuleFor(bp => bp.Notes, f=> notesFaker.Generate(2))
+                .RuleFor(bp => bp.Notes, f => notesFaker.Generate(2))
                 .RuleFor(bp => bp.Address, f => new EmployeeAddress
                 {
                     County = f.Address.County(),
@@ -227,7 +225,7 @@ namespace SophieHR.Api.Data
                 .RuleFor(bp => bp.CompanyId, f => company1.Id)
                 .RuleFor(bp => bp.StartOfEmployment, (f, u) => f.Date.Recent(4600))
                 .RuleFor(bp => bp.DepartmentId, f => company1deptIT.Id)
-                
+
                 .RuleFor(bp => bp.Address, f => new EmployeeAddress
                 {
                     County = f.Address.County(),

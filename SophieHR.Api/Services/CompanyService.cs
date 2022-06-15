@@ -9,12 +9,19 @@ namespace SophieHR.Api.Services
     public interface ICompanyService
     {
         Task<ICollection<CompanyDetailNoLogo>> GetAllCompaniesNoLogoAsync();
+
         Task<ICollection<KeyValuePair<Guid, string>>> GetCompanyNamesAsync(string username, bool isManager = false);
+
         Task<CompanyDetailDto> GetCompanyByIdNoTrackingAsync(Guid id);
+
         Task<Company> FindCompanyByIdAsync(Guid id);
+
         Task<HttpResponseMessage> UpdateCompanyAsync(Guid id, CompanyDetailNoLogo companyDetail);
+
         Task<HttpResponseMessage> UploadLogoForCompanyAsync(Guid id, IFormFile logo);
+
         Task<HttpResponseMessage> CreateNewCompanyAsync(CompanyCreateDto companyDto);
+
         Task<HttpResponseMessage> DeleteCompanyAsync(Guid companyId);
     }
 
@@ -33,13 +40,13 @@ namespace SophieHR.Api.Services
 
         public async Task<ICollection<CompanyDetailNoLogo>> GetAllCompaniesNoLogoAsync()
         {
-            _logger.LogInformation($"{nameof(CompanyService)} calling {GetAllCompaniesNoLogoAsync}");
+            _logger.LogInformation($"{nameof(GetAllCompaniesNoLogoAsync)} called");
             return _mapper.Map<List<CompanyDetailNoLogo>>(await _context.Companies.ToListAsync());
         }
 
         public async Task<ICollection<KeyValuePair<Guid, string>>> GetCompanyNamesAsync(string username, bool isManager = false)
         {
-            _logger.LogInformation($"{nameof(CompanyService)} calling {nameof(GetCompanyNamesAsync)}");
+            _logger.LogInformation($"{nameof(GetCompanyNamesAsync)} called");
             var companies = await _context.Companies.Select(x => new KeyValuePair<Guid, string>(x.Id, x.Name)).ToListAsync();
             if (isManager)
             {
@@ -51,7 +58,7 @@ namespace SophieHR.Api.Services
 
         public async Task<CompanyDetailDto> GetCompanyByIdNoTrackingAsync(Guid id)
         {
-            _logger.LogInformation($"{nameof(CompanyService)} calling {nameof(GetCompanyByIdNoTrackingAsync)}");
+            _logger.LogInformation($"{nameof(GetCompanyByIdNoTrackingAsync)} called");
 
             return await _context.Companies
                 .Include(x => x.Address)
@@ -72,19 +79,21 @@ namespace SophieHR.Api.Services
 
         public async Task<Company> FindCompanyByIdAsync(Guid id)
         {
+            _logger.LogInformation($"{nameof(FindCompanyByIdAsync)} called");
             return await _context.Companies.FindAsync(id);
         }
 
         public async Task<HttpResponseMessage> UpdateCompanyAsync(Guid id, CompanyDetailNoLogo companyDetail)
         {
-            if(companyDetail.Id != id)
+            _logger.LogInformation($"{nameof(UpdateCompanyAsync)} called");
+            if (companyDetail.Id != id)
             {
                 return new HttpResponseMessage(System.Net.HttpStatusCode.NotFound) { Content = new StringContent($"Id's do not match!") };
             }
             var originalCompany = await _context.Companies.FindAsync(id);
             if (originalCompany == null)
             {
-                _logger.LogWarning($"Unable to find original company with id {id}");
+                _logger.LogWarning($"{nameof(UpdateCompanyAsync)} Unable to find original company with id {id}");
                 return new HttpResponseMessage(System.Net.HttpStatusCode.NotFound) { Content = new StringContent($"Unable to find original company with id {id}") };
             }
             var company = _mapper.Map(companyDetail, originalCompany);
@@ -96,13 +105,14 @@ namespace SophieHR.Api.Services
 
         public async Task<HttpResponseMessage> UploadLogoForCompanyAsync(Guid id, IFormFile logo)
         {
+            _logger.LogInformation($"{nameof(UploadLogoForCompanyAsync)} called");
             var result = new HttpResponseMessage();
             if (logo != null)
             {
                 var company = await _context.Companies.FindAsync(id);
                 if (company == null)
                 {
-                    _logger.LogWarning($"Unable to find company with id {id}");
+                    _logger.LogWarning($"{nameof(UpdateCompanyAsync)} Unable to find company with id {id}");
                     //return NotFound($"Unable to find a company with the Id of {id}");
                     result.StatusCode = System.Net.HttpStatusCode.NotFound;
                     result.Content = new StringContent($"Unable to find company with id {id}");
@@ -126,6 +136,7 @@ namespace SophieHR.Api.Services
 
         public async Task<HttpResponseMessage> CreateNewCompanyAsync(CompanyCreateDto companyDto)
         {
+            _logger.LogInformation($"{nameof(CreateNewCompanyAsync)} called");
             var company = _mapper.Map<Company>(companyDto);
             _context.Companies.Add(company);
             try
@@ -141,6 +152,7 @@ namespace SophieHR.Api.Services
 
         public async Task<HttpResponseMessage> DeleteCompanyAsync(Guid companyId)
         {
+            _logger.LogInformation($"{nameof(DeleteCompanyAsync)} called");
             var company = await _context.Companies.FindAsync(companyId);
             if (company == null)
             {

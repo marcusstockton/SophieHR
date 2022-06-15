@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
 using SophieHR.Api.Models;
 using SophieHR.Api.Models.DTOs.Company;
+
 #nullable enable
+
 namespace SophieHR.Api.Profiles
 {
     public class CompanyProfile : Profile

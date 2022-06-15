@@ -136,7 +136,7 @@ namespace SophieHR.Api.Services.Tests
             {
                 Id = unknownId,
                 Name = "This company doesn't exist",
-                Address = new CompanyAddress { County = "Devon"},
+                Address = new CompanyAddress { County = "Devon" },
                 CreatedDate = DateTime.Now,
                 UpdatedDate = DateTime.Now
             };
@@ -186,7 +186,6 @@ namespace SophieHR.Api.Services.Tests
                     Line1 = "Line1",
                     Postcode = "ER11RE"
                 }
-
             };
 
             var result = await _service.CreateNewCompanyAsync(newCompany);
@@ -207,6 +206,6 @@ namespace SophieHR.Api.Services.Tests
             var result = await _service.DeleteCompanyAsync(Guid.NewGuid());
 
             Assert.AreEqual(HttpStatusCode.BadRequest, result.StatusCode);
-        }   
+        }
     }
 }

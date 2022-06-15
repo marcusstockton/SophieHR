@@ -4,8 +4,6 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using SophieHR.Api.Data;
 using SophieHR.Api.Models;
 using SophieHR.Api.Models.DTOs.Employee;
 using SophieHR.Api.Services;
@@ -36,7 +34,7 @@ namespace SophieHR.Api.Controllers
         {
             _logger.LogInformation($"{nameof(EmployeesController)} > {nameof(GetEmployeesForCompanyId)} getting employees for company {companyId}");
             var employeeList = await _context.GetEmployeesForCompanyId(companyId);
-                
+
             return Ok(employeeList);
         }
 
@@ -54,7 +52,7 @@ namespace SophieHR.Api.Controllers
         {
             _logger.LogInformation($"{nameof(EmployeesController)} > {nameof(GetEmployeesForManager)} Getting employees for manager id {managerId}");
             var employees = await _context.GetEmployeesForManager(managerId);
-                
+
             return Ok(employees);
         }
 
@@ -84,7 +82,6 @@ namespace SophieHR.Api.Controllers
                 return NoContent();
             }
             return BadRequest("No File");
-            
         }
 
         // PUT: api/Employees/5
@@ -120,9 +117,10 @@ namespace SophieHR.Api.Controllers
             _logger.LogInformation($"{nameof(EmployeesController)} > {nameof(DeleteEmployee)} deleting employee {id}");
 
             await _context.DeleteEmployee(id);
-            
+
             return NoContent();
         }
+
         [HttpGet("GetTitles"), Produces(typeof(List<string>))]
         [ResponseCache(Duration = 60, Location = ResponseCacheLocation.Any, NoStore = false)]
         public ActionResult<List<string>> GetTitles()

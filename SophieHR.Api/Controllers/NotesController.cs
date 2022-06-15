@@ -26,7 +26,7 @@ namespace SophieHR.Api.Controllers
         [HttpGet("get-notes-for-employee/{employeeId}"), Produces(typeof(IEnumerable<NoteDetailDto>))]
         public async Task<ActionResult<IEnumerable<NoteDetailDto>>> GetNotesForEmployee(Guid employeeId)
         {
-            var notes = await _context.Notes.Where(x=>x.EmployeeId == employeeId).ToListAsync();
+            var notes = await _context.Notes.Where(x => x.EmployeeId == employeeId).ToListAsync();
 
             return Ok(_mapper.Map<IEnumerable<NoteDetailDto>>(notes));
         }
@@ -79,7 +79,7 @@ namespace SophieHR.Api.Controllers
         // POST: api/Notes
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost("{employeeId}")]
-        public async Task<ActionResult<NoteDetailDto>> PostNotes([FromBody]NoteCreateDto noteInput, [FromRoute]Guid employeeId)
+        public async Task<ActionResult<NoteDetailDto>> PostNotes([FromBody] NoteCreateDto noteInput, [FromRoute] Guid employeeId)
         {
             var note = _mapper.Map<Note>(noteInput);
             note.EmployeeId = employeeId;
@@ -107,7 +107,7 @@ namespace SophieHR.Api.Controllers
 
         [HttpGet("GetNoteTypes"), Produces(typeof(Dictionary<int, string>))]
         [ResponseCache(Duration = 60, Location = ResponseCacheLocation.Any, NoStore = false)]
-        public ActionResult<Dictionary<int,string>> GetNoteTypes()
+        public ActionResult<Dictionary<int, string>> GetNoteTypes()
         {
             var dict = Enum.GetValues(typeof(NoteType))
                .Cast<NoteType>()
