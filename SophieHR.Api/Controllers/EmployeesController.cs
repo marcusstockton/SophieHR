@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using SophieHR.Api.Models;
 using SophieHR.Api.Models.DTOs.Employee;
 using SophieHR.Api.Services;
+using System.Net;
 
 namespace SophieHR.Api.Controllers
 {
@@ -86,28 +87,28 @@ namespace SophieHR.Api.Controllers
 
         // PUT: api/Employees/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}"), ProducesResponseType(StatusCodes.Status204NoContent), ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> PutEmployee(Guid id, EmployeeDetailDto employeeDetail)
+        [HttpPut("{id}"), Produces(typeof(EmployeeDetailDto)), ProducesResponseType(StatusCodes.Status204NoContent), ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<EmployeeDetailDto>> PutEmployee(Guid id, EmployeeDetailDto employeeDetail)
         {
             _logger.LogInformation($"{nameof(EmployeesController)} > {nameof(PutEmployee)} Updating employee {employeeDetail}");
             if (id != employeeDetail.Id)
             {
                 return BadRequest();
             }
-            await _context.UpdateEmployee(employeeDetail);
-            return NoContent();
+            var employee = await _context.UpdateEmployee(employeeDetail);
+            return Ok(employee);
         }
 
         // POST: api/Employees
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost, ProducesResponseType(StatusCodes.Status204NoContent)]
+        [HttpPost, ProducesResponseType(StatusCodes.Status201Created), Produces(typeof(EmployeeDetailDto))]
         public async Task<ActionResult<EmployeeDetailDto>> PostEmployee(EmployeeCreateDto employeeDto)
         {
             _logger.LogInformation($"{nameof(EmployeesController)} > {nameof(PostEmployee)} creating employee {employeeDto}");
 
-            await _context.CreateEmployee(employeeDto);
+            var employee = await _context.CreateEmployee(employeeDto);
 
-            return NoContent();
+            return CreatedAtAction(nameof(GetEmployee), new { id = employee.Id }, employee);
         }
 
         // DELETE: api/Employees/5

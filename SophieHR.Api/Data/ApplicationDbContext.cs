@@ -66,8 +66,6 @@ namespace SophieHR.Api.Data
 
             builder.Entity<Employee>(b =>
             {
-                b.Property(x => x.FirstName).IsRequired().HasMaxLength(100);
-                b.Property(x => x.LastName).IsRequired().HasMaxLength(100);
                 b.Property(x => x.HolidayAllowance).IsRequired();
                 b.Property(x => x.StartOfEmployment).IsRequired();
                 b.Property(x => x.MiddleName).HasMaxLength(100);

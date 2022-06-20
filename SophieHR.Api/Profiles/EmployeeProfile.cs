@@ -11,7 +11,7 @@ namespace SophieHR.Api.Profiles
     {
         public EmployeeProfile()
         {
-            CreateMap<Employee, EmployeeDetailDto>().ReverseMap();
+            CreateMap<EmployeeDetailDto, Employee>().ReverseMap();
             CreateMap<EmployeeListDto, Employee>().ReverseMap();
             CreateMap<EmployeeCreateDto, Employee>().ReverseMap();
             CreateMap<EmployeeAvatarDetail, EmployeeAvatar>().ReverseMap();

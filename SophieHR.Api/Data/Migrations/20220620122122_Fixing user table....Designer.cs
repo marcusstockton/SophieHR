@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SophieHR.Api.Data;
 
@@ -11,9 +12,10 @@ using SophieHR.Api.Data;
 namespace SophieHR.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220620122122_Fixing user table...")]
+    partial class Fixingusertable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -204,7 +206,7 @@ namespace SophieHR.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Address", (string)null);
+                    b.ToTable("Address");
 
                     b.HasDiscriminator<string>("Discriminator").HasValue("Address");
                 });
@@ -321,7 +323,7 @@ namespace SophieHR.Api.Migrations
                     b.HasIndex("Id", "Name")
                         .IsUnique();
 
-                    b.ToTable("Companies", (string)null);
+                    b.ToTable("Companies");
                 });
 
             modelBuilder.Entity("SophieHR.Api.Models.Department", b =>
@@ -350,7 +352,7 @@ namespace SophieHR.Api.Migrations
 
                     b.HasIndex("Id", "Name");
 
-                    b.ToTable("Departments", (string)null);
+                    b.ToTable("Departments");
                 });
 
             modelBuilder.Entity("SophieHR.Api.Models.EmployeeAvatar", b =>
@@ -376,7 +378,7 @@ namespace SophieHR.Api.Migrations
                     b.HasIndex("EmployeeId")
                         .IsUnique();
 
-                    b.ToTable("EmployeeAvatars", (string)null);
+                    b.ToTable("EmployeeAvatars");
                 });
 
             modelBuilder.Entity("SophieHR.Api.Models.Note", b =>
@@ -408,7 +410,7 @@ namespace SophieHR.Api.Migrations
 
                     b.HasIndex("EmployeeId");
 
-                    b.ToTable("Notes", (string)null);
+                    b.ToTable("Notes");
                 });
 
             modelBuilder.Entity("SophieHR.Api.Models.CompanyAddress", b =>

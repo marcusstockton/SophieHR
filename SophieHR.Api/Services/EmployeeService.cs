@@ -20,9 +20,9 @@ namespace SophieHR.Api.Services
 
         Task UploadAvatarToEmployee(Guid id, IFormFile avatar);
 
-        Task UpdateEmployee(EmployeeDetailDto employeeDto);
+        Task<EmployeeDetailDto> UpdateEmployee(EmployeeDetailDto employeeDto);
 
-        Task CreateEmployee(EmployeeCreateDto employeeDto);
+        Task<Employee> CreateEmployee(EmployeeCreateDto employeeDto);
 
         Task DeleteEmployee(Guid employeeId);
 
@@ -44,16 +44,25 @@ namespace SophieHR.Api.Services
             _logger = logger;
         }
 
-        public async Task CreateEmployee(EmployeeCreateDto employeeDto)
+        public async Task<Employee> CreateEmployee(EmployeeCreateDto employeeDto)
         {
             _logger.LogInformation($"{nameof(CreateEmployee)} called.");
             var employee = _mapper.Map<Employee>(employeeDto);
-
-            employee.UserName = employeeDto.WorkEmailAddress;
-            var newEmployee = await _context.Employees.AddAsync(employee);
-            await _userManager.CreateAsync(employee, "P@55w0rd1");
-            await _userManager.AddToRoleAsync(employee, "User");
-            await _context.SaveChangesAsync();
+            if (!_context.Employees.Any(x => x.Email == employee.WorkEmailAddress))
+            {
+                employee.UserName = employeeDto.WorkEmailAddress;
+                var newEmployee = await _context.Employees.AddAsync(employee);
+                await _userManager.CreateAsync(employee, "P@55w0rd1");
+                await _userManager.SetEmailAsync(employee, employeeDto.WorkEmailAddress);
+                await _userManager.AddToRoleAsync(employee, "User");
+                await _context.SaveChangesAsync();
+                return employee;
+            }
+            else
+            {
+                throw new ArgumentException("Employee already exists with this email adress");
+            }
+                
         }
 
         public async Task DeleteEmployee(Guid employeeId)
@@ -129,18 +138,20 @@ namespace SophieHR.Api.Services
             return Enum.GetNames(typeof(Title)).ToList();
         }
 
-        public async Task UpdateEmployee(EmployeeDetailDto employeeDto)
+        public async Task<EmployeeDetailDto> UpdateEmployee(EmployeeDetailDto employeeDto)
         {
             _logger.LogInformation($"{nameof(UpdateEmployee)} called.");
+
             var originalEmployee = await _context.Employees.FindAsync(employeeDto.Id);
             if (originalEmployee == null)
             {
                 throw new ArgumentException($"Unable to find a employee with the Id of {employeeDto.Id}");
             }
-            var employee = _mapper.Map(employeeDto, originalEmployee);
-            _context.Employees.Attach(employee);
-            _context.Entry(employee).State = EntityState.Modified;
+            _mapper.Map(employeeDto, originalEmployee);
+            _context.Employees.Update(originalEmployee);
             await _context.SaveChangesAsync();
+
+            return _mapper.Map<EmployeeDetailDto>(originalEmployee);
         }
 
         public async Task UploadAvatarToEmployee(Guid id, IFormFile avatar)
