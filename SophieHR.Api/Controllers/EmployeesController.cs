@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using SophieHR.Api.Models;
 using SophieHR.Api.Models.DTOs.Employee;
 using SophieHR.Api.Services;
-using System.Net;
+using System.Security.Claims;
 
 namespace SophieHR.Api.Controllers
 {
@@ -95,6 +95,12 @@ namespace SophieHR.Api.Controllers
             {
                 return BadRequest();
             }
+            var userid = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if ((User.IsInRole("Manager") && userid == id.ToString())) // Admin user can...
+            {
+                return BadRequest("Cannot update your own record");
+            }
+
             var employee = await _context.UpdateEmployee(employeeDetail);
             return Ok(employee);
         }

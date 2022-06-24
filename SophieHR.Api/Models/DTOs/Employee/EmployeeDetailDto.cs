@@ -25,18 +25,13 @@ namespace SophieHR.Api.Models.DTOs.Employee
         public DateTime DateOfBirth { get; set; }
         public DateTime StartOfEmployment { get; set; }
         public DateTime? EndOfEmployment { get; set; }
-        public Guid AddressId { get; set; }
-        [ForeignKey("AddressId")]
+        public string? PassportNumber { get; set; }
+        public string? NationalInsuranceNumber { get; set; }
         public virtual EmployeeAddress Address { get; set; }
         public Guid? ManagerId { get; set; }
         public EmployeeAvatarDetail? Avatar { get; set; }
-        public Guid? DepartmentId { get; set; }
-        [ForeignKey("DepartmentId")]
         public virtual DepartmentIdNameDto? Department { get; set; }
-        public Guid? CompanyId { get; set; }
-        [ForeignKey("CompanyId")]
         public virtual CompanyIdNameDto Company { get; set; }
-        public string? PassportNumber { get; set; }
-        public string? NationalInsuranceNumber { get; set; }
+        public ICollection<Note> Notes { get; set; }
     }
 }
