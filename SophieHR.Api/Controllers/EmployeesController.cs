@@ -14,7 +14,7 @@ namespace SophieHR.Api.Controllers
     [ApiExplorerSettings(GroupName = "v1")]
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Admin, Manager")]
+    [Authorize(Roles = "Admin, Manager, CompanyAdmin")]
     public class EmployeesController : ControllerBase
     {
         private readonly IEmployeeService _context;
@@ -30,6 +30,7 @@ namespace SophieHR.Api.Controllers
         }
 
         // GET: api/Employees
+        [Authorize(Roles = "Admin, CompanyAdmin")]
         [HttpGet("get-by-company/{companyId}"), Produces(typeof(IEnumerable<EmployeeListDto>))]
         public async Task<ActionResult<IEnumerable<EmployeeListDto>>> GetEmployeesForCompanyId(Guid companyId)
         {
@@ -39,6 +40,7 @@ namespace SophieHR.Api.Controllers
             return Ok(employeeList);
         }
 
+        [Authorize(Roles = "Admin, CompanyAdmin")]
         [HttpGet("list-of-managers-for-company/{companyId}"), Produces(typeof(IEnumerable<EmployeeListDto>))]
         public async Task<ActionResult<IEnumerable<EmployeeListDto>>> GetManagersForCompanyId(Guid companyId)
         {
@@ -58,7 +60,7 @@ namespace SophieHR.Api.Controllers
         }
 
         // GET: api/Employees/5
-        [HttpGet("get-by-id/{id}"), Authorize(Roles = "Admin, Manager, User"), Produces(typeof(EmployeeDetailDto))]
+        [HttpGet("get-by-id/{id}"), Authorize(Roles = "Admin, Manager, User CompanyAdmin"), Produces(typeof(EmployeeDetailDto))]
         public async Task<ActionResult<EmployeeDetailDto>> GetEmployee(Guid id)
         {
             _logger.LogInformation($"{nameof(EmployeesController)} > {nameof(GetEmployee)} Getting employees by id {id}");

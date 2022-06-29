@@ -71,7 +71,7 @@ namespace SophieHR.Api.Data
                     .RuleFor(x => x.Address, f => addressFaker.Generate(1).First())
                     .RuleFor(x => x.Logo, f => f.PickRandom(logos))
                     .RuleFor(x => x.Name, f => f.Company.CompanyName())
-                    .RuleFor(x=>x.CompanyConfig, companyConfigFaker)
+                    //.RuleFor(x => x.CompanyConfig, companyConfigFaker.Generate(1).First())
                     .RuleFor(x => x.CreatedDate, f => f.Date.Past());
 
                 var companies = companyFaker.Generate(15);
@@ -88,6 +88,10 @@ namespace SophieHR.Api.Data
 
                 foreach (var company in context.Companies.ToList())
                 {
+                    company.CompanyConfig = companyConfigFaker.Generate(1).First();
+                    context.Companies.Update(company);
+                    await context.SaveChangesAsync();
+
                     // Create some company admin accounts:
                     var companyAdmin = new Employee
                     {
@@ -108,7 +112,7 @@ namespace SophieHR.Api.Data
             }
 
             //// Add some departments
-            //_logger.LogInformation("Creating some departments for the companies");
+            _logger.LogInformation("Creating some departments for the companies");
             var company1 = context.Companies.AsNoTrackingWithIdentityResolution().OrderBy(x => x.Id).First();
             var company2 = context.Companies.AsNoTrackingWithIdentityResolution().OrderBy(x => x.Id).Skip(1).First();
             await context.Departments.AddRangeAsync(
