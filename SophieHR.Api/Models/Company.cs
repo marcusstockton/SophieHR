@@ -6,5 +6,6 @@
         public byte[]? Logo { get; set; }
         public CompanyAddress Address { get; set; }
         public ICollection<Employee> Employees { get; set; }
+        public CompanyConfig CompanyConfig { get; set; }
     }
 }

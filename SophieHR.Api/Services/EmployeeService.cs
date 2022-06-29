@@ -50,10 +50,12 @@ namespace SophieHR.Api.Services
             var employee = _mapper.Map<Employee>(employeeDto);
             if (!_context.Employees.Any(x => x.Email == employee.WorkEmailAddress))
             {
+                var manager = await _context.Employees.SingleAsync(x=>x.Id == Guid.Parse(employeeDto.ManagerId));
+                employee.Manager = manager;
                 employee.UserName = employeeDto.WorkEmailAddress;
                 var newEmployee = await _context.Employees.AddAsync(employee);
                 await _userManager.CreateAsync(employee, "P@55w0rd1");
-                await _userManager.SetEmailAsync(employee, employeeDto.WorkEmailAddress);
+                //await _userManager.SetEmailAsync(employee, employeeDto.WorkEmailAddress);
                 await _userManager.AddToRoleAsync(employee, "User");
                 await _context.SaveChangesAsync();
                 return employee;

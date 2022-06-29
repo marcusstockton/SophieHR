@@ -84,14 +84,18 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    //using (var scope = app.Services.CreateScope())
-    //{
-    //    var services = scope.ServiceProvider;
-    //    var context = services.GetRequiredService<ApplicationDbContext>();
-    //    await context.Database.EnsureDeletedAsync();
-    //    context.Database.Migrate();
-    //    await DataSeeder.Initialize(services);
-    //}
+    if (builder.Configuration.GetValue<bool>("ReseedDummyData") && app.Environment.IsDevelopment())
+    {
+        using (var scope = app.Services.CreateScope())
+        {
+            var services = scope.ServiceProvider;
+            var context = services.GetRequiredService<ApplicationDbContext>();
+            await context.Database.EnsureDeletedAsync();
+            context.Database.Migrate();
+            await DataSeeder.Initialize(services);
+        }
+    }
+
 }
 
 // Register the Swagger generator and the Swagger UI middlewares

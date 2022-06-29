@@ -73,7 +73,7 @@ namespace SophieHR.Api.Controllers
         }
 
         [HttpPost("{id}/upload-avatar"), Authorize(Roles = "Admin, Manager"), ProducesResponseType(StatusCodes.Status204NoContent), ProducesResponseType(StatusCodes.Status404NotFound)]
-        [RequestFormLimits(MultipartBodyLengthLimit = 5000000)] // Limit to 5mb logo
+        [RequestFormLimits(MultipartBodyLengthLimit = 5000000)] // Limit to 5mb
         public async Task<IActionResult> UploadAvatar(Guid id, IFormFile avatar)
         {
             _logger.LogInformation($"{nameof(EmployeesController)} > {nameof(UploadAvatar)} Uploading avatar for employee id {id}");

@@ -3,6 +3,7 @@ using Bogus.Extensions.UnitedKingdom;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SophieHR.Api.Models;
+using System.Text.RegularExpressions;
 
 namespace SophieHR.Api.Data
 {
@@ -21,6 +22,29 @@ namespace SophieHR.Api.Data
 
         public static async Task SeedDBAsync(ApplicationDbContext context, RoleManager<IdentityRole<Guid>> _roleManager, UserManager<ApplicationUser> _userManager, ILogger<DataSeeder> _logger)
         {
+            if (!context.Roles.Any())
+            {
+                _logger.LogInformation("Creating some roles");
+                await _roleManager.CreateAsync(new IdentityRole<Guid> { Name = "Admin" });
+                await _roleManager.CreateAsync(new IdentityRole<Guid> { Name = "CompanyAdmin" });
+                await _roleManager.CreateAsync(new IdentityRole<Guid> { Name = "Manager" });
+                await _roleManager.CreateAsync(new IdentityRole<Guid> { Name = "User" });
+            }
+
+            if (!context.Users.Any())
+            {
+                _logger.LogInformation("Creating some admin users");
+                var adminUser = new ApplicationUser
+                {
+                    UserName = "admin@hr.com",
+                    Email = "admin@hr.com",
+                    FirstName = "Marcus",
+                    LastName = "Stockton"
+                };
+                await _userManager.CreateAsync(adminUser, "P@55w0rd1");
+                await _userManager.AddToRoleAsync(adminUser, "Admin");
+            }
+
             if (!context.Companies.Any())
             {
                 // Create some companies and logos:
@@ -40,10 +64,14 @@ namespace SophieHR.Api.Data
                     .RuleFor(x => x.County, f => f.Address.County())
                     .RuleFor(x => x.Postcode, f => f.Address.ZipCode());
 
+                var companyConfigFaker = new Faker<CompanyConfig>("en_GB")
+                    .RuleFor(x => x.GdprRetentionPeriodInYears, f => f.Random.Number(1, 7));
+
                 var companyFaker = new Faker<Company>("en_GB")
                     .RuleFor(x => x.Address, f => addressFaker.Generate(1).First())
                     .RuleFor(x => x.Logo, f => f.PickRandom(logos))
                     .RuleFor(x => x.Name, f => f.Company.CompanyName())
+                    .RuleFor(x=>x.CompanyConfig, companyConfigFaker)
                     .RuleFor(x => x.CreatedDate, f => f.Date.Past());
 
                 var companies = companyFaker.Generate(15);
@@ -57,10 +85,30 @@ namespace SophieHR.Api.Data
                 await context.Departments.AddRangeAsync(departments);
 
                 await context.SaveChangesAsync();
+
+                foreach (var company in context.Companies.ToList())
+                {
+                    // Create some company admin accounts:
+                    var companyAdmin = new Employee
+                    {
+                        CompanyId = company.Id,
+                        FirstName = "HR",
+                        LastName = company.Name,
+                        UserName = $"HR@{Regex.Replace(company.Name.Replace(" ", ""), "[^A-Za-z0-9 -]", "")}.biz",
+                        Gender = Gender.Female,
+                        JobTitle = "Head of Human Resources",
+                        Title = Title.Mrs,
+                        HolidayAllowance = 21,
+                    };
+                    await context.Employees.AddAsync(companyAdmin);
+                    await _userManager.AddPasswordAsync(companyAdmin, "P@55w0rd1");
+                    await _userManager.AddToRoleAsync(companyAdmin, "CompanyAdmin");
+                    context.Employees.Add(companyAdmin);
+                }
             }
 
-            // Add some departments
-            _logger.LogInformation("Creating some departments for the companies");
+            //// Add some departments
+            //_logger.LogInformation("Creating some departments for the companies");
             var company1 = context.Companies.AsNoTrackingWithIdentityResolution().OrderBy(x => x.Id).First();
             var company2 = context.Companies.AsNoTrackingWithIdentityResolution().OrderBy(x => x.Id).Skip(1).First();
             await context.Departments.AddRangeAsync(
@@ -84,29 +132,7 @@ namespace SophieHR.Api.Data
                 );
             await context.SaveChangesAsync();
 
-            if (!context.Roles.Any())
-            {
-                _logger.LogInformation("Creating some roles");
-                await _roleManager.CreateAsync(new IdentityRole<Guid> { Name = "Admin" });
-                await _roleManager.CreateAsync(new IdentityRole<Guid> { Name = "Manager" });
-                await _roleManager.CreateAsync(new IdentityRole<Guid> { Name = "User" });
-            }
-
-            if (!context.Users.Any())
-            {
-                _logger.LogInformation("Creating some admin users");
-                var adminUser = new ApplicationUser
-                {
-                    UserName = "admin@hr.com",
-                    Email = "admin@hr.com",
-                    FirstName = "Marcus",
-                    LastName = "Stockton"
-                };
-                await _userManager.CreateAsync(adminUser, "P@55w0rd1");
-                await _userManager.AddToRoleAsync(adminUser, "Admin");
-            }
-
-            if (!context.Employees.Any())
+            if (!context.Employees.Where(x=>x.FirstName != "HR" && x.JobTitle != "Head of Human Resources").Any())
             {
                 _logger.LogInformation("Creating some employees");
 

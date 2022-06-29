@@ -12,6 +12,7 @@ namespace SophieHR.Api.Data
         }
 
         public DbSet<Company> Companies { get; set; }
+        public DbSet<CompanyConfig> CompanyConfigs { get; set; }
         public DbSet<CompanyAddress> CompanyAddresses { get; set; }
         public DbSet<EmployeeAddress> EmployeeAddresses { get; set; }
         public DbSet<Department> Departments { get; set; }
@@ -21,6 +22,11 @@ namespace SophieHR.Api.Data
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
+            builder.Entity<CompanyConfig>(b =>
+            {
+                b.HasOne(x => x.Company).WithOne(x => x.CompanyConfig).HasForeignKey<CompanyConfig>(x => x.CompanyId);
+            });
+
             builder.Entity<Company>(b =>
             {
                 b.Property(x => x.Name).IsRequired().HasMaxLength(200);

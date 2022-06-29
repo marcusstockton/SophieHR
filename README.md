@@ -11,5 +11,7 @@ Some attempt at a readme file for this api 😄
 - Company
 	- Add company wide option for accruing leave (1 day per month etc?)
 	- Add better heirarchy for managers - managers have managers who have managers, up to the ceo etc
+	- Create a company admin? await _roleManager.CreateAsync(new IdentityRole<Guid> { Name = "CompanyAdmin" });
+
  
  
