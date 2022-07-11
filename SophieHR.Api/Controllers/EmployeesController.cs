@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using SophieHR.Api.Models;
 using SophieHR.Api.Models.DTOs.Employee;
 using SophieHR.Api.Services;
+using System.Globalization;
 using System.Security.Claims;
 
 namespace SophieHR.Api.Controllers
@@ -20,13 +21,15 @@ namespace SophieHR.Api.Controllers
         private readonly IEmployeeService _context;
         public readonly IMapper _mapper;
         private readonly ILogger<EmployeesController> _logger;
-        private readonly UserManager<ApplicationUser> _userManager;
+        //private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IJobTitleService _jobTitleService;
 
-        public EmployeesController(IEmployeeService context, IMapper mapper, ILogger<EmployeesController> logger)
+        public EmployeesController(IEmployeeService context, IMapper mapper, ILogger<EmployeesController> logger, IJobTitleService jobTitleService)
         {
             _context = context;
             _mapper = mapper;
             _logger = logger;
+            _jobTitleService = jobTitleService;
         }
 
         // GET: api/Employees
@@ -40,11 +43,21 @@ namespace SophieHR.Api.Controllers
             return Ok(employeeList);
         }
 
-        [Authorize(Roles = "Admin, CompanyAdmin")]
+        [Authorize(Roles = "Admin, CompanyAdmin, Manager")]
         [HttpGet("list-of-managers-for-company/{companyId}"), Produces(typeof(IEnumerable<EmployeeListDto>))]
         public async Task<ActionResult<IEnumerable<EmployeeListDto>>> GetManagersForCompanyId(Guid companyId)
         {
             _logger.LogInformation($"{nameof(EmployeesController)} > {nameof(GetManagersForCompanyId)} Getting managers for company id {companyId}");
+            // If user is a manager, just return them....
+            if (User.IsInRole("Manager"))
+            {
+                var username = User.FindFirstValue(ClaimTypes.Name);
+                var user = await _context.GetEmployeeByUsername(username);
+                var result = new List<EmployeeListDto>();
+                result.Add(new EmployeeListDto { Id = user.Id, FirstName = user.FirstName, LastName = user.LastName});
+                return Ok(result);
+            }
+            
             var managers = await _context.GetManagersForCompanyId(companyId);
 
             return Ok(managers);
@@ -136,6 +149,16 @@ namespace SophieHR.Api.Controllers
         {
             _logger.LogInformation($"{nameof(EmployeesController)} > {nameof(GetTitles)} getting titles");
             return Ok(_context.GetTitles());
+        }
+
+        [HttpGet("job-title-autocomplete"), Produces(typeof(List<string>))]
+        public async Task<ActionResult> JobTitleAutoComplete(string jobTitle)
+        {
+            _logger.LogInformation($"{nameof(JobTitleAutoComplete)} finding job titles with {jobTitle}");
+            var jobTitles = await _jobTitleService.JobTitlesAsync();
+
+            var jobTitlesFiltered = jobTitles.Where(x => x.Contains(jobTitle)).Select(x=> CultureInfo.CurrentCulture.TextInfo.ToTitleCase(x)).ToList();
+            return Ok(jobTitlesFiltered);
         }
     }
 }

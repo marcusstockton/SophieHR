@@ -189,7 +189,7 @@ namespace SophieHR.Api.Services.Tests
             };
 
             var result = await _service.CreateNewCompanyAsync(newCompany);
-            Assert.AreEqual(HttpStatusCode.Created, result.StatusCode);
+            Assert.IsNotNull(result.Id);
         }
 
         [TestMethod()]

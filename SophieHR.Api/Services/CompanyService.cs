@@ -20,7 +20,7 @@ namespace SophieHR.Api.Services
 
         Task<HttpResponseMessage> UploadLogoForCompanyAsync(Guid id, IFormFile logo);
 
-        Task<HttpResponseMessage> CreateNewCompanyAsync(CompanyCreateDto companyDto);
+        Task<CompanyDetailDto> CreateNewCompanyAsync(CompanyCreateDto companyDto);
 
         Task<HttpResponseMessage> DeleteCompanyAsync(Guid companyId);
     }
@@ -134,7 +134,7 @@ namespace SophieHR.Api.Services
             return result;
         }
 
-        public async Task<HttpResponseMessage> CreateNewCompanyAsync(CompanyCreateDto companyDto)
+        public async Task<CompanyDetailDto> CreateNewCompanyAsync(CompanyCreateDto companyDto)
         {
             _logger.LogInformation($"{nameof(CreateNewCompanyAsync)} called");
             var company = _mapper.Map<Company>(companyDto);
@@ -142,11 +142,11 @@ namespace SophieHR.Api.Services
             try
             {
                 await _context.SaveChangesAsync();
-                return new HttpResponseMessage(System.Net.HttpStatusCode.Created);
+                return _mapper.Map<CompanyDetailDto>(company);
             }
             catch (Exception ex)
             {
-                return new HttpResponseMessage(System.Net.HttpStatusCode.InternalServerError) { Content = new StringContent(ex.Message) };
+                throw;
             }
         }
 

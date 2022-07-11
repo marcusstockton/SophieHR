@@ -18,6 +18,9 @@ builder.Services.TryAddTransient<IEmailSender, EmailService>();
 builder.Services.TryAddTransient<ICompanyService, CompanyService>();
 builder.Services.TryAddTransient<IDepartmentService, DepartmentService>();
 builder.Services.TryAddTransient<IEmployeeService, EmployeeService>();
+builder.Services.TryAddScoped<IJobTitleService, JobTitleServiceCache>();
+
+builder.Services.AddMemoryCache();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

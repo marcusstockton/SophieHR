@@ -18,6 +18,8 @@ namespace SophieHR.Api.Services
 
         Task<EmployeeDetailDto> GetEmployeeById(Guid employeeId, ClaimsPrincipal user);
 
+        Task<EmployeeDetailDto> GetEmployeeByUsername(string username);
+
         Task UploadAvatarToEmployee(Guid id, IFormFile avatar);
 
         Task<EmployeeDetailDto> UpdateEmployee(EmployeeDetailDto employeeDto);
@@ -50,8 +52,12 @@ namespace SophieHR.Api.Services
             var employee = _mapper.Map<Employee>(employeeDto);
             if (!_context.Employees.Any(x => x.Email == employee.WorkEmailAddress))
             {
-                var manager = await _context.Employees.SingleAsync(x=>x.Id == Guid.Parse(employeeDto.ManagerId));
-                employee.Manager = manager;
+                if (!string.IsNullOrEmpty(employeeDto.ManagerId))
+                {
+                    var manager = await _context.Employees.SingleAsync(x => x.Id == Guid.Parse(employeeDto.ManagerId));
+                    employee.Manager = manager;
+                }
+                
                 employee.UserName = employeeDto.WorkEmailAddress;
                 var newEmployee = await _context.Employees.AddAsync(employee);
                 await _userManager.CreateAsync(employee, "P@55w0rd1");
@@ -91,6 +97,21 @@ namespace SophieHR.Api.Services
                .Include(x => x.Manager)
                .Include(x=>x.Notes.OrderByDescending(x=>x.CreatedDate))
                .SingleOrDefaultAsync(x => user.IsInRole("User") ? x.UserName == user.Identity.Name : x.Id == employeeId);
+
+            return _mapper.Map<EmployeeDetailDto>(employee);
+        }
+
+        public async Task<EmployeeDetailDto> GetEmployeeByUsername(string username)
+        {
+            _logger.LogInformation($"{nameof(GetEmployeeByUsername)} called.");
+            var employee = await _context.Employees
+               .Include(x => x.Avatar)
+               .Include(x => x.Address)
+               .Include(x => x.Department)
+               .Include(x => x.Company)
+               .Include(x => x.Manager)
+               .Include(x => x.Notes.OrderByDescending(x => x.CreatedDate))
+               .SingleOrDefaultAsync(x => x.UserName == username);
 
             return _mapper.Map<EmployeeDetailDto>(employee);
         }
