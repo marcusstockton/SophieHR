@@ -15,7 +15,7 @@ namespace SophieHR.Api.Controllers
     [ApiExplorerSettings(GroupName = "v1")]
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Admin, Manager, CompanyAdmin")]
+    [Authorize(Roles = "Admin, Manager, CompanyAdmin, HRManager")]
     public class EmployeesController : ControllerBase
     {
         private readonly IEmployeeService _context;
@@ -33,7 +33,7 @@ namespace SophieHR.Api.Controllers
         }
 
         // GET: api/Employees
-        [Authorize(Roles = "Admin, CompanyAdmin")]
+        [Authorize(Policy = "CompanyManagement")]
         [HttpGet("get-by-company/{companyId}"), Produces(typeof(IEnumerable<EmployeeListDto>))]
         public async Task<ActionResult<IEnumerable<EmployeeListDto>>> GetEmployeesForCompanyId(Guid companyId)
         {
@@ -43,7 +43,7 @@ namespace SophieHR.Api.Controllers
             return Ok(employeeList);
         }
 
-        [Authorize(Roles = "Admin, CompanyAdmin, Manager")]
+        [Authorize(Policy = "CompanyManagement")]
         [HttpGet("list-of-managers-for-company/{companyId}"), Produces(typeof(IEnumerable<EmployeeListDto>))]
         public async Task<ActionResult<IEnumerable<EmployeeListDto>>> GetManagersForCompanyId(Guid companyId)
         {
@@ -54,10 +54,10 @@ namespace SophieHR.Api.Controllers
                 var username = User.FindFirstValue(ClaimTypes.Name);
                 var user = await _context.GetEmployeeByUsername(username);
                 var result = new List<EmployeeListDto>();
-                result.Add(new EmployeeListDto { Id = user.Id, FirstName = user.FirstName, LastName = user.LastName});
+                result.Add(new EmployeeListDto { Id = user.Id, FirstName = user.FirstName, LastName = user.LastName });
                 return Ok(result);
             }
-            
+
             var managers = await _context.GetManagersForCompanyId(companyId);
 
             return Ok(managers);
@@ -73,7 +73,7 @@ namespace SophieHR.Api.Controllers
         }
 
         // GET: api/Employees/5
-        [HttpGet("get-by-id/{id}"), Authorize(Roles = "Admin, Manager, User CompanyAdmin"), Produces(typeof(EmployeeDetailDto))]
+        [HttpGet("get-by-id/{id}"), Authorize(Roles = "Admin, Manager, User, CompanyAdmin"), Produces(typeof(EmployeeDetailDto))]
         public async Task<ActionResult<EmployeeDetailDto>> GetEmployee(Guid id)
         {
             _logger.LogInformation($"{nameof(EmployeesController)} > {nameof(GetEmployee)} Getting employees by id {id}");
@@ -111,7 +111,7 @@ namespace SophieHR.Api.Controllers
                 return BadRequest();
             }
             var userid = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if ((User.IsInRole("Manager") && userid == id.ToString())) // Admin user can...
+            if ((!User.IsInRole("Admin") && userid == id.ToString())) // Admin user can...
             {
                 return BadRequest("Cannot update your own record");
             }
@@ -122,12 +122,30 @@ namespace SophieHR.Api.Controllers
 
         // POST: api/Employees
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost, ProducesResponseType(StatusCodes.Status201Created), Produces(typeof(EmployeeDetailDto))]
-        public async Task<ActionResult<EmployeeDetailDto>> PostEmployee(EmployeeCreateDto employeeDto)
+        [Authorize(Roles = "Admin, Manager, CompanyAdmin, HRManager")]
+        [HttpPost("create-employee"), ProducesResponseType(StatusCodes.Status201Created), Produces(typeof(EmployeeDetailDto))]
+        public async Task<ActionResult<EmployeeDetailDto>> CreateEmployee(EmployeeCreateDto employeeDto, string role = "User")
         {
-            _logger.LogInformation($"{nameof(EmployeesController)} > {nameof(PostEmployee)} creating employee {employeeDto}");
-
-            var employee = await _context.CreateEmployee(employeeDto);
+            _logger.LogInformation($"{nameof(EmployeesController)} > {nameof(CreateEmployee)} creating employee {employeeDto}");
+            if (User.IsInRole("Manager"))
+            {
+                // Default manager to current user:
+                var username = User.FindFirstValue(ClaimTypes.Name);
+                var manager = await _context.GetEmployeeByUsername(username);
+                employeeDto.ManagerId = manager.Id.ToString();
+                role = "User"; // Managers can't create other managers...
+            }
+            if (User.IsInRole("CompanyAdmin") && role.ToLower() == "admin")
+            {
+                ModelState.AddModelError(role, "You do not have the permission to create this type of user");
+                return BadRequest(ModelState);
+            }
+            if (User.IsInRole("HRManager") && new[] { "admin", "companyadmin", "hrmanager" }.Any(c => role.Contains(c.ToLower())))
+            {
+                ModelState.AddModelError(role, "You do not have the permission to create this type of user");
+                return BadRequest(ModelState);
+            }
+            var employee = await _context.CreateEmployee(employeeDto, role);
 
             return CreatedAtAction(nameof(GetEmployee), new { id = employee.Id }, employee);
         }

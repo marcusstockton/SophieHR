@@ -27,6 +27,7 @@ namespace SophieHR.Api.Data
                 _logger.LogInformation("Creating some roles");
                 await _roleManager.CreateAsync(new IdentityRole<Guid> { Name = "Admin" });
                 await _roleManager.CreateAsync(new IdentityRole<Guid> { Name = "CompanyAdmin" });
+                await _roleManager.CreateAsync(new IdentityRole<Guid> { Name = "HRManager" });
                 await _roleManager.CreateAsync(new IdentityRole<Guid> { Name = "Manager" });
                 await _roleManager.CreateAsync(new IdentityRole<Guid> { Name = "User" });
             }
@@ -103,7 +104,11 @@ namespace SophieHR.Api.Data
                         JobTitle = "Head of Human Resources",
                         Title = Title.Mrs,
                         HolidayAllowance = 21,
+                        NormalizedUserName = $"HR@{Regex.Replace(company.Name.Replace(" ", ""), "[^A-Za-z0-9 -]", "")}.biz".ToUpper(),
+                        Email = $"HR@{Regex.Replace(company.Name.Replace(" ", ""), "[^A-Za-z0-9 -]", "")}.biz",
+                        NormalizedEmail = $"HR@{Regex.Replace(company.Name.Replace(" ", ""), "[^A-Za-z0-9 -]", "")}.biz".ToUpper(),
                     };
+
                     await context.Employees.AddAsync(companyAdmin);
                     await _userManager.AddPasswordAsync(companyAdmin, "P@55w0rd1");
                     await _userManager.AddToRoleAsync(companyAdmin, "CompanyAdmin");

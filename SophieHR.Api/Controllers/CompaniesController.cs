@@ -53,7 +53,7 @@ namespace SophieHR.Api.Controllers
             return Ok(company);
         }
 
-        [HttpPost("{id}/upload-logo"), Authorize(Roles = "Admin")]
+        [HttpPost("{id}/upload-logo"), Authorize(Policy = "CompanyManagement")]
         [RequestFormLimits(MultipartBodyLengthLimit = 1000000)] // Limit to 1mb logo
         public async Task<IActionResult> UploadLogo(Guid id, IFormFile logo)
         {
@@ -68,7 +68,7 @@ namespace SophieHR.Api.Controllers
 
         // PUT: api/Companies/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}"), Authorize(Roles = "Admin")]
+        [HttpPut("{id}"), Authorize(Policy = "CompanyManagement")]
         public async Task<IActionResult> PutCompany(Guid id, CompanyDetailNoLogo companyDetail)
         {
             _logger.LogInformation($"{nameof(CompaniesController)} Updating company with id {id}");

@@ -173,5 +173,15 @@ namespace SophieHR.Api.Controllers
 
             return Ok(_mapper.Map<List<string>>(managers.Select(x => x.UserName).ToList()));
         }
+
+        [HttpGet("GetListOfCompanyAdmin")] // ToDo - delete!
+        [Produces(typeof(List<string>))]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetListOfCompanyAdminsAsync()
+        {
+            var companyAdmins = await _userManager.GetUsersInRoleAsync("CompanyAdmin");
+
+            return Ok(_mapper.Map<List<string>>(companyAdmins.Select(x => x.UserName).ToList()));
+        }
     }
 }

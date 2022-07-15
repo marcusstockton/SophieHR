@@ -10,7 +10,7 @@ namespace SophieHR.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Admin, Manager")]
+    [Authorize(Policy = "CompanyManagement")]
     public class NotesController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -86,7 +86,7 @@ namespace SophieHR.Api.Controllers
             _context.Notes.Add(note);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetNote", new { id = note.Id }, note);
+            return CreatedAtAction(nameof(GetNote), new { id = note.Id }, note);
         }
 
         // DELETE: api/Notes/5

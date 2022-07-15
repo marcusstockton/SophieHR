@@ -60,6 +60,9 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddAuthorization(options =>
 {
+    options.AddPolicy("CompanyManagement", policy =>
+          policy.RequireRole("Admin", "CompanyAdmin", "HRManager"));
+
     options.FallbackPolicy = new AuthorizationPolicyBuilder()
         .RequireAuthenticatedUser()
         .Build();

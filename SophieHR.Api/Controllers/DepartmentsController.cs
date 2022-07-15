@@ -26,7 +26,7 @@ namespace SophieHR.Api.Controllers
             _logger = logger;
         }
 
-        [HttpGet("get-departments-by-companyid/{companyId}"), Authorize(Roles = "Admin, Manager"), Produces(typeof(IEnumerable<DepartmentDetailDto>))]
+        [HttpGet("get-departments-by-companyid/{companyId}"), Authorize(Policy = "CompanyManagement"), Produces(typeof(IEnumerable<DepartmentDetailDto>))]
         public async Task<ActionResult<IEnumerable<DepartmentDetailDto>>> GetDepartmentsByCompanyId(Guid companyId)
         {
             _logger.LogInformation($"{nameof(DepartmentsController)} > {nameof(GetDepartmentsByCompanyId)} getting Departments for company {companyId}");
@@ -52,7 +52,7 @@ namespace SophieHR.Api.Controllers
 
         // PUT: api/Departments/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}"), Authorize(Roles = "Admin, Manager"), ProducesResponseType(StatusCodes.Status204NoContent), ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [HttpPut("{id}"), Authorize(Policy = "CompanyManagement"), ProducesResponseType(StatusCodes.Status204NoContent), ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> PutDepartment(Guid id, DepartmentDetailDto departmentDetail)
         {
             _logger.LogInformation($"{nameof(DepartmentsController)} > {nameof(PutDepartment)} updating Department {departmentDetail.Name} against companyid {departmentDetail.CompanyId}");
@@ -69,7 +69,7 @@ namespace SophieHR.Api.Controllers
 
         // POST: api/Departments
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost, Authorize(Roles = "Admin, Manager")]
+        [HttpPost, Authorize(Policy = "CompanyManagement")]
         [ProducesResponseType(StatusCodes.Status201Created), ProducesResponseType(typeof(BadRequestResult), StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<DepartmentDetailDto>> PostDepartment(DepartmentCreateDto departmentCreateDto)
         {
@@ -83,7 +83,7 @@ namespace SophieHR.Api.Controllers
         }
 
         // DELETE: api/Departments/5
-        [HttpDelete("{id}"), Authorize(Roles = "Admin, Manager"), ProducesResponseType(StatusCodes.Status204NoContent), ProducesResponseType(StatusCodes.Status404NotFound)]
+        [HttpDelete("{id}"), Authorize(Policy = "CompanyManagement"), ProducesResponseType(StatusCodes.Status204NoContent), ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteDepartment(Guid id)
         {
             _logger.LogInformation($"{nameof(DepartmentsController)} > {nameof(DeleteDepartment)} deleting Department id {id}");
