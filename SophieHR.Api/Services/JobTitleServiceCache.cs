@@ -7,10 +7,11 @@ namespace SophieHR.Api.Services
     {
         Task<IList<string>> JobTitlesAsync();
     }
+
     public class JobTitleServiceCache : IJobTitleService
     {
-        IMemoryCache _inMemoryCache;
-        static List<string> _cacheKeys = new List<string>();
+        private IMemoryCache _inMemoryCache;
+        private static List<string> _cacheKeys = new List<string>();
 
         public JobTitleServiceCache(IMemoryCache inMemoryCache)
         {
@@ -43,7 +44,8 @@ namespace SophieHR.Api.Services
                 return result.JobTitles.ToList();
             }
         }
-        class JobTitleAutocompleteResponse
+
+        private class JobTitleAutocompleteResponse
         {
             [JsonProperty("job-titles")]
             public string[] JobTitles { get; set; }

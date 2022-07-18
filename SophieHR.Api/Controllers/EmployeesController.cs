@@ -2,9 +2,7 @@
 
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using SophieHR.Api.Models;
 using SophieHR.Api.Models.DTOs.Employee;
 using SophieHR.Api.Services;
 using System.Globalization;
@@ -21,7 +19,6 @@ namespace SophieHR.Api.Controllers
         private readonly IEmployeeService _context;
         public readonly IMapper _mapper;
         private readonly ILogger<EmployeesController> _logger;
-        //private readonly UserManager<ApplicationUser> _userManager;
         private readonly IJobTitleService _jobTitleService;
 
         public EmployeesController(IEmployeeService context, IMapper mapper, ILogger<EmployeesController> logger, IJobTitleService jobTitleService)
@@ -123,15 +120,31 @@ namespace SophieHR.Api.Controllers
         // POST: api/Employees
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [Authorize(Roles = "Admin, Manager, CompanyAdmin, HRManager")]
-        [HttpPost("create-employee"), ProducesResponseType(StatusCodes.Status201Created), Produces(typeof(EmployeeDetailDto))]
+        [HttpPost("create-employee")]
+        [ProducesResponseType(StatusCodes.Status201Created), ProducesResponseType(StatusCodes.Status400BadRequest), Produces(typeof(EmployeeDetailDto))]
         public async Task<ActionResult<EmployeeDetailDto>> CreateEmployee(EmployeeCreateDto employeeDto, string role = "User")
         {
             _logger.LogInformation($"{nameof(EmployeesController)} > {nameof(CreateEmployee)} creating employee {employeeDto}");
+            EmployeeDetailDto manager = null;
+
+            if (role.ToLower() == "user" && !User.IsInRole("Manager"))
+            {
+                if (string.IsNullOrEmpty(employeeDto.ManagerId) || !Guid.TryParse(employeeDto.ManagerId, out var managerGuid))
+                {
+                    ModelState.AddModelError(employeeDto.ManagerId, "You need to supply a manager id");
+                    return BadRequest(ModelState);
+                }
+                else
+                {
+                    manager = await _context.GetEmployeeById(managerGuid, User);
+                }
+            }
+
             if (User.IsInRole("Manager"))
             {
                 // Default manager to current user:
                 var username = User.FindFirstValue(ClaimTypes.Name);
-                var manager = await _context.GetEmployeeByUsername(username);
+                manager = await _context.GetEmployeeByUsername(username);
                 employeeDto.ManagerId = manager.Id.ToString();
                 role = "User"; // Managers can't create other managers...
             }
@@ -145,7 +158,7 @@ namespace SophieHR.Api.Controllers
                 ModelState.AddModelError(role, "You do not have the permission to create this type of user");
                 return BadRequest(ModelState);
             }
-            var employee = await _context.CreateEmployee(employeeDto, role);
+            var employee = await _context.CreateEmployee(employeeDto, manager,  role);
 
             return CreatedAtAction(nameof(GetEmployee), new { id = employee.Id }, employee);
         }
@@ -175,7 +188,7 @@ namespace SophieHR.Api.Controllers
             _logger.LogInformation($"{nameof(JobTitleAutoComplete)} finding job titles with {jobTitle}");
             var jobTitles = await _jobTitleService.JobTitlesAsync();
 
-            var jobTitlesFiltered = jobTitles.Where(x => x.Contains(jobTitle)).Select(x=> CultureInfo.CurrentCulture.TextInfo.ToTitleCase(x)).ToList();
+            var jobTitlesFiltered = jobTitles.Where(x => x.Contains(jobTitle)).Select(x => CultureInfo.CurrentCulture.TextInfo.ToTitleCase(x)).ToList();
             return Ok(jobTitlesFiltered);
         }
     }

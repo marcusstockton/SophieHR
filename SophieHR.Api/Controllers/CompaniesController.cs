@@ -95,9 +95,9 @@ namespace SophieHR.Api.Controllers
         {
             _logger.LogInformation($"{nameof(CompaniesController)} Creating a new company with name {companyDto.Name}");
             var result = await _companyService.CreateNewCompanyAsync(companyDto);
-            if (result!=null)
+            if (result != null)
             {
-                return CreatedAtAction(nameof(GetCompany), new { id=result.Id }, result);
+                return CreatedAtAction(nameof(GetCompany), new { id = result.Id }, result);
             }
             return BadRequest(result);
         }

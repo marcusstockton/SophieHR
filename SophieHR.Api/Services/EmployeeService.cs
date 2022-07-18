@@ -24,7 +24,7 @@ namespace SophieHR.Api.Services
 
         Task<EmployeeDetailDto> UpdateEmployee(EmployeeDetailDto employeeDto);
 
-        Task<Employee> CreateEmployee(EmployeeCreateDto employeeDto, string role = "User");
+        Task<Employee> CreateEmployee(EmployeeCreateDto employeeDto, EmployeeDetailDto manager = null, string role = "User");
 
         Task DeleteEmployee(Guid employeeId);
 
@@ -46,7 +46,7 @@ namespace SophieHR.Api.Services
             _logger = logger;
         }
 
-        public async Task<Employee> CreateEmployee(EmployeeCreateDto employeeDto, string role = "User")
+        public async Task<Employee> CreateEmployee(EmployeeCreateDto employeeDto, EmployeeDetailDto manager = null, string role = "User")
         {
             _logger.LogInformation($"{nameof(CreateEmployee)} called.");
             var employee = _mapper.Map<Employee>(employeeDto);
@@ -56,8 +56,7 @@ namespace SophieHR.Api.Services
                 {
                     throw new ArgumentNullException("ManagerId", "A valid managerId is required");
                 }
-                var manager = await _context.Employees.SingleAsync(x => x.Id == Guid.Parse(employeeDto.ManagerId));
-                employee.Manager = manager;
+                employee.Manager = _mapper.Map<Employee>(manager);
                 employee.UserName = employeeDto.WorkEmailAddress;
                 var newEmployee = await _context.Employees.AddAsync(employee);
                 await _userManager.CreateAsync(employee, "P@55w0rd1");
@@ -69,7 +68,6 @@ namespace SophieHR.Api.Services
             {
                 throw new ArgumentException("Employee already exists with this email adress");
             }
-                
         }
 
         public async Task DeleteEmployee(Guid employeeId)
@@ -94,7 +92,8 @@ namespace SophieHR.Api.Services
                .Include(x => x.Department)
                .Include(x => x.Company)
                .Include(x => x.Manager)
-               .Include(x=>x.Notes.OrderByDescending(x=>x.CreatedDate))
+               .Include(x => x.Notes.OrderByDescending(x => x.CreatedDate))
+               .AsNoTracking()
                .SingleOrDefaultAsync(x => user.IsInRole("User") ? x.UserName == user.Identity.Name : x.Id == employeeId);
 
             return _mapper.Map<EmployeeDetailDto>(employee);
@@ -110,6 +109,7 @@ namespace SophieHR.Api.Services
                .Include(x => x.Company)
                .Include(x => x.Manager)
                .Include(x => x.Notes.OrderByDescending(x => x.CreatedDate))
+               .AsNoTracking()
                .SingleOrDefaultAsync(x => x.UserName == username);
 
             return _mapper.Map<EmployeeDetailDto>(employee);
@@ -121,6 +121,7 @@ namespace SophieHR.Api.Services
             var employeeList = await _context.Employees
                 .Include(x => x.Department)
                 .Where(x => x.CompanyId == companyId)
+                .AsNoTracking()
                 .ToListAsync();
             return _mapper.Map<ICollection<EmployeeListDto>>(employeeList);
         }
@@ -131,6 +132,7 @@ namespace SophieHR.Api.Services
             var employees = await _context.Employees
                 .Include(x => x.Department)
                 .Where(x => x.Manager.Id == managerId)
+                .AsNoTracking()
                 .ToListAsync();
 
             return _mapper.Map<ICollection<EmployeeListDto>>(employees);

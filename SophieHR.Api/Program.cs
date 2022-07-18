@@ -101,7 +101,6 @@ if (app.Environment.IsDevelopment())
             await DataSeeder.Initialize(services);
         }
     }
-
 }
 
 // Register the Swagger generator and the Swagger UI middlewares

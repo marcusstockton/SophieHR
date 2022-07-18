@@ -141,7 +141,7 @@ namespace SophieHR.Api.Data
                 );
             await context.SaveChangesAsync();
 
-            if (!context.Employees.Where(x=>x.FirstName != "HR" && x.JobTitle != "Head of Human Resources").Any())
+            if (!context.Employees.Where(x => x.FirstName != "HR" && x.JobTitle != "Head of Human Resources").Any())
             {
                 _logger.LogInformation("Creating some employees");
 
