@@ -68,6 +68,7 @@ namespace SophieHR.Api.Data
             {
                 b.Property(x => x.Title).HasMaxLength(250);
                 b.Property(x => x.NoteType).IsRequired();
+                
             });
 
             builder.Entity<Employee>(b =>
@@ -86,7 +87,7 @@ namespace SophieHR.Api.Data
                 b.HasOne(x => x.Company).WithMany(x => x.Employees).HasForeignKey(x => x.CompanyId).OnDelete(DeleteBehavior.Restrict);
                 b.HasOne(x => x.Department).WithMany().HasForeignKey(x => x.DepartmentId).OnDelete(DeleteBehavior.Restrict);
                 b.HasOne(x => x.Address).WithOne();
-                b.HasMany<Note>().WithOne().HasForeignKey(x => x.EmployeeId);
+                //b.HasMany<Note>().WithOne().HasForeignKey(x => x.EmployeeId);
             });
 
             base.OnModelCreating(builder);

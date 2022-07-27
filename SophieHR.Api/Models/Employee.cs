@@ -17,6 +17,7 @@ namespace SophieHR.Api.Models
         public DateTime DateOfBirth { get; set; }
         public DateTime StartOfEmployment { get; set; }
         public DateTime? EndOfEmployment { get; set; }
+        public Guid AddressId { get; set; }
         public EmployeeAddress Address { get; set; }
         public Employee? Manager { get; set; }
 
