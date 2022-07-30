@@ -35,7 +35,7 @@ namespace SophieHR.Api.JwtHelpers
                 // Get secret key
                 var key = System.Text.Encoding.ASCII.GetBytes(jwtSettings.IssuerSigningKey);
                 Guid Id = Guid.Empty;
-                DateTime expireTime = DateTime.UtcNow.AddHours(11);
+                DateTime expireTime = DateTime.UtcNow.AddDays(1);
                 UserToken.ExpiredTime = expireTime;
                 var JWToken = new JwtSecurityToken(
                     issuer: jwtSettings.ValidIssuer,

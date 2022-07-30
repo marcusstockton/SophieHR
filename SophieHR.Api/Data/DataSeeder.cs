@@ -210,6 +210,7 @@ namespace SophieHR.Api.Data
         {
             var notesFaker = new Faker<Note>("en_GB")
                 .RuleFor(x => x.CreatedDate, f => f.Date.Recent())
+                .RuleFor(x=>x.Title, f=>f.Lorem.Sentence())
                 .RuleFor(x => x.Content, f => f.Lorem.Paragraph());
 
             var Company1deptITEmployees = new Faker<Employee>("en_GB")

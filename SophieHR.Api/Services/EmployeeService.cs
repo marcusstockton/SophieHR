@@ -36,9 +36,9 @@ namespace SophieHR.Api.Services
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IMapper _mapper;
-        private readonly ILogger<CompanyService> _logger;
+        private readonly ILogger<EmployeeService> _logger;
 
-        public EmployeeService(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IMapper mapper, ILogger<CompanyService> logger)
+        public EmployeeService(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IMapper mapper, ILogger<EmployeeService> logger)
         {
             _context = context;
             _userManager = userManager;
@@ -131,6 +131,7 @@ namespace SophieHR.Api.Services
             _logger.LogInformation($"{nameof(GetEmployeesForManager)} called.");
             var employees = await _context.Employees
                 .Include(x => x.Department)
+                .Include(x=>x.Address)
                 .Where(x => x.Manager.Id == managerId)
                 .AsNoTracking()
                 .ToListAsync();
