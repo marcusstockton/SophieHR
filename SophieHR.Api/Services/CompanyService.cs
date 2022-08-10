@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using SophieHR.Api.DAL;
 using SophieHR.Api.Data;
 using SophieHR.Api.Models;
 using SophieHR.Api.Models.DTOs.Company;
@@ -30,24 +31,27 @@ namespace SophieHR.Api.Services
         private readonly ApplicationDbContext _context;
         public readonly IMapper _mapper;
         private readonly ILogger<CompanyService> _logger;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public CompanyService(ApplicationDbContext context, IMapper mapper, ILogger<CompanyService> logger)
+        public CompanyService(ApplicationDbContext context, IMapper mapper, ILogger<CompanyService> logger, IUnitOfWork unitOfWork)
         {
             _context = context;
             _mapper = mapper;
             _logger = logger;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<ICollection<CompanyDetailNoLogo>> GetAllCompaniesNoLogoAsync()
         {
             _logger.LogInformation($"{nameof(GetAllCompaniesNoLogoAsync)} called");
-            return _mapper.Map<List<CompanyDetailNoLogo>>(await _context.Companies.ToListAsync());
+            
+            return _mapper.Map<List<CompanyDetailNoLogo>>(await _unitOfWork.Companies.GetAllAsync());
         }
 
         public async Task<ICollection<KeyValuePair<Guid, string>>> GetCompanyNamesAsync(string username, bool isManager = false)
         {
             _logger.LogInformation($"{nameof(GetCompanyNamesAsync)} called");
-            var companies = await _context.Companies.Select(x => new KeyValuePair<Guid, string>(x.Id, x.Name)).ToListAsync();
+            var companies = await _unitOfWork.Companies.GetCompanyNamesAsync();
             if (isManager)
             {
                 var companyId = await _context.Employees.Where(x => x.UserName == username).Select(x => x.CompanyId).SingleOrDefaultAsync();
@@ -60,27 +64,24 @@ namespace SophieHR.Api.Services
         {
             _logger.LogInformation($"{nameof(GetCompanyByIdNoTrackingAsync)} called");
 
-            return await _context.Companies
-                .Include(x => x.Address)
-                .Include(x => x.Employees)
-                .AsNoTracking()
-                .Select(x => new CompanyDetailDto
-                {
-                    Address = x.Address,
-                    CreatedDate = x.CreatedDate,
-                    EmployeeCount = x.Employees.Count(),
-                    Id = x.Id,
-                    Logo = x.Logo != null ? Convert.ToBase64String(x.Logo) : null,
-                    Name = x.Name,
-                    UpdatedDate = x.UpdatedDate
-                })
-                .FirstAsync(x => x.Id == id);
+            return _unitOfWork.Companies.Find(c => c.Id == id, includeProperties: "Address,Employees").Select(x => new CompanyDetailDto
+            {
+                Address = x.Address,
+                CreatedDate = x.CreatedDate,
+                EmployeeCount = x.Employees.Count(),
+                Id = x.Id,
+                Logo = x.Logo != null ? Convert.ToBase64String(x.Logo) : null,
+                Name = x.Name,
+                UpdatedDate = x.UpdatedDate
+            }).FirstOrDefault();
+
         }
 
         public async Task<Company> FindCompanyByIdAsync(Guid id)
         {
             _logger.LogInformation($"{nameof(FindCompanyByIdAsync)} called");
-            return await _context.Companies.FindAsync(id);
+            return await _unitOfWork.Companies.GetByIdAsync(id);
+            //return await _context.Companies.FindAsync(id);
         }
 
         public async Task<HttpResponseMessage> UpdateCompanyAsync(Guid id, CompanyDetailNoLogo companyDetail)
@@ -90,16 +91,15 @@ namespace SophieHR.Api.Services
             {
                 return new HttpResponseMessage(System.Net.HttpStatusCode.NotFound) { Content = new StringContent($"Id's do not match!") };
             }
-            var originalCompany = await _context.Companies.FindAsync(id);
+            var originalCompany = await _unitOfWork.Companies.GetByIdAsync(id);
             if (originalCompany == null)
             {
                 _logger.LogWarning($"{nameof(UpdateCompanyAsync)} Unable to find original company with id {id}");
                 return new HttpResponseMessage(System.Net.HttpStatusCode.NotFound) { Content = new StringContent($"Unable to find original company with id {id}") };
             }
             var company = _mapper.Map(companyDetail, originalCompany);
-            _context.Companies.Attach(company);
-            _context.Entry(company).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
+            _unitOfWork.Companies.Update(company);
+            _unitOfWork.Complete();
             return new HttpResponseMessage(System.Net.HttpStatusCode.NoContent);
         }
 

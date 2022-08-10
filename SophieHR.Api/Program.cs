@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using NSwag;
 using NSwag.Generation.Processors.Security;
+using SophieHR.Api.DAL;
 using SophieHR.Api.Data;
 using SophieHR.Api.Extensions;
 using SophieHR.Api.Models;
@@ -81,6 +82,8 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
     options.User.RequireUniqueEmail = true;
 }).AddRoles<IdentityRole<Guid>>()
   .AddEntityFrameworkStores<ApplicationDbContext>();
+
+builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddTransient<DataSeeder>();

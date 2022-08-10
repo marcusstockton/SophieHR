@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
+using SophieHR.Api.DAL;
 using SophieHR.Api.Data;
 using SophieHR.Api.Models;
 using SophieHR.Api.Models.DTOs.Company;
@@ -41,6 +42,7 @@ namespace SophieHR.Api.Services.Tests
             var mapper = config.CreateMapper();
 
             var mockLogger = new Mock<ILogger<CompanyService>>();
+            var mockUoW = new Mock<IUnitOfWork>();
 
             _id1 = Guid.NewGuid();
             _id2 = Guid.NewGuid();
@@ -53,7 +55,7 @@ namespace SophieHR.Api.Services.Tests
             await _context.Companies.AddRangeAsync(companyList);
             await _context.SaveChangesAsync();
 
-            _service = new CompanyService(_context, mapper, mockLogger.Object);
+            _service = new CompanyService(_context, mapper, mockLogger.Object, mockUoW.Object);
         }
 
         [TestCleanup()]
