@@ -79,7 +79,8 @@ namespace SophieHR.Api.Services
                 throw new ArgumentException("Unable to find employee");
             }
 
-            await _userManager.DeleteAsync(employee);
+            //await _userManager.DeleteAsync(employee);
+            _context.Employees.Remove(employee);
             await _context.SaveChangesAsync();
         }
 
