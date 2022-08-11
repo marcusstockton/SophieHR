@@ -95,7 +95,9 @@ namespace SophieHR.Api.Services
                .Include(x => x.Manager)
                .Include(x => x.Notes)
                .AsNoTracking()
-               .SingleOrDefaultAsync(x => user.IsInRole("User") ? x.UserName == user.Identity.Name : x.Id == employeeId);
+               .SingleOrDefaultAsync(x =>
+                    user.IsInRole("User") ? x.UserName == user.Identity.Name
+                    : x.Id == employeeId);
 
             return _mapper.Map<EmployeeDetailDto>(employee);
         }

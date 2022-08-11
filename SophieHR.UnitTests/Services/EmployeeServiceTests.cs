@@ -11,6 +11,7 @@ using SophieHR.Api.Profiles;
 using SophieHR.Api.Services;
 using SophieHR.Api.Services.Tests;
 using System.Security.Claims;
+using System.Security.Principal;
 
 namespace SophieHR.UnitTests.Services
 {
@@ -40,6 +41,7 @@ namespace SophieHR.UnitTests.Services
             var config = new MapperConfiguration(cfg =>
             {
                 cfg.AddProfile(new EmployeeProfile());
+                cfg.AddProfile(new CompanyProfile());
                 cfg.AddProfile(new AddressProfile());
             });
             var mapper = config.CreateMapper();
@@ -124,11 +126,14 @@ namespace SophieHR.UnitTests.Services
         }
 
         [TestMethod]
-        public async Task GetEmployeeById_StateUnderTest_ExpectedBehavior()
+        public async Task GetEmployeeById_As_Manager_Returns_Correct_Employee()
         {
             // Arrange
             Guid employeeId = _employeeId1;
-            ClaimsPrincipal user = null;
+
+            var mockPrincipal = new Mock<ClaimsPrincipal>();
+            mockPrincipal.Setup(x => x.IsInRole(It.IsAny<string>())).Returns(false);
+            ClaimsPrincipal user = mockPrincipal.Object;
 
             // Act
             var result = await _service.GetEmployeeById(
@@ -136,7 +141,27 @@ namespace SophieHR.UnitTests.Services
                 user);
 
             // Assert
-            Assert.Fail();
+            Assert.AreEqual(result.UserName, "test@test.com");
+        }
+
+        [TestMethod]
+        public async Task GetEmployeeById_As_User_Returns_User_Record()
+        {
+            // Arrange
+            Guid employeeId = _employeeId1;
+
+            var mockPrincipal = new Mock<ClaimsPrincipal>();
+            mockPrincipal.Setup(x => x.Identity.Name).Returns("test1@test.com");
+            mockPrincipal.Setup(x => x.IsInRole(It.IsAny<string>())).Returns(true);
+            ClaimsPrincipal user = mockPrincipal.Object;
+
+            // Act
+            var result = await _service.GetEmployeeById(
+                employeeId,
+                user);
+
+            // Assert
+            Assert.AreEqual(result.UserName, "test1@test.com");
         }
 
         //[TestMethod]
