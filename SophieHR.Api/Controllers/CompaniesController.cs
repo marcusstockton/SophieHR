@@ -114,5 +114,36 @@ namespace SophieHR.Api.Controllers
             }
             return BadRequest(result);
         }
+
+        [AllowAnonymous]
+        [HttpGet, Route("getautosuggestion"), ResponseCache(Duration = 1400)]
+        public async Task<IActionResult> GetAutoSuggestion(string search)
+        {
+            return Ok(await _companyService.GetAutoSuggestion(search));
+        }
+
+        [AllowAnonymous]
+        [HttpGet, Route("GetMapFromLatLong")]//, ResponseCache(Duration = 1400)
+        public async Task<IActionResult> GetMapFromLatLong(decimal lat, decimal lon)
+        {
+            var result = await _companyService.GetMapFromLatLong(lat, lon);
+            return Ok(result);
+        }
+
+        [AllowAnonymous]
+        [HttpGet, Route("postcode-auto-complete")]
+        public async Task<IActionResult> PostcodeAutoComplete(string postcode)
+        {
+            var result = await _companyService.PostcodeAutoComplete(postcode);
+            return Ok(result);
+        }
+
+        [AllowAnonymous]
+        [HttpGet, Route("postcode-lookup")]
+        public async Task<IActionResult> PostcodeLookup(string postcode)
+        {
+            var result = await _companyService.PostCodeLookup(postcode);
+            return Ok(result);
+        }
     }
 }
