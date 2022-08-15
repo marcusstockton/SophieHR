@@ -116,14 +116,14 @@ namespace SophieHR.Api.Controllers
         }
 
         [AllowAnonymous]
-        [HttpGet, Route("getautosuggestion"), ResponseCache(Duration = 1400)]
+        [HttpGet, Route("getautosuggestion"), ResponseCache(Duration = 300)]
         public async Task<IActionResult> GetAutoSuggestion(string search)
         {
             return Ok(await _companyService.GetAutoSuggestion(search));
         }
 
         [AllowAnonymous]
-        [HttpGet, Route("GetMapFromLatLong")]//, ResponseCache(Duration = 1400)
+        [HttpGet, Route("GetMapFromLatLong"), ResponseCache(Duration = 86400)]// One day
         public async Task<IActionResult> GetMapFromLatLong(decimal lat, decimal lon)
         {
             var result = await _companyService.GetMapFromLatLong(lat, lon);
@@ -139,7 +139,7 @@ namespace SophieHR.Api.Controllers
         }
 
         [AllowAnonymous]
-        [HttpGet, Route("postcode-lookup")]
+        [HttpGet, Route("postcode-lookup"), ResponseCache(Duration = 300)] // 5 mins
         public async Task<IActionResult> PostcodeLookup(string postcode)
         {
             var result = await _companyService.PostCodeLookup(postcode);

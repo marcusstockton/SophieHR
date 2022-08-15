@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Namotion.Reflection;
 using NSwag;
 using NSwag.Generation.Processors.Security;
 using SophieHR.Api.Data;
@@ -85,14 +86,22 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddTransient<DataSeeder>();
 
-builder.Services.AddHttpClient("autosuggestHereApiClient", client => {
-    client.BaseAddress = new Uri("https://autosuggest.search.hereapi.com/v1/autosuggest");
+builder.Services.AddHttpClient("autosuggestHereApiClient", client =>
+{
+    var url = builder.Configuration.GetSection("ThirdPartyClients:HereApi").GetValue<string>("BaseUrl");
+    client.BaseAddress = new Uri(url);
 });
-builder.Services.AddHttpClient("imageHereApiClient", client => {
-    client.BaseAddress = new Uri("https://image.maps.ls.hereapi.com/mia/1.6/mapview");
+
+builder.Services.AddHttpClient("imageHereApiClient", client =>
+{
+    var url = builder.Configuration.GetSection("ThirdPartyClients:HereApiImages").GetValue<string>("BaseUrl");
+    client.BaseAddress = new Uri(url);
 });
-builder.Services.AddHttpClient("postcodesioClient", client => {
-    client.BaseAddress = new Uri("https://postcodes.io/postcodes/");
+
+builder.Services.AddHttpClient("postcodesioClient", client =>
+{
+    var url = builder.Configuration.GetSection("ThirdPartyClients:PostcodesIo").GetValue<string>("BaseUrl");
+    client.BaseAddress = new Uri(url);
 });
 
 builder.Services.AddResponseCaching();
