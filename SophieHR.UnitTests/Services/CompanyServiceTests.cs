@@ -42,6 +42,8 @@ namespace SophieHR.Api.Services.Tests
 
             var mockLogger = new Mock<ILogger<CompanyService>>();
 
+            var mockHttpClientFactory = new Mock<IHttpClientFactory>();
+
             _id1 = Guid.NewGuid();
             _id2 = Guid.NewGuid();
             var companyList = new List<Company>
@@ -53,7 +55,7 @@ namespace SophieHR.Api.Services.Tests
             await _context.Companies.AddRangeAsync(companyList);
             await _context.SaveChangesAsync();
 
-            _service = new CompanyService(_context, mapper, mockLogger.Object);
+            _service = new CompanyService(_context, mapper, mockLogger.Object, mockHttpClientFactory.Object);
         }
 
         [TestCleanup()]

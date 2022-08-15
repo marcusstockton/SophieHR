@@ -39,8 +39,9 @@ namespace SophieHR.Api.Services
         private string _apiKey;
         private string _ukLatLong;
         private string _countryCode;
+        private readonly IHttpClientFactory _httpClientFactory;
 
-        public CompanyService(ApplicationDbContext context, IMapper mapper, ILogger<CompanyService> logger)
+        public CompanyService(ApplicationDbContext context, IMapper mapper, ILogger<CompanyService> logger, IHttpClientFactory httpClientFactory)
         {
             _context = context;
             _mapper = mapper;
@@ -48,6 +49,7 @@ namespace SophieHR.Api.Services
             _apiKey = Environment.GetEnvironmentVariable("HERE_Maps_API_Key", EnvironmentVariableTarget.User);
             _ukLatLong = "55.3781,3.4360"; // UK lat/lon
             _countryCode = "GBP";
+            _httpClientFactory = httpClientFactory;
         }
 
         public async Task<ICollection<CompanyDetailNoLogo>> GetAllCompaniesNoLogoAsync()
@@ -180,44 +182,43 @@ namespace SophieHR.Api.Services
         public async Task<string> GetAutoSuggestion(string search)
         {
             _logger.LogInformation($"{nameof(GetAutoSuggestion)} Getting autosuggestions for {search}");
-            using (HttpClient client = new HttpClient())
+            var client = _httpClientFactory.CreateClient("autosuggestHereApiClient");
+
+            var url = $"?at={_ukLatLong}&countryCode={_countryCode}&limit=50&lang=en&q={search}&apiKey={_apiKey}";
+            var response = await client.GetAsync(url);
+            if (response.IsSuccessStatusCode)
             {
-                var url = $"https://autosuggest.search.hereapi.com/v1/autosuggest?at={_ukLatLong}&countryCode={_countryCode}&limit=50&lang=en&q={search}&apiKey={_apiKey}";
-                var response = await client.GetAsync(url);
-                if (response.IsSuccessStatusCode)
-                {
-                    var data = await response.Content.ReadAsStringAsync();
-                    return data;
-                }
+                var data = await response.Content.ReadAsStringAsync();
+                return data;
             }
+
             return null;
         }
 
         public async Task<string> GetMapFromLatLong(decimal lat, decimal lon)
         {
             _logger.LogInformation($"{nameof(GetMapFromLatLong)} Getting Map for lat lon {lat} {lon}");
-            using (HttpClient client = new HttpClient())
-            {
-                var url = $"https://image.maps.ls.hereapi.com/mia/1.6/mapview?apiKey={_apiKey}&c={lat},{lon}&vt=0&z=12";
-                var response = await client.GetByteArrayAsync(url);
-                return Convert.ToBase64String(response);
-            }
+            var height = 300;
+            var width = 420;
+            var client = _httpClientFactory.CreateClient("imageHereApiClient");
+            var url = $"?apiKey={_apiKey}&c={lat},{lon}&vt=0&z=12&h={height}&w={width}";
+            var response = await client.GetByteArrayAsync(url);
+            return Convert.ToBase64String(response);
         }
 
         public async Task<string> PostcodeAutoComplete(string postcode)
         {
             _logger.LogInformation($"{nameof(PostcodeAutoComplete)} querying postcode {postcode}");
 
-            using (HttpClient client = new HttpClient())
-            {
-                var url = $"https://postcodes.io/postcodes/{postcode}/autocomplete";
+            var client = _httpClientFactory.CreateClient("postcodesioClient");
+            var url = $"{postcode}/autocomplete";
                 var response = await client.GetAsync(url);
                 if (response.IsSuccessStatusCode)
                 {
                     var data = await response.Content.ReadAsStringAsync();
                     return data;
                 }
-            }
+            
             return null;
         }
         public async Task<PostcodeLookup> PostCodeLookup(string postcode)
@@ -225,9 +226,8 @@ namespace SophieHR.Api.Services
             _logger.LogInformation($"{nameof(PostcodeAutoComplete)} querying postcode {postcode}");
             if (await VerifyPostcode(postcode))
             {
-                using (HttpClient client = new HttpClient())
-                {
-                    var url = $"https://postcodes.io/postcodes/{postcode}";
+                var client = _httpClientFactory.CreateClient("postcodesioClient");
+                var url = $"{postcode}";
                     var response = await client.GetFromJsonAsync<PostcodeLookup>(url);
                     if (response.status == 200)
                     {
@@ -237,16 +237,14 @@ namespace SophieHR.Api.Services
                     {
                         throw new ArgumentException("Invalid Postcode");
                     }
-                }
             }
             throw new ArgumentException("Invalid Postcode supplied");
         }
 
         private async Task<bool> VerifyPostcode(string postcode)
         {
-            using (HttpClient client = new HttpClient())
-            {
-                var url = $"https://postcodes.io/postcodes/{postcode}/validate";
+            var client = _httpClientFactory.CreateClient("postcodesioClient");
+            var url = $"{postcode}/validate";
                 var response = await client.GetAsync(url);
                 if (response.IsSuccessStatusCode)
                 {
@@ -254,7 +252,6 @@ namespace SophieHR.Api.Services
                     return jsonData.Result;                    
                 }
                 return false;
-            }
         }
     }
 }

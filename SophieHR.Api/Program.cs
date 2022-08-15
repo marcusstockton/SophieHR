@@ -85,6 +85,16 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddTransient<DataSeeder>();
 
+builder.Services.AddHttpClient("autosuggestHereApiClient", client => {
+    client.BaseAddress = new Uri("https://autosuggest.search.hereapi.com/v1/autosuggest");
+});
+builder.Services.AddHttpClient("imageHereApiClient", client => {
+    client.BaseAddress = new Uri("https://image.maps.ls.hereapi.com/mia/1.6/mapview");
+});
+builder.Services.AddHttpClient("postcodesioClient", client => {
+    client.BaseAddress = new Uri("https://postcodes.io/postcodes/");
+});
+
 builder.Services.AddResponseCaching();
 
 var app = builder.Build();
