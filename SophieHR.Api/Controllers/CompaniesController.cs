@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SophieHR.Api.Models.DTOs.Company;
 using SophieHR.Api.Services;
+using System.Net;
 
 namespace SophieHR.Api.Controllers
 {
@@ -46,7 +47,8 @@ namespace SophieHR.Api.Controllers
 
             if (company == null)
             {
-                _logger.LogWarning($"{nameof(CompaniesController)} Unable to find company with id {id}");
+                var error = $"Unable to find company with id {id}";
+                _logger.LogWarning($"{nameof(CompaniesController)} {error}");
                 return NotFound();
             }
 
@@ -115,14 +117,14 @@ namespace SophieHR.Api.Controllers
             return BadRequest(result);
         }
 
-        [AllowAnonymous]
+        //[AllowAnonymous]
         [HttpGet, Route("getautosuggestion"), ResponseCache(Duration = 300)]
         public async Task<IActionResult> GetAutoSuggestion(string search)
         {
             return Ok(await _companyService.GetAutoSuggestion(search));
         }
 
-        [AllowAnonymous]
+        //[AllowAnonymous]
         [HttpGet, Route("GetMapFromLatLong"), ResponseCache(Duration = 86400)]// One day
         public async Task<IActionResult> GetMapFromLatLong(decimal lat, decimal lon)
         {
@@ -130,7 +132,7 @@ namespace SophieHR.Api.Controllers
             return Ok(result);
         }
 
-        [AllowAnonymous]
+        //[AllowAnonymous]
         [HttpGet, Route("postcode-auto-complete")]
         public async Task<IActionResult> PostcodeAutoComplete(string postcode)
         {
@@ -138,7 +140,7 @@ namespace SophieHR.Api.Controllers
             return Ok(result);
         }
 
-        [AllowAnonymous]
+        //[AllowAnonymous]
         [HttpGet, Route("postcode-lookup"), ResponseCache(Duration = 300)] // 5 mins
         public async Task<IActionResult> PostcodeLookup(string postcode)
         {

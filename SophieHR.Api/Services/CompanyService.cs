@@ -88,7 +88,7 @@ namespace SophieHR.Api.Services
                     Name = x.Name,
                     UpdatedDate = x.UpdatedDate
                 })
-                .FirstAsync(x => x.Id == id);
+                .FirstOrDefaultAsync(x => x.Id == id);
         }
 
         public async Task<Company> FindCompanyByIdAsync(Guid id)
