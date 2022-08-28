@@ -81,7 +81,7 @@ namespace SophieHR.UnitTests.Services
         {
             // Arrange
             EmployeeCreateDto employeeDto = new EmployeeCreateDto { FirstName = "Damien", LastName = "Rice", WorkEmailAddress = "test@test.com"};
-            EmployeeDetailDto manager = null;
+            Employee manager = null;
             string role = null;
 
             // Act
@@ -96,7 +96,7 @@ namespace SophieHR.UnitTests.Services
         {
             // Arrange
             EmployeeCreateDto employeeDto = new EmployeeCreateDto { FirstName = "Damien", LastName = "Rice", WorkEmailAddress = "test2@test.com" };
-            EmployeeDetailDto manager = null;
+            Employee manager = null;
             string role = null;
 
             // Act

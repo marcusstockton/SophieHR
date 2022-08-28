@@ -3,6 +3,7 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SophieHR.Api.Models;
 using SophieHR.Api.Models.DTOs.Employee;
 using SophieHR.Api.Services;
 using System.Globalization;
@@ -81,7 +82,8 @@ namespace SophieHR.Api.Controllers
                 _logger.LogInformation($"No employee found by id {id}");
                 return NotFound();
             }
-            return Ok(employee);
+            
+            return Ok(_mapper.Map<EmployeeDetailDto>(employee));
         }
 
         [HttpPost("{id}/upload-avatar"), Authorize(Roles = "Admin, Manager"), ProducesResponseType(StatusCodes.Status204NoContent), ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -125,7 +127,7 @@ namespace SophieHR.Api.Controllers
         public async Task<ActionResult<EmployeeDetailDto>> CreateEmployee(EmployeeCreateDto employeeDto, string role = "User")
         {
             _logger.LogInformation($"{nameof(EmployeesController)} > {nameof(CreateEmployee)} creating employee {employeeDto}");
-            EmployeeDetailDto manager = null;
+            Employee manager = null;
 
             if (role.ToLower() == "user" && !User.IsInRole("Manager"))
             {

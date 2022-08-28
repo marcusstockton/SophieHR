@@ -3,6 +3,7 @@ using Bogus.Extensions.UnitedKingdom;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SophieHR.Api.Models;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
 namespace SophieHR.Api.Data
@@ -65,6 +66,13 @@ namespace SophieHR.Api.Data
                     .RuleFor(x => x.County, f => f.Address.County())
                     .RuleFor(x => x.Postcode, f => f.Address.ZipCode());
 
+                var employeeAddressFaker = new Faker<EmployeeAddress>("en_GB")
+                    .RuleFor(x => x.Line1, f => f.Address.BuildingNumber())
+                    .RuleFor(x => x.Line2, f => f.Address.StreetAddress())
+                    .RuleFor(x => x.Line3, f => f.Address.SecondaryAddress())
+                    .RuleFor(x => x.County, f => f.Address.County())
+                    .RuleFor(x => x.Postcode, f => f.Address.ZipCode());
+
                 var companyConfigFaker = new Faker<CompanyConfig>("en_GB")
                     .RuleFor(x => x.GdprRetentionPeriodInYears, f => f.Random.Number(1, 7));
 
@@ -93,6 +101,14 @@ namespace SophieHR.Api.Data
                     context.Companies.Update(company);
                     await context.SaveChangesAsync();
 
+                    var hrDept = new Department
+                    {
+                        CompanyId = company.Id,
+                        Name = "HR"
+                    };
+                    await context.Departments.AddAsync(hrDept);
+                    await context.SaveChangesAsync();
+
                     // Create some company admin accounts:
                     var companyAdmin = new Employee
                     {
@@ -103,16 +119,18 @@ namespace SophieHR.Api.Data
                         Gender = Gender.Female,
                         JobTitle = "Head of Human Resources",
                         Title = Title.Mrs,
+                        Address = employeeAddressFaker.Generate(1).First(),
+                        DepartmentId = hrDept.Id,
+                        StartOfEmployment = DateTime.Now,
                         HolidayAllowance = 21,
                         NormalizedUserName = $"HR@{Regex.Replace(company.Name.Replace(" ", ""), "[^A-Za-z0-9 -]", "")}.biz".ToUpper(),
                         Email = $"HR@{Regex.Replace(company.Name.Replace(" ", ""), "[^A-Za-z0-9 -]", "")}.biz",
                         NormalizedEmail = $"HR@{Regex.Replace(company.Name.Replace(" ", ""), "[^A-Za-z0-9 -]", "")}.biz".ToUpper(),
                     };
 
-                    await context.Employees.AddAsync(companyAdmin);
-                    await _userManager.AddPasswordAsync(companyAdmin, "P@55w0rd1");
+                    await _userManager.CreateAsync(companyAdmin, "P@55w0rd1");
                     await _userManager.AddToRoleAsync(companyAdmin, "CompanyAdmin");
-                    context.Employees.Add(companyAdmin);
+                    await context.SaveChangesAsync();
                 }
             }
 
@@ -209,7 +227,7 @@ namespace SophieHR.Api.Data
         private static async Task<List<Employee>> CreateUsers(ApplicationDbContext context, ILogger<DataSeeder> _logger, Company company1, Department company1deptIT, List<byte[]> demoImages, List<Employee> comp1deptITEmployeeManagers)
         {
             var notesFaker = new Faker<Note>("en_GB")
-                .RuleFor(x => x.CreatedDate, f => f.Date.Recent())
+                .RuleFor(x => x.CreatedDate, f => f.Date.Recent(365))
                 .RuleFor(x=>x.Title, f=>f.Lorem.Sentence())
                 .RuleFor(x => x.Content, f => f.Lorem.Paragraph());
 
@@ -223,7 +241,7 @@ namespace SophieHR.Api.Data
                 .RuleFor(bp => bp.DepartmentId, f => company1deptIT.Id)
                 .RuleFor(bp => bp.NationalInsuranceNumber, f => f.Finance.Nino().Replace(" ", ""))
                 .RuleFor(bp => bp.PassportNumber, f => DateTime.UtcNow.Ticks.ToString().Substring(9))
-                .RuleFor(bp => bp.Notes, f => notesFaker.Generate(2))
+                .RuleFor(bp => bp.Notes, f => notesFaker.Generate(f.Random.Number(2, 5)))
                 .RuleFor(bp => bp.Address, f => new EmployeeAddress
                 {
                     County = f.Address.County(),
@@ -251,6 +269,11 @@ namespace SophieHR.Api.Data
 
         private static async Task<List<Employee>> CreateManagers(ApplicationDbContext context, ILogger<DataSeeder> _logger, Company company1, Department company1deptIT, List<byte[]> demoImages)
         {
+            var notesFaker = new Faker<Note>("en_GB")
+                .RuleFor(x => x.CreatedDate, f => f.Date.Recent(365))
+                .RuleFor(x => x.Title, f => f.Lorem.Sentence())
+                .RuleFor(x => x.Content, f => f.Lorem.Paragraph());
+
             var Company1deptITManagers = new Faker<Employee>("en_GB")
                 .RuleFor(bp => bp.Gender, f => f.PickRandom<Gender>())
                 .RuleFor(bp => bp.Title, f => f.PickRandom<Title>())
@@ -261,7 +284,7 @@ namespace SophieHR.Api.Data
                 .RuleFor(bp => bp.CompanyId, f => company1.Id)
                 .RuleFor(bp => bp.StartOfEmployment, (f, u) => f.Date.Recent(4600))
                 .RuleFor(bp => bp.DepartmentId, f => company1deptIT.Id)
-
+                .RuleFor(bp => bp.Notes, f => notesFaker.Generate(f.Random.Number(2, 5)))
                 .RuleFor(bp => bp.Address, f => new EmployeeAddress
                 {
                     County = f.Address.County(),

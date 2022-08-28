@@ -18,8 +18,7 @@ namespace SophieHR.Api.Models
         public DateTime StartOfEmployment { get; set; }
         public DateTime? EndOfEmployment { get; set; }
         public Guid AddressId { get; set; }
-        public EmployeeAddress Address { get; set; }
-        public Employee? Manager { get; set; }
+
 
         [RegularExpression(@"^[0-9]{10}GBR[0-9]{7}[U,M,F]{1}[0-9]{9}$")]
         public string PassportNumber { get; set; }
@@ -30,9 +29,11 @@ namespace SophieHR.Api.Models
         public Guid? DepartmentId { get; set; }
         public Guid CompanyId { get; set; }
         public Guid EmployeeAvatarId { get; set; }
-        public virtual Department Department { get; set; }
+        public virtual EmployeeAddress? Address { get; set; }
+        public virtual Employee? Manager { get; set; }
+        public virtual Department? Department { get; set; }
         public virtual Company Company { get; set; }
-        public virtual EmployeeAvatar Avatar { get; set; }
+        public virtual EmployeeAvatar? Avatar { get; set; }
         public virtual ICollection<Note> Notes { get; set; }
     }
 

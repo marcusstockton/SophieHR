@@ -16,15 +16,15 @@ namespace SophieHR.Api.Services
 
         Task<ICollection<EmployeeListDto>> GetEmployeesForManager(Guid managerId);
 
-        Task<EmployeeDetailDto> GetEmployeeById(Guid employeeId, ClaimsPrincipal user);
+        Task<Employee> GetEmployeeById(Guid employeeId, ClaimsPrincipal user);
 
-        Task<EmployeeDetailDto> GetEmployeeByUsername(string username);
+        Task<Employee> GetEmployeeByUsername(string username);
 
         Task UploadAvatarToEmployee(Guid id, IFormFile avatar);
 
         Task<EmployeeDetailDto> UpdateEmployee(EmployeeDetailDto employeeDto);
 
-        Task<Employee> CreateEmployee(EmployeeCreateDto employeeDto, EmployeeDetailDto manager = null, string role = "User");
+        Task<Employee> CreateEmployee(EmployeeCreateDto employeeDto, Employee manager = null, string role = "User");
 
         Task DeleteEmployee(Guid employeeId);
 
@@ -46,7 +46,7 @@ namespace SophieHR.Api.Services
             _logger = logger;
         }
 
-        public async Task<Employee> CreateEmployee(EmployeeCreateDto employeeDto, EmployeeDetailDto manager = null, string role = "User")
+        public async Task<Employee> CreateEmployee(EmployeeCreateDto employeeDto, Employee manager = null, string role = "User")
         {
             _logger.LogInformation($"{nameof(CreateEmployee)} called.");
             var employee = _mapper.Map<Employee>(employeeDto);
@@ -84,10 +84,11 @@ namespace SophieHR.Api.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task<EmployeeDetailDto> GetEmployeeById(Guid employeeId, ClaimsPrincipal user)
+        public async Task<Employee> GetEmployeeById(Guid employeeId, ClaimsPrincipal user)
         {
             _logger.LogInformation($"{nameof(GetEmployeeById)} called.");
-            var employee = await _context.Employees
+
+            return await _context.Employees
                .Include(x => x.Avatar)
                .Include(x => x.Address)
                .Include(x => x.Department)
@@ -98,14 +99,12 @@ namespace SophieHR.Api.Services
                .SingleOrDefaultAsync(x =>
                     user.IsInRole("User") ? x.UserName == user.Identity.Name
                     : x.Id == employeeId);
-
-            return _mapper.Map<EmployeeDetailDto>(employee);
         }
 
-        public async Task<EmployeeDetailDto> GetEmployeeByUsername(string username)
+        public async Task<Employee> GetEmployeeByUsername(string username)
         {
             _logger.LogInformation($"{nameof(GetEmployeeByUsername)} called.");
-            var employee = await _context.Employees
+            return await _context.Employees
                .Include(x => x.Avatar)
                .Include(x => x.Address)
                .Include(x => x.Department)
@@ -114,8 +113,6 @@ namespace SophieHR.Api.Services
                .Include(x => x.Notes)
                .AsNoTracking()
                .SingleOrDefaultAsync(x => x.UserName == username);
-
-            return _mapper.Map<EmployeeDetailDto>(employee);
         }
 
         public async Task<ICollection<EmployeeListDto>> GetEmployeesForCompanyId(Guid companyId)
