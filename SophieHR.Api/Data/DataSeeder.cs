@@ -228,8 +228,8 @@ namespace SophieHR.Api.Data
         {
             var notesFaker = new Faker<Note>("en_GB")
                 .RuleFor(x => x.CreatedDate, f => f.Date.Recent(365))
-                .RuleFor(x=>x.Title, f=>f.Lorem.Sentence())
-                .RuleFor(x => x.Content, f => f.Lorem.Paragraph());
+                .RuleFor(x=>x.Title, f=>f.WaffleTitle())
+                .RuleFor(x => x.Content, f => f.WaffleText(paragraphs: f.Random.Int(1, 3), false));
 
             var Company1deptITEmployees = new Faker<Employee>("en_GB")
                 .RuleFor(bp => bp.Gender, f => f.PickRandom<Gender>())
@@ -238,13 +238,14 @@ namespace SophieHR.Api.Data
                 .RuleFor(bp => bp.LastName, (f, u) => f.Name.LastName((Bogus.DataSets.Name.Gender)u.Gender))
                 .RuleFor(bp => bp.CompanyId, f => company1.Id)
                 .RuleFor(bp => bp.StartOfEmployment, (f, u) => f.Date.Recent(4600))
+                .RuleFor(bp => bp.EndOfEmployment, (f, u) => f.Date.Future(f.Random.Int(1, 6), u.StartOfEmployment).OrNull(f))
                 .RuleFor(bp => bp.DepartmentId, f => company1deptIT.Id)
                 .RuleFor(bp => bp.NationalInsuranceNumber, f => f.Finance.Nino().Replace(" ", ""))
-                .RuleFor(bp => bp.PassportNumber, f => DateTime.UtcNow.Ticks.ToString().Substring(9))
+                //.RuleFor(bp => bp.PassportNumber, f => DateTime.UtcNow.Ticks.ToString().Substring(9))
                 .RuleFor(bp => bp.Notes, f => notesFaker.Generate(f.Random.Number(2, 5)))
                 .RuleFor(bp => bp.Address, f => new EmployeeAddress
                 {
-                    County = f.Address.County(),
+                    County = ExtensionsForUnitedKingdom.CountryOfUnitedKingdom(f.Address),
                     Line1 = f.Address.BuildingNumber() + " " + f.Address.StreetName(),
                     Line2 = f.Address.SecondaryAddress(),
                     Line3 = f.Address.StreetSuffix(),
@@ -257,7 +258,7 @@ namespace SophieHR.Api.Data
                 .RuleFor(bp => bp.JobTitle, f => f.Name.JobTitle())
                 .RuleFor(bp => bp.Avatar, f => new EmployeeAvatar { Avatar = f.PickRandom(demoImages) })
                 .RuleFor(bp => bp.Manager, f => f.PickRandom(comp1deptITEmployeeManagers))
-                .RuleFor(bp => bp.HolidayAllowance, f => f.Random.Number(28, 50))
+                .RuleFor(bp => bp.HolidayAllowance, f => f.Random.Number(21, 50))
                 .RuleFor(bp => bp.PhoneNumber, f => f.Phone.PhoneNumber())
                 .FinishWith((f, bp) => _logger.LogInformation($"Employee created for company {company1.Name} and department {company1deptIT.Name}. Id={bp.Id}"));
 
@@ -271,8 +272,8 @@ namespace SophieHR.Api.Data
         {
             var notesFaker = new Faker<Note>("en_GB")
                 .RuleFor(x => x.CreatedDate, f => f.Date.Recent(365))
-                .RuleFor(x => x.Title, f => f.Lorem.Sentence())
-                .RuleFor(x => x.Content, f => f.Lorem.Paragraph());
+                .RuleFor(x => x.Title, f => f.WaffleTitle())
+                .RuleFor(x => x.Content, f => f.WaffleText(paragraphs: f.Random.Int(1,3), false));
 
             var Company1deptITManagers = new Faker<Employee>("en_GB")
                 .RuleFor(bp => bp.Gender, f => f.PickRandom<Gender>())
@@ -280,14 +281,15 @@ namespace SophieHR.Api.Data
                 .RuleFor(bp => bp.FirstName, (f, u) => f.Name.FirstName((Bogus.DataSets.Name.Gender)u.Gender))
                 .RuleFor(bp => bp.LastName, (f, u) => f.Name.LastName((Bogus.DataSets.Name.Gender)u.Gender))
                 .RuleFor(bp => bp.NationalInsuranceNumber, f => f.Finance.Nino().Replace(" ", ""))
-                .RuleFor(bp => bp.PassportNumber, f => DateTime.UtcNow.Ticks.ToString().Substring(9))
+                //.RuleFor(bp => bp.PassportNumber, f => DateTime.UtcNow.Ticks.ToString().Substring(9))
                 .RuleFor(bp => bp.CompanyId, f => company1.Id)
                 .RuleFor(bp => bp.StartOfEmployment, (f, u) => f.Date.Recent(4600))
+                //.RuleFor(bp=>bp.EndOfEmployment, (f,u)=>f.Date.Future(f.Random.Int(1, 6), u.StartOfEmployment).OrNull(f))
                 .RuleFor(bp => bp.DepartmentId, f => company1deptIT.Id)
                 .RuleFor(bp => bp.Notes, f => notesFaker.Generate(f.Random.Number(2, 5)))
                 .RuleFor(bp => bp.Address, f => new EmployeeAddress
                 {
-                    County = f.Address.County(),
+                    County = ExtensionsForUnitedKingdom.CountryOfUnitedKingdom(f.Address),
                     Line1 = f.Address.BuildingNumber() + " " + f.Address.StreetName(),
                     Line2 = f.Address.SecondaryAddress(),
                     Line3 = f.Address.StreetSuffix(),
