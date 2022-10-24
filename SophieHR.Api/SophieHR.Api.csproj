@@ -27,6 +27,7 @@
     <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="6.24.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="6.0.10" />
     <PackageReference Include="NSwag.AspNetCore" Version="13.17.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.3.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.24.0" />
     <PackageReference Include="WaffleGenerator.Bogus" Version="4.2.1" />
   </ItemGroup>

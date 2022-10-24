@@ -1,6 +1,7 @@
 ﻿using SophieHR.Api.Models.DTOs.Company;
 using SophieHR.Api.Models.DTOs.Department;
 using SophieHR.Api.Models.DTOs.Employee.EmployeeAvatar;
+using SophieHR.Api.Models.DTOs.Notes;
 
 namespace SophieHR.Api.Models.DTOs.Employee
 {
@@ -31,6 +32,6 @@ namespace SophieHR.Api.Models.DTOs.Employee
         public EmployeeAvatarDetail? Avatar { get; set; }
         public virtual DepartmentIdNameDto? Department { get; set; }
         public virtual CompanyIdNameDto Company { get; set; }
-        public ICollection<Note> Notes { get; set; }
+        public ICollection<NoteDetailDto> Notes { get; set; }
     }
 }

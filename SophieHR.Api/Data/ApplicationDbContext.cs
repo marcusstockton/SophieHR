@@ -19,6 +19,7 @@ namespace SophieHR.Api.Data
         public DbSet<Employee> Employees { get; set; }
         public DbSet<EmployeeAvatar> EmployeeAvatars { get; set; }
         public DbSet<Note> Notes { get; set; }
+        public DbSet<LeaveRequest> LeaveRequests { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -39,6 +40,12 @@ namespace SophieHR.Api.Data
                 b.Property(x => x.FirstName).HasMaxLength(50);
                 b.Property(x => x.LastName).HasMaxLength(50);
                 b.HasIndex(nameof(ApplicationUser.Id), nameof(ApplicationUser.Email), nameof(ApplicationUser.UserName));
+            });
+
+            builder.Entity<LeaveRequest>(b =>
+            {
+                b.Property(x => x.EmployeeId).IsRequired();
+                b.HasIndex(x => x.EmployeeId);
             });
 
             builder.Entity<Address>(b =>
