@@ -32,6 +32,5 @@ namespace SophieHR.Api.Models.DTOs.Employee
         public EmployeeAvatarDetail? Avatar { get; set; }
         public virtual DepartmentIdNameDto? Department { get; set; }
         public virtual CompanyIdNameDto Company { get; set; }
-        public ICollection<NoteDetailDto> Notes { get; set; }
     }
 }

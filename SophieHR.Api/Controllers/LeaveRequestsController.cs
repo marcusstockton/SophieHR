@@ -22,10 +22,10 @@ namespace SophieHR.Api.Controllers
         }
 
         // GET: api/LeaveRequests
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<LeaveRequest>>> GetLeaveRequests()
+        [HttpGet("GetLeaveRequestsForEmployee/{employeeId}")]
+        public async Task<ActionResult<IEnumerable<LeaveRequest>>> GetLeaveRequestsForEmployee(Guid employeeId)
         {
-            return await _context.LeaveRequests.ToListAsync();
+            return await _context.LeaveRequests.Where(x=>x.EmployeeId == employeeId).ToListAsync();
         }
 
         // GET: api/LeaveRequests/5

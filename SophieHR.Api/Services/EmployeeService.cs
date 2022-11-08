@@ -94,7 +94,6 @@ namespace SophieHR.Api.Services
                .Include(x => x.Department)
                .Include(x => x.Company)
                .Include(x => x.Manager)
-               .Include(x => x.Notes)
                .AsNoTracking()
                .SingleOrDefaultAsync(x =>
                     user.IsInRole("User") ? x.UserName == user.Identity.Name
