@@ -118,7 +118,7 @@ namespace SophieHR.Api.Controllers
         }
 
         //[AllowAnonymous]
-        [HttpGet, Route("getautosuggestion"), ResponseCache(Duration = 300)]
+        [HttpGet, Route("get-location-autosuggestion"), ResponseCache(Duration = 300)]
         public async Task<IActionResult> GetAutoSuggestion(string search)
         {
             return Ok(await _companyService.GetAutoSuggestion(search));

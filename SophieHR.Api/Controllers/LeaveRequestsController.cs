@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SophieHR.Api.Data;
 using SophieHR.Api.Models;
+using SophieHR.Api.Models.DTOs.LeaveRequest;
 
 namespace SophieHR.Api.Controllers
 {
@@ -15,10 +17,12 @@ namespace SophieHR.Api.Controllers
     public class LeaveRequestsController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        public readonly IMapper _mapper;
 
-        public LeaveRequestsController(ApplicationDbContext context)
+        public LeaveRequestsController(ApplicationDbContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
         // GET: api/LeaveRequests
@@ -76,8 +80,10 @@ namespace SophieHR.Api.Controllers
         // POST: api/LeaveRequests
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<LeaveRequest>> PostLeaveRequest(LeaveRequest leaveRequest)
+        public async Task<ActionResult<LeaveRequest>> PostLeaveRequest(CreateLeaveRequest leaveRequestDto)
         {
+            var leaveRequest = _mapper.Map<LeaveRequest>(leaveRequestDto);
+
             _context.LeaveRequests.Add(leaveRequest);
             await _context.SaveChangesAsync();
 
