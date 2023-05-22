@@ -16,7 +16,7 @@
         public string County { get; set; }
         public AddressType AddressType { get; set; }
 
-        [Obsolete("REQUIRED FOR ENTITY FRAMEWORK - DO NOT USE OR REMOVE")]
+        //[Obsolete("REQUIRED FOR ENTITY FRAMEWORK - DO NOT USE OR REMOVE")]
         public Address()
         {
         }
