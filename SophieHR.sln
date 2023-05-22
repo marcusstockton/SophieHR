@@ -5,7 +5,7 @@ VisualStudioVersion = 17.1.32210.238
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SophieHR.Api", "SophieHR.Api\SophieHR.Api.csproj", "{5B1FF48C-9A50-44BA-8918-74FB2BBAEC0E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SophieHR.UnitTests", "SophieHR.UnitTests\SophieHR.UnitTests.csproj", "{467E5859-B5CD-4F3A-803C-920655DA1F9D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SophieHR.UnitTests", "SophieHR.UnitTests\SophieHR.UnitTests.csproj", "{467E5859-B5CD-4F3A-803C-920655DA1F9D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

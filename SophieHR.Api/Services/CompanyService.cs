@@ -26,7 +26,7 @@ namespace SophieHR.Api.Services
 
         Task<HttpResponseMessage> DeleteCompanyAsync(Guid companyId);
         Task<string> GetAutoSuggestion(string search);
-        Task<string> GetMapFromLatLong(decimal lat, decimal lon);
+        Task<string> GetMapFromLatLong(decimal lat, decimal lon, int zoomLevel = 15, int mapType = 3, int width = 2048, short viewType = 1);
         Task<string> PostcodeAutoComplete(string postcode);
         Task<PostcodeLookup> PostCodeLookup(string postcode);
     }
@@ -195,13 +195,12 @@ namespace SophieHR.Api.Services
             return null;
         }
 
-        public async Task<string> GetMapFromLatLong(decimal lat, decimal lon)
+        public async Task<string> GetMapFromLatLong(decimal lat, decimal lon, int zoomLevel = 15, int mapType = 3, int width = 2048, short viewType=1)
         {
             _logger.LogInformation($"{nameof(GetMapFromLatLong)} Getting Map for lat lon {lat} {lon}");
             var height = 300;
-            var width = 420;
             var client = _httpClientFactory.CreateClient("imageHereApiClient");
-            var url = $"?apiKey={_apiKey}&c={lat},{lon}&vt=0&z=12&h={height}&w={width}";
+            var url = $"?apiKey={_apiKey}&c={lat},{lon}&vt={viewType}&z={zoomLevel}&h={height}&w={width}";
             var response = await client.GetByteArrayAsync(url);
             return Convert.ToBase64String(response);
         }

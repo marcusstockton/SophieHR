@@ -126,14 +126,14 @@ namespace SophieHR.Api.Controllers
 
         //[AllowAnonymous]
         [HttpGet, Route("GetMapFromLatLong"), ResponseCache(Duration = 86400)]// One day
-        public async Task<IActionResult> GetMapFromLatLong(decimal lat, decimal lon)
+        public async Task<IActionResult> GetMapFromLatLong(decimal lat, decimal lon, int zoomLevel = 15, int mapType = 3, int width = 2048, short viewType = 1)
         {
-            var result = await _companyService.GetMapFromLatLong(lat, lon);
+            var result = await _companyService.GetMapFromLatLong(lat, lon, zoomLevel, mapType, width, viewType);
             return Ok(result);
         }
 
         //[AllowAnonymous]
-        [HttpGet, Route("postcode-auto-complete")]
+        [HttpGet, Route("postcode-auto-complete"), ResponseCache(Duration = 300)]
         public async Task<IActionResult> PostcodeAutoComplete(string postcode)
         {
             var result = await _companyService.PostcodeAutoComplete(postcode);
