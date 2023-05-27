@@ -27,7 +27,7 @@ namespace SophieHR.Api.Services
         Task<HttpResponseMessage> DeleteCompanyAsync(Guid companyId);
         Task<string> GetAutoSuggestion(string search);
         Task<string> GetMapFromLatLong(decimal lat, decimal lon, int zoomLevel = 15, int mapType = 3, int width = 2048, short viewType = 1);
-        Task<string> PostcodeAutoComplete(string postcode);
+        Task<string[]> PostcodeAutoComplete(string postcode);
         Task<PostcodeLookup> PostCodeLookup(string postcode);
     }
 
@@ -205,17 +205,16 @@ namespace SophieHR.Api.Services
             return Convert.ToBase64String(response);
         }
 
-        public async Task<string> PostcodeAutoComplete(string postcode)
+        public async Task<string[]> PostcodeAutoComplete(string postcode)
         {
             _logger.LogInformation($"{nameof(PostcodeAutoComplete)} querying postcode {postcode}");
 
             var client = _httpClientFactory.CreateClient("postcodesioClient");
             var url = $"{postcode}/autocomplete";
-                var response = await client.GetAsync(url);
-                if (response.IsSuccessStatusCode)
+                var response = await client.GetFromJsonAsync<PostcodeAutoComplate>(url);
+                if (response.status == 200)
                 {
-                    var data = await response.Content.ReadAsStringAsync();
-                    return data;
+                    return response.result;
                 }
             
             return null;
@@ -251,6 +250,12 @@ namespace SophieHR.Api.Services
                     return jsonData.Result;                    
                 }
                 return false;
+        }
+
+        class PostcodeAutoComplate
+        {
+            public int status { get; set; }
+            public string[] result { get; set; }
         }
     }
 }

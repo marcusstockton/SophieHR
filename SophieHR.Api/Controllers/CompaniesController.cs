@@ -10,6 +10,7 @@ namespace SophieHR.Api.Controllers
 {
     [ApiExplorerSettings(GroupName = "v1")]
     [Route("api/[controller]")]
+    [Produces("application/json")]
     [ApiController]
     [Authorize]
     public class CompaniesController : ControllerBase
@@ -134,10 +135,10 @@ namespace SophieHR.Api.Controllers
 
         //[AllowAnonymous]
         [HttpGet, Route("postcode-auto-complete"), ResponseCache(Duration = 300)]
-        public async Task<IActionResult> PostcodeAutoComplete(string postcode)
+        public async Task<ActionResult<string[]>> PostcodeAutoComplete(string postcode)
         {
             var result = await _companyService.PostcodeAutoComplete(postcode);
-            return Ok(result);
+            return result;
         }
 
         //[AllowAnonymous]
