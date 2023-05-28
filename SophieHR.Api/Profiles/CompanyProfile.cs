@@ -13,8 +13,6 @@ namespace SophieHR.Api.Profiles
             CreateMap<CompanyCreateDto, Company>().ReverseMap();
             CreateMap<Company, CompanyDetailDto>().ReverseMap();
             CreateMap<CompanyDetailNoLogo, Company>()
-                .ForMember(dest => dest.Latitude, act => act.MapFrom(src=>src.Lat))
-                .ForMember(dest => dest.Longitude, act => act.MapFrom(src => src.Lon))
                 .ReverseMap();
             CreateMap<CompanyIdNameDto, Company>().ReverseMap();
             

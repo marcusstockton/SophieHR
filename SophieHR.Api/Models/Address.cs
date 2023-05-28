@@ -14,6 +14,8 @@
         public string? Line4 { get; set; }
         public string Postcode { get; set; }
         public string County { get; set; }
+        public double Lat { get; set; }
+        public double Lon { get; set; }
         public AddressType AddressType { get; set; }
 
         //[Obsolete("REQUIRED FOR ENTITY FRAMEWORK - DO NOT USE OR REMOVE")]

@@ -2,6 +2,7 @@
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using SophieHR.Api.Models.DTOs.Company;
 using SophieHR.Api.Services;
 using System.Net;
@@ -127,7 +128,7 @@ namespace SophieHR.Api.Controllers
 
         //[AllowAnonymous]
         [HttpGet, Route("GetMapFromLatLong"), ResponseCache(Duration = 86400)]// One day
-        public async Task<IActionResult> GetMapFromLatLong(decimal lat, decimal lon, int zoomLevel = 15, int mapType = 3, int width = 2048, short viewType = 1)
+        public async Task<ActionResult<string>> GetMapFromLatLong(decimal lat, decimal lon, int zoomLevel = 15, int mapType = 3, int width = 2048, short viewType = 1)
         {
             var result = await _companyService.GetMapFromLatLong(lat, lon, zoomLevel, mapType, width, viewType);
             return Ok(result);
@@ -142,8 +143,9 @@ namespace SophieHR.Api.Controllers
         }
 
         //[AllowAnonymous]
+        [ProducesResponseType(200)]
         [HttpGet, Route("postcode-lookup"), ResponseCache(Duration = 300)] // 5 mins
-        public async Task<IActionResult> PostcodeLookup(string postcode)
+        public async Task<ActionResult<PostcodeLookup>> PostcodeLookup(string postcode)
         {
             var result = await _companyService.PostCodeLookup(postcode);
             return Ok(result);
