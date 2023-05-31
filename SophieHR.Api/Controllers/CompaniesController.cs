@@ -95,32 +95,33 @@ namespace SophieHR.Api.Controllers
         // POST: api/Companies
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost, Authorize(Roles = "Admin")]
-        public async Task<ActionResult<CompanyDetailDto>> PostCompany(CompanyCreateDto companyDto)
+        [ProducesResponseType(typeof(CompanyDetailDto), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> PostCompany(CompanyCreateDto companyDto)
         {
             _logger.LogInformation($"{nameof(CompaniesController)} Creating a new company with name {companyDto.Name}");
-            var result = await _companyService.CreateNewCompanyAsync(companyDto);
-            if (result != null)
+            try
             {
-                return CreatedAtAction(nameof(GetCompany), new { id = result.Id }, result);
+                var result = await _companyService.CreateNewCompanyAsync(companyDto);
+                return Ok(result);
             }
-            return BadRequest(result);
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
         }
 
         // DELETE: api/Companies/5
         [HttpDelete("{id}"), Authorize(Roles = "Admin")]
-        public async Task<IActionResult> DeleteCompany(Guid id)
+        public async Task<HttpResponseMessage> DeleteCompany(Guid id)
         {
             _logger.LogInformation($"{nameof(CompaniesController)} Deleting company with id {id}");
-            var result = await _companyService.DeleteCompanyAsync(id);
-            if (result.IsSuccessStatusCode)
-            {
-                return Ok(result);
-            }
-            return BadRequest(result);
+            return await _companyService.DeleteCompanyAsync(id);
         }
 
         //[AllowAnonymous]
         [HttpGet, Route("get-location-autosuggestion"), ResponseCache(Duration = 300)]
+        [ProducesResponseType(typeof(string[]), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAutoSuggestion(string search)
         {
             return Ok(await _companyService.GetAutoSuggestion(search));
@@ -128,7 +129,8 @@ namespace SophieHR.Api.Controllers
 
         //[AllowAnonymous]
         [HttpGet, Route("GetMapFromLatLong"), ResponseCache(Duration = 86400)]// One day
-        public async Task<ActionResult<string>> GetMapFromLatLong(decimal lat, decimal lon, int zoomLevel = 15, int mapType = 3, int width = 2048, short viewType = 1)
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetMapFromLatLong(decimal lat, decimal lon, int zoomLevel = 15, int mapType = 3, int width = 2048, short viewType = 1)
         {
             var result = await _companyService.GetMapFromLatLong(lat, lon, zoomLevel, mapType, width, viewType);
             return Ok(result);
@@ -136,16 +138,18 @@ namespace SophieHR.Api.Controllers
 
         //[AllowAnonymous]
         [HttpGet, Route("postcode-auto-complete"), ResponseCache(Duration = 300)]
-        public async Task<ActionResult<string[]>> PostcodeAutoComplete(string postcode)
+        [ProducesResponseType(typeof(string[]), StatusCodes.Status200OK)]
+        public async Task<IActionResult> PostcodeAutoComplete(string postcode)
         {
             var result = await _companyService.PostcodeAutoComplete(postcode);
-            return result;
+            return Ok(result);
         }
 
         //[AllowAnonymous]
         [ProducesResponseType(200)]
         [HttpGet, Route("postcode-lookup"), ResponseCache(Duration = 300)] // 5 mins
-        public async Task<ActionResult<PostcodeLookup>> PostcodeLookup(string postcode)
+        [ProducesResponseType(typeof(PostcodeLookup), StatusCodes.Status200OK)]
+        public async Task<IActionResult> PostcodeLookup(string postcode)
         {
             var result = await _companyService.PostCodeLookup(postcode);
             return Ok(result);

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SophieHR.Api.Data;
 using SophieHR.Api.Models;
+using SophieHR.Api.Models.DTOs.Company;
 using SophieHR.Api.Models.DTOs.Notes;
 
 namespace SophieHR.Api.Controllers
@@ -33,7 +34,9 @@ namespace SophieHR.Api.Controllers
 
         // GET: api/Notes/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<NoteDetailDto>> GetNote(Guid id)
+        [ProducesResponseType(typeof(NoteDetailDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetNote(Guid id)
         {
             var note = await _context.Notes.FindAsync(id);
 
@@ -42,12 +45,14 @@ namespace SophieHR.Api.Controllers
                 return NotFound();
             }
 
-            return _mapper.Map<NoteDetailDto>(note);
+            return Ok(_mapper.Map<NoteDetailDto>(note));
         }
 
         // PUT: api/Notes/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> PutNotes(Guid id, NoteDetailDto noteDto)
         {
             if (id != noteDto.Id)

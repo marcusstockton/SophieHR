@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SophieHR.Api.Data;
 using SophieHR.Api.Models;
+using SophieHR.Api.Models.DTOs.Company;
 using SophieHR.Api.Models.DTOs.LeaveRequest;
 
 namespace SophieHR.Api.Controllers
@@ -49,6 +50,8 @@ namespace SophieHR.Api.Controllers
         // PUT: api/LeaveRequests/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> PutLeaveRequest(Guid id, LeaveRequest leaveRequest)
         {
             if (id != leaveRequest.Id)
@@ -92,6 +95,8 @@ namespace SophieHR.Api.Controllers
 
         // DELETE: api/LeaveRequests/5
         [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteLeaveRequest(Guid id)
         {
             var leaveRequest = await _context.LeaveRequests.FindAsync(id);

@@ -55,7 +55,7 @@ namespace SophieHR.Api.Services
         public async Task<ICollection<CompanyDetailNoLogo>> GetAllCompaniesNoLogoAsync()
         {
             _logger.LogInformation($"{nameof(GetAllCompaniesNoLogoAsync)} called");
-            return _mapper.Map<List<CompanyDetailNoLogo>>(await _context.Companies.ToListAsync());
+            return _mapper.Map<List<CompanyDetailNoLogo>>(await _context.Companies.Include(x=>x.Address).ToListAsync());
         }
 
         public async Task<ICollection<KeyValuePair<Guid, string>>> GetCompanyNamesAsync(string username, bool isManager = false)
@@ -74,10 +74,10 @@ namespace SophieHR.Api.Services
         {
             _logger.LogInformation($"{nameof(GetCompanyByIdNoTrackingAsync)} called");
 
-            return await _context.Companies
-                .Include(x => x.Address)
-                .Include(x => x.Employees)
-                .AsNoTracking()
+            return await _context.Companies.AsNoTracking()
+                .Include(x => x.Address).AsNoTracking()
+                .Include(x => x.Employees).AsNoTracking()
+                .Include(x=>x.CompanyConfig).AsNoTracking()
                 .Select(x => new CompanyDetailDto
                 {
                     Address = x.Address,
@@ -104,17 +104,34 @@ namespace SophieHR.Api.Services
             {
                 return new HttpResponseMessage(System.Net.HttpStatusCode.NotFound) { Content = new StringContent($"Id's do not match!") };
             }
-            var originalCompany = await _context.Companies.FindAsync(id);
+            var originalCompany = await _context.Companies
+                .Include(x=>x.CompanyConfig).AsNoTracking()
+                .Include(x=>x.Address).AsNoTracking()
+                .Include(x=>x.Employees).AsNoTracking()
+                .SingleAsync(x=>x.Id == id);
             if (originalCompany == null)
             {
                 _logger.LogWarning($"{nameof(UpdateCompanyAsync)} Unable to find original company with id {id}");
                 return new HttpResponseMessage(System.Net.HttpStatusCode.NotFound) { Content = new StringContent($"Unable to find original company with id {id}") };
             }
-            var company = _mapper.Map(companyDetail, originalCompany);
-            _context.Companies.Attach(company);
-            _context.Entry(company).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
-            return new HttpResponseMessage(System.Net.HttpStatusCode.NoContent);
+            
+            try
+            {
+                var company = _mapper.Map(companyDetail, originalCompany);
+                _context.Companies.Attach(company);
+                _context.CompanyAddresses.Attach(company.Address);
+                _context.Entry(company).State = EntityState.Modified;
+                _context.Entry(company.Address).State = EntityState.Modified;
+
+                await _context.SaveChangesAsync();
+                return new HttpResponseMessage(System.Net.HttpStatusCode.NoContent);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"An exception was thrown when trying to update Company id {id}");
+                throw;
+            }
+            
         }
 
         public async Task<HttpResponseMessage> UploadLogoForCompanyAsync(Guid id, IFormFile logo)
@@ -152,6 +169,10 @@ namespace SophieHR.Api.Services
         {
             _logger.LogInformation($"{nameof(CreateNewCompanyAsync)} called");
             var company = _mapper.Map<Company>(companyDto);
+            if(_context.Companies.Any(x=>x.Name == companyDto.Name))
+            {
+                throw new Exception("Company with this name already exists!");
+            }
             _context.Companies.Add(company);
             try
             {
