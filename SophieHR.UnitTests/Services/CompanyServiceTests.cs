@@ -81,7 +81,7 @@ namespace SophieHR.Api.Services.Tests
         [TestMethod()]
         public async Task GetCompanyByIdNoTrackingAsyncTest()
         {
-            var company = await _service.GetCompanyByIdNoTrackingAsync(_id1);
+            var company = await _service.FindCompanyByIdAsync(_id1);
             Assert.AreEqual("Test Company One", company.Name);
         }
 
@@ -95,19 +95,22 @@ namespace SophieHR.Api.Services.Tests
         [TestMethod()]
         public async Task UpdateCompanyAsyncTestAsync()
         {
-            var company = await _service.FindCompanyByIdAsync(_id2);
+            var company = await _service.GetCompanyByIdNoTrackingAsync(_id2);
 
             var companyUpdate = new CompanyDetailNoLogo
             {
                 Id = company.Id,
                 Name = "Updated Company Name Two",
-                Address = company.Address,
+                Address = new CompanyAddress { Id = company.Address.Id, Line1 = company.Address.Line1, Line2 = company.Address.Line2, Postcode = company.Address.Postcode, County = "Devon" },
                 CreatedDate = company.CreatedDate,
                 UpdatedDate = company.UpdatedDate
             };
 
             var result = await _service.UpdateCompanyAsync(_id2, companyUpdate);
             Assert.AreEqual(HttpStatusCode.NoContent, result.StatusCode);
+            var updatedCompany = await _service.GetCompanyByIdNoTrackingAsync(_id2);
+            Assert.AreEqual("Updated Company Name Two", updatedCompany.Name);
+            Assert.AreEqual("Devon", updatedCompany.Address.County);
         }
 
         [TestMethod()]
@@ -146,7 +149,7 @@ namespace SophieHR.Api.Services.Tests
             var result = await _service.UpdateCompanyAsync(unknownId, companyUpdate);
             Assert.AreEqual(HttpStatusCode.NotFound, result.StatusCode);
             var resultContent = await result.Content.ReadAsStringAsync();
-            Assert.AreEqual($"Unable to find original company with id {unknownId}", resultContent);
+            Assert.AreEqual($"Unable to find company with id {unknownId}", resultContent);
         }
 
         [TestMethod()]

@@ -73,23 +73,10 @@ namespace SophieHR.Api.Controllers
         // PUT: api/Companies/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}"), Authorize(Policy = "CompanyManagement")]
-        public async Task<IActionResult> PutCompany(Guid id, CompanyDetailNoLogo companyDetail)
+        public async Task<HttpResponseMessage> PutCompany(Guid id, CompanyDetailNoLogo companyDetail)
         {
             _logger.LogInformation($"{nameof(CompaniesController)} Updating company with id {id}");
-            if (id != companyDetail.Id)
-            {
-                _logger.LogWarning($"{nameof(CompaniesController)} Id's don't match");
-                return BadRequest();
-            }
-            var result = await _companyService.UpdateCompanyAsync(id, companyDetail);
-            if (result.IsSuccessStatusCode)
-            {
-                return Ok(result);
-            }
-            else
-            {
-                return BadRequest(result);
-            }
+            return await _companyService.UpdateCompanyAsync(id, companyDetail);
         }
 
         // POST: api/Companies
