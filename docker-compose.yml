@@ -1,13 +1,28 @@
 version: '3.4'
 
 services:
+
+  sophiehr.ui:
+    image: ${DOCKER_REGISTRY-}sophiehr_ui
+    build:
+        context: ../sophieHR-angular-material
+        dockerfile: dockerfile
+    ports: 
+      - "4200:80"
+    depends_on:
+     - sophiehr.api
+
   sophiehr.api:
-    image: ${DOCKER_REGISTRY-}sophiehrapi
+    image: ${DOCKER_REGISTRY-}sophiehr_api
     build:
       context: .
       dockerfile: SophieHR.Api/Dockerfile
     ports:
       - "7189:443"
+      - "7189:80"
+    expose:
+        - "443"
+        - "80"
     depends_on:
       - db
 
@@ -16,3 +31,4 @@ services:
     environment:
       - ACCEPT_EULA=Y
       - SA_PASSWORD=P@55w0rd123
+ 
