@@ -31,4 +31,9 @@ services:
     environment:
       - ACCEPT_EULA=Y
       - SA_PASSWORD=P@55w0rd123
+    volumes:
+      - "sqlvolume:/var/opt/mssql"
  
+volumes:
+  sqlvolume:
+    driver: local
