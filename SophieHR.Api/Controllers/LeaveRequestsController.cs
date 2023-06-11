@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
-using Microsoft.AspNetCore.Http;
+﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SophieHR.Api.Data;
 using SophieHR.Api.Models;
-using SophieHR.Api.Models.DTOs.Company;
 using SophieHR.Api.Models.DTOs.LeaveRequest;
 
 namespace SophieHR.Api.Controllers
@@ -30,7 +24,7 @@ namespace SophieHR.Api.Controllers
         [HttpGet("GetLeaveRequestsForEmployee/{employeeId}")]
         public async Task<ActionResult<IEnumerable<LeaveRequest>>> GetLeaveRequestsForEmployee(Guid employeeId)
         {
-            return await _context.LeaveRequests.Where(x=>x.EmployeeId == employeeId).ToListAsync();
+            return await _context.LeaveRequests.Where(x => x.EmployeeId == employeeId).ToListAsync();
         }
 
         // GET: api/LeaveRequests/5

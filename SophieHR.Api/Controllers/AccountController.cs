@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 using SophieHR.Api.Data;
 using SophieHR.Api.Models;
 using SophieHR.Api.Models.DTOs.Employee;
@@ -40,7 +41,7 @@ namespace SophieHR.Api.Controllers
         {
             try
             {
-                _logger.LogInformation($"{nameof(AccountController)} > {nameof(GetToken)} Finding user with username {userLogins.UserName}");
+                Log.Information($"{nameof(AccountController)} > {nameof(GetToken)} Finding user with username {userLogins.UserName}");
                 var Token = new UserTokens();
                 var user = await _userManager.FindByNameAsync(userLogins.UserName);
                 if (user == null)
@@ -169,6 +170,7 @@ namespace SophieHR.Api.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> GetListOfManagersAsync()
         {
+            _logger.LogInformation($"{nameof(GetListOfCompanyAdminsAsync)} Called");
             var managers = await _userManager.GetUsersInRoleAsync("Manager");
 
             return Ok(_mapper.Map<List<string>>(managers.Select(x => x.UserName).ToList()));
@@ -179,6 +181,7 @@ namespace SophieHR.Api.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> GetListOfCompanyAdminsAsync()
         {
+            _logger.LogInformation($"{nameof(GetListOfCompanyAdminsAsync)} Called");
             var companyAdmins = await _userManager.GetUsersInRoleAsync("CompanyAdmin");
 
             return Ok(_mapper.Map<List<string>>(companyAdmins.Select(x => x.UserName).ToList()));

@@ -212,8 +212,5 @@ namespace SophieHR.Api.Services.Tests
 
             Assert.AreEqual(HttpStatusCode.BadRequest, result.StatusCode);
         }
-
-
-        
     }
 }

@@ -3,15 +3,21 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Namotion.Reflection;
 using NSwag;
 using NSwag.Generation.Processors.Security;
+using Serilog;
+using Serilog.Exceptions;
+using Serilog.Sinks.Elasticsearch;
 using SophieHR.Api.Data;
 using SophieHR.Api.Extensions;
 using SophieHR.Api.Models;
 using SophieHR.Api.Services;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
+
+ConfigureLogging();
+builder.Host.UseSerilog();
 
 // Add services to the container.
 builder.Services.AddJWTTokenServices(builder.Configuration);
@@ -115,6 +121,7 @@ if (app.Environment.IsDevelopment())
     {
         using (var scope = app.Services.CreateScope())
         {
+            Log.Information("Reseeding the database");
             var services = scope.ServiceProvider;
             var context = services.GetRequiredService<ApplicationDbContext>();
             await context.Database.EnsureDeletedAsync();
@@ -137,3 +144,35 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+void ConfigureLogging()
+{
+    var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+    var configuration = new ConfigurationBuilder()
+        .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+        .AddJsonFile(
+            $"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}.json",
+            optional: true)
+        .Build();
+
+    Log.Logger = new LoggerConfiguration()
+        .Enrich.FromLogContext()
+        .Enrich.WithExceptionDetails()
+        .Enrich.WithMachineName()
+        .WriteTo.Debug()
+        .WriteTo.Console()
+        .WriteTo.Elasticsearch(ConfigureElasticSink(configuration, environment))
+        .Enrich.WithProperty("Environment", environment)
+        .ReadFrom.Configuration(configuration)
+        .CreateLogger();
+}
+
+ElasticsearchSinkOptions ConfigureElasticSink(IConfigurationRoot configuration, string environment)
+{
+    var index = new ElasticsearchSinkOptions(new Uri(configuration["ElasticConfiguration:Uri"]))
+    {
+        AutoRegisterTemplate = true,
+        IndexFormat = $"{Assembly.GetExecutingAssembly().GetName().Name.ToLower().Replace(".", "-")}-{environment?.ToLower().Replace(".", "-")}-{DateTime.UtcNow:yyyy-MM}"
+    };
+    return index;
+}

@@ -1,6 +1,5 @@
 ﻿namespace SophieHR.Api.Models.DTOs.Company
 {
-
     public class PostcodeLookup
     {
         public int status { get; set; }

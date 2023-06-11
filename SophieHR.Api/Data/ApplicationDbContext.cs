@@ -75,7 +75,6 @@ namespace SophieHR.Api.Data
             {
                 b.Property(x => x.Title).HasMaxLength(250);
                 b.Property(x => x.NoteType).IsRequired();
-                
             });
 
             builder.Entity<Employee>(b =>

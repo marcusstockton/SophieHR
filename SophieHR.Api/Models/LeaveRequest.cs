@@ -1,6 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using SophieHR.Api.Data;
-namespace SophieHR.Api.Models
+﻿namespace SophieHR.Api.Models
 {
     public class LeaveRequest : Base
     {

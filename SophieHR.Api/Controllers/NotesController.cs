@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SophieHR.Api.Data;
 using SophieHR.Api.Models;
-using SophieHR.Api.Models.DTOs.Company;
 using SophieHR.Api.Models.DTOs.Notes;
 
 namespace SophieHR.Api.Controllers

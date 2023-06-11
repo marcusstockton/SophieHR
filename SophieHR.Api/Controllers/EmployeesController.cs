@@ -82,7 +82,7 @@ namespace SophieHR.Api.Controllers
                 _logger.LogInformation($"No employee found by id {id}");
                 return NotFound();
             }
-            
+
             return Ok(_mapper.Map<EmployeeDetailDto>(employee));
         }
 
@@ -160,7 +160,7 @@ namespace SophieHR.Api.Controllers
                 ModelState.AddModelError(role, "You do not have the permission to create this type of user");
                 return BadRequest(ModelState);
             }
-            var employee = await _context.CreateEmployee(employeeDto, manager,  role);
+            var employee = await _context.CreateEmployee(employeeDto, manager, role);
 
             return CreatedAtAction(nameof(GetEmployee), new { id = employee.Id }, employee);
         }

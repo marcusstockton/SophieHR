@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -9,9 +8,7 @@ using SophieHR.Api.Models;
 using SophieHR.Api.Models.DTOs.Employee;
 using SophieHR.Api.Profiles;
 using SophieHR.Api.Services;
-using SophieHR.Api.Services.Tests;
 using System.Security.Claims;
-using System.Security.Principal;
 
 namespace SophieHR.UnitTests.Services
 {
@@ -80,7 +77,7 @@ namespace SophieHR.UnitTests.Services
         public async Task CreateEmployee_ThrowsException_When_Existing_Username_Passed_In()
         {
             // Arrange
-            EmployeeCreateDto employeeDto = new EmployeeCreateDto { FirstName = "Damien", LastName = "Rice", WorkEmailAddress = "test@test.com"};
+            EmployeeCreateDto employeeDto = new EmployeeCreateDto { FirstName = "Damien", LastName = "Rice", WorkEmailAddress = "test@test.com" };
             Employee manager = null;
             string role = null;
 
@@ -105,7 +102,6 @@ namespace SophieHR.UnitTests.Services
             // Assert
             Assert.IsNotNull(result);
             Assert.IsTrue(result.Id != Guid.Empty);
-            
         }
 
         [TestMethod]
@@ -119,7 +115,7 @@ namespace SophieHR.UnitTests.Services
             Assert.AreEqual(before.Count, 1);
 
             await _service.DeleteEmployee(employeeId);
-            
+
             // Assert
             var after = await _service.GetEmployeesForCompanyId(_companyId1);
             Assert.AreEqual(after.Count, 0);

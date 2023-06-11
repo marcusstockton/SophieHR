@@ -1,7 +1,6 @@
 ﻿using SophieHR.Api.Models.DTOs.Company;
 using SophieHR.Api.Models.DTOs.Department;
 using SophieHR.Api.Models.DTOs.Employee.EmployeeAvatar;
-using SophieHR.Api.Models.DTOs.Notes;
 
 namespace SophieHR.Api.Models.DTOs.Employee
 {

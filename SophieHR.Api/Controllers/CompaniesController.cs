@@ -2,10 +2,8 @@
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using SophieHR.Api.Models.DTOs.Company;
 using SophieHR.Api.Services;
-using System.Net;
 
 namespace SophieHR.Api.Controllers
 {

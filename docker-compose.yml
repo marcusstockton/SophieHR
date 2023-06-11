@@ -1,39 +1,84 @@
-version: '3.4'
-
+version: "3.4"
 services:
-
   sophiehr.ui:
+    container_name: sophiehr.ui
     image: ${DOCKER_REGISTRY-}sophiehr_ui
     build:
-        context: ../sophieHR-angular-material
-        dockerfile: dockerfile
-    ports: 
-      - "4200:80"
+      context: ../sophieHR-angular-material
+      dockerfile: dockerfile
+    ports:
+      - 4200:80
     depends_on:
-     - sophiehr.api
+      - sophiehr.api
+    links:
+      - sophiehr.api 
 
   sophiehr.api:
+    container_name: sophiehr.api
     image: ${DOCKER_REGISTRY-}sophiehr_api
     build:
       context: .
       dockerfile: SophieHR.Api/Dockerfile
     ports:
-      - "7189:443"
-      - "7189:80"
+      - 7189:443
+      - 7189:80
     expose:
-        - "443"
-        - "80"
+      - "443"
+      - "80"
     depends_on:
       - db
+    #  - elasticsearch
+    #links:
+    #  - elasticsearch
+    networks:
+      - elastic
 
   db:
-    image: "mcr.microsoft.com/mssql/server:2022-latest"
+    container_name: db
+    image: mcr.microsoft.com/mssql/server:2022-latest
     environment:
       - ACCEPT_EULA=Y
       - SA_PASSWORD=P@55w0rd123
+    ports:
+      - 1433:1433
     volumes:
-      - "sqlvolume:/var/opt/mssql"
- 
+      - sqlserver_data:/var/opt/mssql
+    networks:
+      - elastic
+
+  elasticsearch:
+    container_name: elasticsearch
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.16.1
+    ports:
+      - 9200:9200
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    environment:
+      - xpack.monitoring.enabled=true
+      - xpack.security.enabled=false
+      - xpack.watcher.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - discovery.type=single-node
+    networks:
+      - elastic
+
+  kibana:
+    container_name: kibana
+    image: docker.elastic.co/kibana/kibana:7.16.1
+    ports:
+      - 5601:5601
+    depends_on:
+      - elasticsearch
+    environment:
+      - ELASTICSEARCH_URL=http://localhost:9200
+    networks:
+      - elastic
+
+networks:
+  elastic:
+    driver: bridge
+
 volumes:
-  sqlvolume:
+  elasticsearch-data:
     driver: local
+  sqlserver_data:

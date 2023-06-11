@@ -19,7 +19,6 @@ namespace SophieHR.Api.Models
         public DateTime? EndOfEmployment { get; set; }
         public Guid AddressId { get; set; }
 
-
         [RegularExpression(@"^[0-9]{10}GBR[0-9]{7}[U,M,F]{1}[0-9]{9}$")]
         public string PassportNumber { get; set; }
 

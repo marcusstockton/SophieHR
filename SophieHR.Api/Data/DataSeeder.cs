@@ -3,7 +3,6 @@ using Bogus.Extensions.UnitedKingdom;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SophieHR.Api.Models;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
 namespace SophieHR.Api.Data
@@ -228,7 +227,7 @@ namespace SophieHR.Api.Data
         {
             var notesFaker = new Faker<Note>("en_GB")
                 .RuleFor(x => x.CreatedDate, f => f.Date.Recent(365))
-                .RuleFor(x=>x.Title, f=>f.WaffleTitle())
+                .RuleFor(x => x.Title, f => f.WaffleTitle())
                 .RuleFor(x => x.Content, f => f.WaffleText(paragraphs: f.Random.Int(1, 3), false));
 
             var Company1deptITEmployees = new Faker<Employee>("en_GB")
@@ -273,7 +272,7 @@ namespace SophieHR.Api.Data
             var notesFaker = new Faker<Note>("en_GB")
                 .RuleFor(x => x.CreatedDate, f => f.Date.Recent(365))
                 .RuleFor(x => x.Title, f => f.WaffleTitle())
-                .RuleFor(x => x.Content, f => f.WaffleText(paragraphs: f.Random.Int(1,3), false));
+                .RuleFor(x => x.Content, f => f.WaffleText(paragraphs: f.Random.Int(1, 3), false));
 
             var Company1deptITManagers = new Faker<Employee>("en_GB")
                 .RuleFor(bp => bp.Gender, f => f.PickRandom<Gender>())

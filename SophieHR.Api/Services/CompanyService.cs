@@ -1,7 +1,5 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
 using SophieHR.Api.Data;
 using SophieHR.Api.Models;
 using SophieHR.Api.Models.DTOs.Company;
@@ -25,9 +23,13 @@ namespace SophieHR.Api.Services
         Task<CompanyDetailDto> CreateNewCompanyAsync(CompanyCreateDto companyDto);
 
         Task<HttpResponseMessage> DeleteCompanyAsync(Guid companyId);
+
         Task<string> GetAutoSuggestion(string search);
+
         Task<string> GetMapFromLatLong(decimal lat, decimal lon, int zoomLevel = 15, int mapType = 3, int width = 2048, short viewType = 1);
+
         Task<string[]> PostcodeAutoComplete(string postcode);
+
         Task<PostcodeLookup> PostCodeLookup(string postcode);
     }
 
@@ -55,7 +57,7 @@ namespace SophieHR.Api.Services
         public async Task<ICollection<CompanyDetailNoLogo>> GetAllCompaniesNoLogoAsync()
         {
             _logger.LogInformation($"{nameof(GetAllCompaniesNoLogoAsync)} called");
-            return _mapper.Map<List<CompanyDetailNoLogo>>(await _context.Companies.AsNoTracking().Include(x=>x.Address).ToListAsync());
+            return _mapper.Map<List<CompanyDetailNoLogo>>(await _context.Companies.AsNoTracking().Include(x => x.Address).ToListAsync());
         }
 
         public async Task<ICollection<KeyValuePair<Guid, string>>> GetCompanyNamesAsync(string username, bool isManager = false)
@@ -77,7 +79,7 @@ namespace SophieHR.Api.Services
             return await _context.Companies
                 .Include(x => x.Address)
                 .Include(x => x.Employees)
-                .Include(x=>x.CompanyConfig)
+                .Include(x => x.CompanyConfig)
                 .AsNoTracking()
                 .Select(x => new CompanyDetailDto
                 {
@@ -95,7 +97,7 @@ namespace SophieHR.Api.Services
         public async Task<Company> FindCompanyByIdAsync(Guid id)
         {
             _logger.LogInformation($"{nameof(FindCompanyByIdAsync)} called");
-            return await _context.Companies.AsNoTracking().SingleAsync(x=>x.Id == id);
+            return await _context.Companies.AsNoTracking().SingleAsync(x => x.Id == id);
         }
 
         public async Task<HttpResponseMessage> UpdateCompanyAsync(Guid id, CompanyDetailNoLogo companyDetail)
@@ -132,7 +134,6 @@ namespace SophieHR.Api.Services
                 _logger.LogError(ex, $"An exception was thrown when trying to update Company id {id}");
                 throw;
             }
-
         }
 
         public async Task<HttpResponseMessage> UploadLogoForCompanyAsync(Guid id, IFormFile logo)
@@ -170,7 +171,7 @@ namespace SophieHR.Api.Services
         {
             _logger.LogInformation($"{nameof(CreateNewCompanyAsync)} called");
             var company = _mapper.Map<Company>(companyDto);
-            if(_context.Companies.Any(x=>x.Name == companyDto.Name))
+            if (_context.Companies.Any(x => x.Name == companyDto.Name))
             {
                 throw new Exception("Company with this name already exists!");
             }
@@ -217,7 +218,7 @@ namespace SophieHR.Api.Services
             return null;
         }
 
-        public async Task<string> GetMapFromLatLong(decimal lat, decimal lon, int zoomLevel = 15, int mapType = 3, int width = 2048, short viewType=1)
+        public async Task<string> GetMapFromLatLong(decimal lat, decimal lon, int zoomLevel = 15, int mapType = 3, int width = 2048, short viewType = 1)
         {
             _logger.LogInformation($"{nameof(GetMapFromLatLong)} Getting Map for lat lon {lat} {lon}");
             var height = 300;
@@ -233,14 +234,15 @@ namespace SophieHR.Api.Services
 
             var client = _httpClientFactory.CreateClient("postcodesioClient");
             var url = $"{postcode}/autocomplete";
-                var response = await client.GetFromJsonAsync<PostcodeAutoComplate>(url);
-                if (response.status == 200)
-                {
-                    return response.result;
-                }
-            
+            var response = await client.GetFromJsonAsync<PostcodeAutoComplate>(url);
+            if (response.status == 200)
+            {
+                return response.result;
+            }
+
             return null;
         }
+
         public async Task<PostcodeLookup> PostCodeLookup(string postcode)
         {
             _logger.LogInformation($"{nameof(PostcodeAutoComplete)} querying postcode {postcode}");
@@ -248,15 +250,15 @@ namespace SophieHR.Api.Services
             {
                 var client = _httpClientFactory.CreateClient("postcodesioClient");
                 var url = $"{postcode}";
-                    var response = await client.GetFromJsonAsync<PostcodeLookup>(url);
-                    if (response.status == 200)
-                    {
-                        return response;
-                    }
-                    else
-                    {
-                        throw new ArgumentException("Invalid Postcode");
-                    }
+                var response = await client.GetFromJsonAsync<PostcodeLookup>(url);
+                if (response.status == 200)
+                {
+                    return response;
+                }
+                else
+                {
+                    throw new ArgumentException("Invalid Postcode");
+                }
             }
             throw new ArgumentException("Invalid Postcode supplied");
         }
@@ -265,16 +267,16 @@ namespace SophieHR.Api.Services
         {
             var client = _httpClientFactory.CreateClient("postcodesioClient");
             var url = $"{postcode}/validate";
-                var response = await client.GetAsync(url);
-                if (response.IsSuccessStatusCode)
-                {
-                    var jsonData = await response.Content.ReadFromJsonAsync<VerifyPostcodeResult>();
-                    return jsonData.Result;                    
-                }
-                return false;
+            var response = await client.GetAsync(url);
+            if (response.IsSuccessStatusCode)
+            {
+                var jsonData = await response.Content.ReadFromJsonAsync<VerifyPostcodeResult>();
+                return jsonData.Result;
+            }
+            return false;
         }
 
-        class PostcodeAutoComplate
+        private class PostcodeAutoComplate
         {
             public int status { get; set; }
             public string[] result { get; set; }

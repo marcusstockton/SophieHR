@@ -130,7 +130,7 @@ namespace SophieHR.Api.Services
             _logger.LogInformation($"{nameof(GetEmployeesForManager)} called.");
             var employees = await _context.Employees
                 .Include(x => x.Department)
-                .Include(x=>x.Address)
+                .Include(x => x.Address)
                 .Where(x => x.Manager.Id == managerId)
                 .AsNoTracking()
                 .ToListAsync();
