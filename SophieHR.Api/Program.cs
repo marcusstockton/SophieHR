@@ -7,7 +7,9 @@ using NSwag;
 using NSwag.Generation.Processors.Security;
 using Serilog;
 using Serilog.Exceptions;
+using Serilog.Formatting.Json;
 using Serilog.Sinks.Elasticsearch;
+using Serilog.Sinks.File;
 using SophieHR.Api.Data;
 using SophieHR.Api.Extensions;
 using SophieHR.Api.Models;
@@ -158,6 +160,7 @@ void ConfigureLogging()
     Log.Logger = new LoggerConfiguration()
         .Enrich.FromLogContext()
         .Enrich.WithExceptionDetails()
+        .Enrich.WithEnvironmentName()
         .Enrich.WithMachineName()
         .WriteTo.Debug()
         .WriteTo.Console()
@@ -172,7 +175,10 @@ ElasticsearchSinkOptions ConfigureElasticSink(IConfigurationRoot configuration, 
     var index = new ElasticsearchSinkOptions(new Uri(configuration["ElasticConfiguration:Uri"]))
     {
         AutoRegisterTemplate = true,
-        IndexFormat = $"{Assembly.GetExecutingAssembly().GetName().Name.ToLower().Replace(".", "-")}-{environment?.ToLower().Replace(".", "-")}-{DateTime.UtcNow:yyyy-MM}"
+        IndexFormat = $"{Assembly.GetExecutingAssembly().GetName().Name.ToLower().Replace(".", "-")}-{environment?.ToLower().Replace(".", "-")}-{DateTime.UtcNow:yyyy-MM}",
+        FailureCallback = e => Console.WriteLine("Unable to submit event:- " + e.MessageTemplate),
+        EmitEventFailure = EmitEventFailureHandling.WriteToSelfLog | EmitEventFailureHandling.WriteToFailureSink | EmitEventFailureHandling.RaiseCallback,
+        //FailureSink = new FileSink("./failures.txt", new JsonFormatter(), null),
     };
     return index;
 }

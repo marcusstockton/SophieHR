@@ -10,8 +10,7 @@ services:
       - 4200:80
     depends_on:
       - sophiehr.api
-    links:
-      - sophiehr.api 
+
 
   sophiehr.api:
     container_name: sophiehr.api
@@ -27,11 +26,9 @@ services:
       - "80"
     depends_on:
       - db
-    #  - elasticsearch
-    #links:
-    #  - elasticsearch
+      - elasticsearch
     networks:
-      - elastic
+      - docker-network
 
   db:
     container_name: db
@@ -44,7 +41,7 @@ services:
     volumes:
       - sqlserver_data:/var/opt/mssql
     networks:
-      - elastic
+      - docker-network
 
   elasticsearch:
     container_name: elasticsearch
@@ -54,13 +51,12 @@ services:
     volumes:
       - elasticsearch-data:/usr/share/elasticsearch/data
     environment:
-      - xpack.monitoring.enabled=true
-      - xpack.security.enabled=false
-      - xpack.watcher.enabled=false
-      - ES_JAVA_OPTS=-Xms512m -Xmx512m
-      - discovery.type=single-node
+      - ELASTIC_CLIENT_VERSIONING=1  
+      - xpack.security.enabled=false  
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"  
+      - discovery.type=single-node  
     networks:
-      - elastic
+      - docker-network
 
   kibana:
     container_name: kibana
@@ -70,12 +66,13 @@ services:
     depends_on:
       - elasticsearch
     environment:
-      - ELASTICSEARCH_URL=http://localhost:9200
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
     networks:
-      - elastic
+      - docker-network
 
 networks:
-  elastic:
+  docker-network:
     driver: bridge
 
 volumes:
