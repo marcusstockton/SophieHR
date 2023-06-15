@@ -30,6 +30,7 @@ services:
     networks:
       - docker-network
 
+
   db:
     container_name: db
     image: mcr.microsoft.com/mssql/server:2022-latest
@@ -42,6 +43,7 @@ services:
       - sqlserver_data:/var/opt/mssql
     networks:
       - docker-network
+
 
   elasticsearch:
     container_name: elasticsearch
@@ -58,6 +60,7 @@ services:
     networks:
       - docker-network
 
+
   kibana:
     container_name: kibana
     image: docker.elastic.co/kibana/kibana:7.16.1
@@ -71,6 +74,37 @@ services:
     networks:
       - docker-network
 
+
+  prometheus:
+    image: quay.io/prometheus/prometheus:latest
+    ports:
+      - "9090:9090"
+    configs:
+      - source: prometheus_config
+        target: /etc/prometheus/prometheus.yml
+    volumes:
+      - ./prometheus/:/etc/prometheus/
+      - prometheus_data:/prometheus
+    depends_on:
+      - sophiehr.api
+    networks:
+      - docker-network
+
+
+  grafana:
+    image : grafana/grafana
+    depends_on: 
+      - prometheus
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=AwkX512Xkcd
+      - GF_USERS_ALLOW_SIGN_UP=false
+    networks:
+      - docker-network
+
 networks:
   docker-network:
     driver: bridge
@@ -79,3 +113,10 @@ volumes:
   elasticsearch-data:
     driver: local
   sqlserver_data:
+  prometheus_data:
+  grafana_data:
+
+
+configs:
+  prometheus_config:
+    file: prometheus.yml

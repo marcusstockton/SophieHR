@@ -1,0 +1,22 @@
+﻿scrape_configs:
+  - job_name: prometheus
+    metrics_path: /metrics
+    static_configs:
+    - targets: ['prometheus:9090']
+
+  - job_name: 'sophie_hr_api'
+    tls_config:
+     insecure_skip_verify: true
+    metrics_path: /metrics
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    scheme: https
+    
+    static_configs:
+      - targets: 
+        - 'host.docker.internal:7189'
+    #dns_sd_configs:
+    #  - names:
+    #    - 'tasks.sophiehr.api'
+    #    type: 'A'
+    #    port: 443

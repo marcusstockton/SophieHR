@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using NSwag;
 using NSwag.Generation.Processors.Security;
+using Prometheus;
 using Serilog;
 using Serilog.Exceptions;
 using Serilog.Formatting.Json;
@@ -116,6 +117,7 @@ builder.Services.AddResponseCaching();
 
 var app = builder.Build();
 
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -136,6 +138,23 @@ if (app.Environment.IsDevelopment())
 // Register the Swagger generator and the Swagger UI middlewares
 app.UseOpenApi();
 app.UseSwaggerUi3();
+
+app.UseMetricServer();
+
+app.Use((context, next) =>
+{
+    // Http Context
+    var counter = Metrics.CreateCounter
+    ("PathCounter", "Count request",
+    new CounterConfiguration
+    {
+        LabelNames = new[] { "method", "endpoint" }
+    });
+    // method: GET, POST etc.
+    // endpoint: Requested path
+    counter.WithLabels(context.Request.Method, context.Request.Path).Inc();
+    return next();
+});
 
 app.UseCors("CorsPolicy");
 app.UseHttpsRedirection();
