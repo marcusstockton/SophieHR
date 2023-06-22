@@ -18,6 +18,8 @@ services:
     build:
       context: .
       dockerfile: SophieHR.Api/Dockerfile
+    environment:
+      HERE_Maps_API_Key: ${HERE_Maps_API_Key}  # Read from .env file. Styled like: HERE_Maps_API_Key=1234
     ports:
       - 7189:443
       - 7189:80
@@ -115,7 +117,6 @@ volumes:
   sqlserver_data:
   prometheus_data:
   grafana_data:
-
 
 configs:
   prometheus_config:

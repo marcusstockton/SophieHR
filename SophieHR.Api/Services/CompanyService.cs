@@ -48,7 +48,7 @@ namespace SophieHR.Api.Services
             _context = context;
             _mapper = mapper;
             _logger = logger;
-            _apiKey = Environment.GetEnvironmentVariable("HERE_Maps_API_Key", EnvironmentVariableTarget.User);
+            _apiKey = Environment.GetEnvironmentVariable("HERE_Maps_API_Key");
             _ukLatLong = "55.3781,3.4360"; // UK lat/lon
             _countryCode = "GBP";
             _httpClientFactory = httpClientFactory;
@@ -122,7 +122,7 @@ namespace SophieHR.Api.Services
             try
             {
                 var updatedCompany = _mapper.Map<Company>(companyDetail);
-
+                updatedCompany.Logo = originalCompany.Logo;
                 _context.Entry(originalCompany).CurrentValues.SetValues(updatedCompany);
                 _context.Entry(originalCompany.Address).CurrentValues.SetValues(updatedCompany.Address);
 
@@ -220,6 +220,11 @@ namespace SophieHR.Api.Services
 
         public async Task<string> GetMapFromLatLong(decimal lat, decimal lon, int zoomLevel = 15, int mapType = 3, int width = 2048, short viewType = 1)
         {
+            if(_apiKey == null)
+            {
+                _logger.LogError("API Key is null");
+                return string.Empty;
+            }
             _logger.LogInformation($"{nameof(GetMapFromLatLong)} Getting Map for lat lon {lat} {lon}");
             var height = 300;
             var client = _httpClientFactory.CreateClient("imageHereApiClient");

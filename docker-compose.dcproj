@@ -9,11 +9,13 @@
     <DockerServiceName>sophiehr.api</DockerServiceName>
   </PropertyGroup>
   <ItemGroup>
+    <None Include=".env" />
     <None Include="docker-compose.override.yml">
       <DependentUpon>docker-compose.yml</DependentUpon>
     </None>
     <None Include="docker-compose.yml" />
     <None Include=".dockerignore" />
+    <None Include="here_api_key.txt" />
     <None Include="prometheus.yml" />
   </ItemGroup>
 </Project>
