@@ -121,7 +121,7 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    if (builder.Configuration.GetValue<bool>("ReseedDummyData") && app.Environment.IsDevelopment())
+    if (builder.Configuration.GetValue<bool>("ReseedDummyData"))
     {
         using (var scope = app.Services.CreateScope())
         {
