@@ -1,4 +1,4 @@
-
+This project is really just my first attempt at using docker and adding some useful metric tracking.
 
 
 Useful Links:

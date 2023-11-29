@@ -15,7 +15,6 @@
     </None>
     <None Include="docker-compose.yml" />
     <None Include=".dockerignore" />
-    <None Include="here_api_key.txt" />
     <None Include="prometheus.yml" />
   </ItemGroup>
 </Project>
