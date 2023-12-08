@@ -8,9 +8,7 @@ using NSwag.Generation.Processors.Security;
 using Prometheus;
 using Serilog;
 using Serilog.Exceptions;
-using Serilog.Formatting.Json;
 using Serilog.Sinks.Elasticsearch;
-using Serilog.Sinks.File;
 using SophieHR.Api.Data;
 using SophieHR.Api.Extensions;
 using SophieHR.Api.Models;
@@ -117,7 +115,6 @@ builder.Services.AddResponseCaching();
 
 var app = builder.Build();
 
-
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -144,12 +141,7 @@ app.UseMetricServer();
 app.Use((context, next) =>
 {
     // Http Context
-    var counter = Metrics.CreateCounter
-    ("PathCounter", "Count request",
-    new CounterConfiguration
-    {
-        LabelNames = new[] { "method", "endpoint" }
-    });
+    var counter = Metrics.CreateCounter("PathCounter", "Count request", new CounterConfiguration { LabelNames = new[] { "method", "endpoint" } });
     // method: GET, POST etc.
     // endpoint: Requested path
     counter.WithLabels(context.Request.Method, context.Request.Path).Inc();
@@ -163,6 +155,18 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Apply any migrations to the docker image
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+
+    var context = services.GetRequiredService<ApplicationDbContext>();
+    if (context.Database.GetPendingMigrations().Any())
+    {
+        context.Database.Migrate();
+    }
+}
 
 app.Run();
 

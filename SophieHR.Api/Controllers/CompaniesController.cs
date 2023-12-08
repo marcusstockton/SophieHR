@@ -118,7 +118,7 @@ namespace SophieHR.Api.Controllers
         public async Task<IActionResult> GetMapFromLatLong(decimal lat, decimal lon, int zoomLevel = 15, int mapType = 3, int width = 2048, short viewType = 1)
         {
             var result = await _companyService.GetMapFromLatLong(lat, lon, zoomLevel, mapType, width, viewType);
-            if(result.Length > 0)
+            if (result.Length > 0)
             {
                 return Ok(result);
             }

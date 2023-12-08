@@ -20,11 +20,23 @@ namespace SophieHR.Api.Controllers
             _mapper = mapper;
         }
 
+        [HttpGet("GetLeaveTypes")]
+        public IActionResult GetLeaveTypes()
+        {
+            var dict = new Dictionary<int, string>();
+            foreach (var name in Enum.GetNames(typeof(LeaveType)))
+            {
+                dict.Add((int)Enum.Parse(typeof(LeaveType), name), name);
+            }
+            return Ok(dict);
+        }
+
         // GET: api/LeaveRequests
         [HttpGet("GetLeaveRequestsForEmployee/{employeeId}")]
         public async Task<ActionResult<IEnumerable<LeaveRequest>>> GetLeaveRequestsForEmployee(Guid employeeId)
         {
-            return await _context.LeaveRequests.Where(x => x.EmployeeId == employeeId).ToListAsync();
+            var results = await _context.LeaveRequests.Where(x => x.EmployeeId == employeeId).ToListAsync();
+            return Ok(results);
         }
 
         // GET: api/LeaveRequests/5
@@ -81,10 +93,19 @@ namespace SophieHR.Api.Controllers
         {
             var leaveRequest = _mapper.Map<LeaveRequest>(leaveRequestDto);
 
+            var existingLeave = _context.LeaveRequests.Where(x => x.EmployeeId == leaveRequest.EmployeeId && (x.StartDate == leaveRequestDto.StartDate || x.EndDate == leaveRequestDto.EndDate)).AsEnumerable();
+            if (existingLeave.Any())
+            {
+                return BadRequest("A Leave Request already exists between these dates.");
+            }
+
             _context.LeaveRequests.Add(leaveRequest);
+
+            //TODO: calcuate the time to take off of leave allowance:
+
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetLeaveRequest", new { id = leaveRequest.Id }, leaveRequest);
+            return Created();
         }
 
         // DELETE: api/LeaveRequests/5

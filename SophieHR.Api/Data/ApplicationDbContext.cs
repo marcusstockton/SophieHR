@@ -46,6 +46,7 @@ namespace SophieHR.Api.Data
             {
                 b.Property(x => x.EmployeeId).IsRequired();
                 b.HasIndex(x => x.EmployeeId);
+                b.Property(x => x.LeaveType).HasConversion<int>().IsRequired();
             });
 
             builder.Entity<Address>(b =>

@@ -264,6 +264,15 @@ namespace SophieHR.Api.Data
             var num = Faker.RandomNumber.Next(8, 20);
             var users = Company1deptITEmployees.Generate(num);
             await context.Employees.AddRangeAsync(users);
+
+            var leaveFaker = new Faker<LeaveRequest>("en_GB")
+                .RuleFor(x => x.StartDate, f => f.Date.Future())
+                .RuleFor(x => x.EndDate, (f, u) => f.Date.Soon(1, u.StartDate.Date))
+                .RuleFor(x => x.StartDateFirstHalf, f => f.Random.Bool())
+                .RuleFor(x => x.EndDateFirstHalf, f => f.Random.Bool())
+                .RuleFor(x => x.EmployeeId, f => f.PickRandom(users.Select(x => x.Id)))
+                .RuleFor(x => x.LeaveType, f => f.PickRandom<LeaveType>());
+
             return users;
         }
 

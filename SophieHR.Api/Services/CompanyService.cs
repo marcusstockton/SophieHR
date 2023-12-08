@@ -220,7 +220,7 @@ namespace SophieHR.Api.Services
 
         public async Task<string> GetMapFromLatLong(decimal lat, decimal lon, int zoomLevel = 15, int mapType = 3, int width = 2048, short viewType = 1)
         {
-            if(_apiKey == null)
+            if (_apiKey == null)
             {
                 _logger.LogError("API Key is null");
                 return string.Empty;
