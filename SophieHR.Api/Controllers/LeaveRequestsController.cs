@@ -21,7 +21,7 @@ namespace SophieHR.Api.Controllers
         }
 
         [HttpGet("GetLeaveTypes")]
-        public IActionResult GetLeaveTypes()
+        public ActionResult<Dictionary<int, string>> GetLeaveTypes()
         {
             var dict = new Dictionary<int, string>();
             foreach (var name in Enum.GetNames(typeof(LeaveType)))

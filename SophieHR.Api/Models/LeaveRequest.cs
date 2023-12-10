@@ -11,6 +11,7 @@
         public bool EndDateFirstHalf { get; set; }
         public bool EndDateSecondHalf { get; set; }
         public bool Approved { get; set; }
+        public string Comments { get; set; }
         public LeaveType LeaveType { get; set; }
     }
 }

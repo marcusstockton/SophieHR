@@ -44,8 +44,9 @@ namespace SophieHR.Api.Data
 
             builder.Entity<LeaveRequest>(b =>
             {
-                b.Property(x => x.EmployeeId).IsRequired();
                 b.HasIndex(x => x.EmployeeId);
+                b.Property(x => x.EmployeeId).IsRequired();
+                b.Property(x => x.Comments).HasMaxLength(250);
                 b.Property(x => x.LeaveType).HasConversion<int>().IsRequired();
             });
 
