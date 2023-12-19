@@ -26,10 +26,14 @@ namespace SophieHR.Api.Models.DTOs.Employee
         public DateTime? EndOfEmployment { get; set; }
         public string? PassportNumber { get; set; }
         public string? NationalInsuranceNumber { get; set; }
-        public virtual EmployeeAddress Address { get; set; }
+        public Guid? AddressId { get; set; }
         public Guid? ManagerId { get; set; }
+        public Guid? CompanyId { get; set; }
+        public Guid? DepartmentId { get; set; }
+        public Guid? EmployeeAvatarId { get; set; }
         public EmployeeAvatarDetail? Avatar { get; set; }
         public virtual DepartmentIdNameDto? Department { get; set; }
         public virtual CompanyIdNameDto Company { get; set; }
+        public virtual EmployeeAddress Address { get; set; }
     }
 }

@@ -116,6 +116,11 @@ namespace SophieHR.Api.Controllers
             }
 
             var employee = await _context.UpdateEmployee(employeeDetail);
+            if (employee == null)
+            {
+                return StatusCode(500);
+            }
+
             return Ok(employee);
         }
 

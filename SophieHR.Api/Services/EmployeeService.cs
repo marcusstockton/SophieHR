@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using SophieHR.Api.Data;
 using SophieHR.Api.Models;
 using SophieHR.Api.Models.DTOs.Employee;
+using System.Data;
 using System.Security.Claims;
 
 namespace SophieHR.Api.Services
@@ -174,9 +175,21 @@ namespace SophieHR.Api.Services
             }
             _mapper.Map(employeeDto, originalEmployee);
             _context.Employees.Update(originalEmployee);
-            await _context.SaveChangesAsync();
-
-            return _mapper.Map<EmployeeDetailDto>(originalEmployee);
+            try
+            {
+                await _context.SaveChangesAsync();
+                return _mapper.Map<EmployeeDetailDto>(originalEmployee);
+            }
+            catch (DBConcurrencyException ex)
+            {
+                _logger.LogError(ex, $"Database error occured when updating employee id {employeeDto.Id}");
+                return null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error updating employee id {employeeDto.Id}");
+                return null;
+            }
         }
 
         public async Task UploadAvatarToEmployee(Guid id, IFormFile avatar)
