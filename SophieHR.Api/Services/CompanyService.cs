@@ -230,6 +230,7 @@ namespace SophieHR.Api.Services
             var client = _httpClientFactory.CreateClient("imageHereApiClient");
             var url = $"?apiKey={_apiKey}&c={lat},{lon}&vt={viewType}&z={zoomLevel}&h={height}&w={width}";
             var response = await client.GetByteArrayAsync(url);
+            
             return Convert.ToBase64String(response);
         }
 
