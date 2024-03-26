@@ -1,15 +1,15 @@
 version: "3.4"
 services:
-  # sophiehr.ui:
-  #   container_name: sophiehr.ui
-  #   image: ${DOCKER_REGISTRY-}sophiehr_ui
-  #   build:
-  #     context: ../sophieHR-angular-material
-  #     dockerfile: dockerfile
-  #   ports:
-  #     - 4200:80
-  #   depends_on:
-  #     - sophiehr.api
+  sophiehr.ui:
+    container_name: sophiehr.ui
+    image: ${DOCKER_REGISTRY-}sophiehr_ui
+    build:
+      context: ../sophieHR-angular-material
+      dockerfile: dockerfile
+    ports:
+      - 4200:80
+    depends_on:
+      - sophiehr.api
 
 
   sophiehr.api:

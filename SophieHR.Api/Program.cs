@@ -199,7 +199,7 @@ ElasticsearchSinkOptions ConfigureElasticSink(IConfigurationRoot configuration, 
     {
         AutoRegisterTemplate = true,
         IndexFormat = $"{Assembly.GetExecutingAssembly().GetName().Name.ToLower().Replace(".", "-")}-{environment?.ToLower().Replace(".", "-")}-{DateTime.UtcNow:yyyy-MM}",
-        FailureCallback = e => Console.WriteLine("Unable to submit event:- " + e.MessageTemplate),
+        FailureCallback = (e, r) => Console.WriteLine("Unable to submit event:- " + e.MessageTemplate),
         EmitEventFailure = EmitEventFailureHandling.WriteToSelfLog | EmitEventFailureHandling.WriteToFailureSink | EmitEventFailureHandling.RaiseCallback,
         //FailureSink = new FileSink("./failures.txt", new JsonFormatter(), null),
     };
