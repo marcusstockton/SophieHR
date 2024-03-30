@@ -172,7 +172,7 @@ namespace SophieHR.Api.Controllers
         {
             _logger.LogInformation($"{nameof(GetListOfCompanyAdminsAsync)} Called");
             var managers = await _userManager.GetUsersInRoleAsync("Manager");
-            
+
             return Ok(_mapper.Map<List<string>>(managers.Select(x => x.UserName).ToList()));
         }
 

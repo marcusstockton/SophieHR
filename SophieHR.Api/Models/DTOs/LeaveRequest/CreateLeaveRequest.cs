@@ -12,6 +12,7 @@ namespace SophieHR.Api.Models.DTOs.LeaveRequest
         public bool EndDateFirstHalf { get; set; }
         public bool EndDateSecondHalf { get; set; }
         public LeaveType LeaveType { get; set; }
+
         [MaxLength(250)]
         public string Comments { get; set; }
     }

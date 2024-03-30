@@ -175,7 +175,6 @@ namespace SophieHR.Api.Controllers
             {
                 return StatusCode(500, ex.Message);
             }
-            
         }
 
         // DELETE: api/Employees/5

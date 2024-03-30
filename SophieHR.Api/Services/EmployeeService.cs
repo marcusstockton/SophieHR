@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using SophieHR.Api.Data;
 using SophieHR.Api.Models;
 using SophieHR.Api.Models.DTOs.Employee;
@@ -54,7 +53,7 @@ namespace SophieHR.Api.Services
         {
             _logger.LogInformation($"{nameof(CreateEmployee)} called.");
             var employee = _mapper.Map<Employee>(employeeDto);
-            if (!_context.Employees.Select(x=>x.WorkEmailAddress).Any(x => x == employee.WorkEmailAddress))
+            if (!_context.Employees.Select(x => x.WorkEmailAddress).Any(x => x == employee.WorkEmailAddress))
             {
                 if (string.IsNullOrEmpty(employeeDto.ManagerId) && role == "User")
                 {
@@ -69,8 +68,8 @@ namespace SophieHR.Api.Services
                     {
                         _logger.LogError($"{nameof(CreateEmployee)} failed to create the user. {item.Code}:- {item.Description}");
                     }
-                    
-                    throw new ArgumentException( created.Errors.Select(x => x.Description).ToArray().ToString());
+
+                    throw new ArgumentException(created.Errors.Select(x => x.Description).ToArray().ToString());
                 }
                 var userrole = await _roleManager.FindByNameAsync(role);
                 if (userrole != null)
@@ -87,7 +86,6 @@ namespace SophieHR.Api.Services
                     _logger.LogError(ex, "Error saving the employee record");
                     throw;
                 }
-                
             }
             else
             {

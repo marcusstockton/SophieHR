@@ -51,6 +51,7 @@ namespace SophieHR.Api.Models.DTOs.Employee
 
         [MaxLength(9), RegularExpression("^[A-Za-z]{2}[0-9]{6}[A-Za-z]{1}$", ErrorMessage = "Invalid Nino.")]
         public string? NationalInsuranceNumber { get; set; }
+
         public string? ManagerId { get; set; }
         public string JobTitle { get; set; }
     }
