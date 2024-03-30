@@ -31,7 +31,7 @@ namespace SophieHR.Api.Models.DTOs.Employee
         public Guid? CompanyId { get; set; }
         public Guid? DepartmentId { get; set; }
         public Guid? EmployeeAvatarId { get; set; }
-        public EmployeeAvatarDetail? Avatar { get; set; }
+        public virtual EmployeeAvatarDetail? Avatar { get; set; }
         public virtual DepartmentIdNameDto? Department { get; set; }
         public virtual CompanyIdNameDto Company { get; set; }
         public virtual EmployeeAddress Address { get; set; }

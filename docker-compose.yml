@@ -1,15 +1,15 @@
 version: "3.4"
 services:
-  sophiehr.ui:
-    container_name: sophiehr.ui
-    image: ${DOCKER_REGISTRY-}sophiehr_ui
-    build:
-      context: ../sophieHR-angular-material
-      dockerfile: dockerfile
-    ports:
-      - 4200:80
-    depends_on:
-      - sophiehr.api
+  # sophiehr.ui:
+  #   container_name: sophiehr.ui
+  #   image: ${DOCKER_REGISTRY-}sophiehr_ui
+  #   build:
+  #     context: ../sophieHR-angular-material
+  #     dockerfile: dockerfile
+  #   ports:
+  #     - 4200:80
+  #   depends_on:
+  #     - sophiehr.api
 
 
   sophiehr.api:
@@ -49,7 +49,7 @@ services:
 
   elasticsearch:
     container_name: elasticsearch
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.1
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.0
     ports:
       - 9200:9200
     volumes:
@@ -63,7 +63,7 @@ services:
 
   kibana:
     container_name: kibana
-    image: docker.elastic.co/kibana/kibana:8.11.1
+    image: docker.elastic.co/kibana/kibana:8.13.0
     ports:
       - 5601:5601
     depends_on:

@@ -69,8 +69,9 @@ namespace SophieHR.UnitTests.Services
 
             var UserStoreMock = Mock.Of<IUserStore<ApplicationUser>>();
             var userMgr = new Mock<UserManager<ApplicationUser>>(UserStoreMock, null, null, null, null, null, null, null, null);
+            var roleManager = new Mock<RoleManager<IdentityRole<Guid>>>();
 
-            _service = new EmployeeService(_context, userMgr.Object, mapper, mockLogger.Object);
+            _service = new EmployeeService(_context, userMgr.Object, roleManager.Object, mapper, mockLogger.Object);
         }
 
         [TestMethod]

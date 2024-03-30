@@ -165,9 +165,17 @@ namespace SophieHR.Api.Controllers
                 ModelState.AddModelError(role, "You do not have the permission to create this type of user");
                 return BadRequest(ModelState);
             }
-            var employee = await _context.CreateEmployee(employeeDto, manager, role);
+            try
+            {
+                var employee = await _context.CreateEmployee(employeeDto, manager, role);
 
-            return CreatedAtAction(nameof(GetEmployee), new { id = employee.Id }, employee);
+                return Created();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+            
         }
 
         // DELETE: api/Employees/5

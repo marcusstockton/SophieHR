@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using SophieHR.Api.Data;
 using SophieHR.Api.Models;
 using SophieHR.Api.Models.DTOs.Employee;
@@ -36,13 +37,15 @@ namespace SophieHR.Api.Services
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly RoleManager<IdentityRole<Guid>> _roleManager;
         private readonly IMapper _mapper;
         private readonly ILogger<EmployeeService> _logger;
 
-        public EmployeeService(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IMapper mapper, ILogger<EmployeeService> logger)
+        public EmployeeService(ApplicationDbContext context, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole<Guid>> roleManager, IMapper mapper, ILogger<EmployeeService> logger)
         {
             _context = context;
             _userManager = userManager;
+            _roleManager = roleManager;
             _mapper = mapper;
             _logger = logger;
         }
@@ -51,19 +54,40 @@ namespace SophieHR.Api.Services
         {
             _logger.LogInformation($"{nameof(CreateEmployee)} called.");
             var employee = _mapper.Map<Employee>(employeeDto);
-            if (!_context.Employees.Any(x => x.Email == employee.WorkEmailAddress))
+            if (!_context.Employees.Select(x=>x.WorkEmailAddress).Any(x => x == employee.WorkEmailAddress))
             {
                 if (string.IsNullOrEmpty(employeeDto.ManagerId) && role == "User")
                 {
                     throw new ArgumentNullException("ManagerId", "A valid managerId is required");
                 }
                 employee.Manager = _mapper.Map<Employee>(manager);
-                employee.UserName = employeeDto.WorkEmailAddress;
-                var newEmployee = await _context.Employees.AddAsync(employee);
-                await _userManager.CreateAsync(employee, "P@55w0rd1");
-                await _userManager.AddToRoleAsync(employee, role);
-                await _context.SaveChangesAsync();
-                return employee;
+                employee.Email = employeeDto.WorkEmailAddress;
+                var created = await _userManager.CreateAsync(employee, "P@55w0rd1");
+                if (!created.Succeeded)
+                {
+                    foreach (var item in created.Errors)
+                    {
+                        _logger.LogError($"{nameof(CreateEmployee)} failed to create the user. {item.Code}:- {item.Description}");
+                    }
+                    
+                    throw new ArgumentException( created.Errors.Select(x => x.Description).ToArray().ToString());
+                }
+                var userrole = await _roleManager.FindByNameAsync(role);
+                if (userrole != null)
+                {
+                    IdentityResult roleResult = await _userManager.AddToRoleAsync(employee, userrole.Name);
+                }
+                try
+                {
+                    await _context.SaveChangesAsync();
+                    return employee;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error saving the employee record");
+                    throw;
+                }
+                
             }
             else
             {
