@@ -94,6 +94,7 @@ namespace SophieHR.Api.Data
                 b.HasOne(x => x.Avatar).WithOne(x => x.Employee).HasForeignKey<EmployeeAvatar>(x => x.EmployeeId);
                 b.HasOne(x => x.Company).WithMany(x => x.Employees).HasForeignKey(x => x.CompanyId).OnDelete(DeleteBehavior.Restrict);
                 b.HasOne(x => x.Department).WithMany().HasForeignKey(x => x.DepartmentId).OnDelete(DeleteBehavior.Restrict);
+                b.HasOne(x => x.Manager).WithMany().HasForeignKey(x=>x.ManagerId).OnDelete(DeleteBehavior.Restrict);
                 b.HasOne(x => x.Address).WithOne();
                 //b.HasMany<Note>().WithOne().HasForeignKey(x => x.EmployeeId);
             });

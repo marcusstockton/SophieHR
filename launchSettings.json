@@ -3,8 +3,16 @@
     "Docker Compose": {
       "commandName": "DockerCompose",
       "commandVersion": "1.0",
+      "composeLaunchAction": "LaunchBrowser",
+      "composeLaunchServiceName": "sophiehr.api",
+      "composeLaunchUrl": "{Scheme}://localhost:{ServicePort}/swagger",
       "serviceActions": {
-        "sophiehr.api": "StartDebugging"
+        "sophiehr.api": "StartDebugging",
+        "db": "StartWithoutDebugging",
+        "elasticsearch": "StartWithoutDebugging",
+        "grafana": "StartWithoutDebugging",
+        "kibana": "StartWithoutDebugging",
+        "prometheus": "StartWithoutDebugging"
       }
     }
   }

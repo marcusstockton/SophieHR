@@ -21,7 +21,7 @@ namespace SophieHR.Api.Services
 
         Task<Employee> GetEmployeeByUsername(string username);
 
-        Task UploadAvatarToEmployee(Guid id, IFormFile avatar);
+        Task<EmployeeAvatar> UploadAvatarToEmployee(Guid id, IFormFile avatar);
 
         Task<EmployeeDetailDto> UpdateEmployee(EmployeeDetailDto employeeDto);
 
@@ -59,33 +59,39 @@ namespace SophieHR.Api.Services
                 {
                     throw new ArgumentNullException("ManagerId", "A valid managerId is required");
                 }
-                employee.Manager = _mapper.Map<Employee>(manager);
                 employee.Email = employeeDto.WorkEmailAddress;
-                var created = await _userManager.CreateAsync(employee, "P@55w0rd1");
-                if (!created.Succeeded)
-                {
-                    foreach (var item in created.Errors)
-                    {
-                        _logger.LogError($"{nameof(CreateEmployee)} failed to create the user. {item.Code}:- {item.Description}");
-                    }
-
-                    throw new ArgumentException(created.Errors.Select(x => x.Description).ToArray().ToString());
-                }
-                var userrole = await _roleManager.FindByNameAsync(role);
-                if (userrole != null)
-                {
-                    IdentityResult roleResult = await _userManager.AddToRoleAsync(employee, userrole.Name);
-                }
+                employee.UserName = employeeDto.Username;
                 try
                 {
+                    var address = _mapper.Map<EmployeeAddress>(employeeDto.Address);
+                    var addressSaved = await _context.EmployeeAddresses.AddAsync(address);
+                    employee.AddressId = address.Id;
+                    var created = await _userManager.CreateAsync(employee, "P@55w0rd1");
+                    if (!created.Succeeded)
+                    {
+                        foreach (var item in created.Errors)
+                        {
+                            _logger.LogError($"{nameof(CreateEmployee)} failed to create the user. {item.Code}:- {item.Description}");
+                        }
+
+                        throw new ArgumentException(created.Errors.Select(x => x.Description).ToArray().ToString());
+                    }
+                    var userrole = await _roleManager.FindByNameAsync(role);
+                    if (userrole != null)
+                    {
+                        IdentityResult roleResult = await _userManager.AddToRoleAsync(employee, userrole.Name);
+                    }
+                    
                     await _context.SaveChangesAsync();
                     return employee;
+                   
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error saving the employee record");
+                    _logger.LogError(ex, "Unable to save the user");
                     throw;
                 }
+                
             }
             else
             {
@@ -214,7 +220,7 @@ namespace SophieHR.Api.Services
             }
         }
 
-        public async Task UploadAvatarToEmployee(Guid id, IFormFile avatar)
+        public async Task<EmployeeAvatar> UploadAvatarToEmployee(Guid id, IFormFile avatar)
         {
             _logger.LogInformation($"{nameof(UploadAvatarToEmployee)} called.");
             var employee = await _context.Employees.FindAsync(id);
@@ -233,6 +239,7 @@ namespace SophieHR.Api.Services
                 employee.Avatar = new EmployeeAvatar { Avatar = bytes };
                 _context.Employees.Update(employee);
                 await _context.SaveChangesAsync();
+                return employee.Avatar;
             }
         }
     }

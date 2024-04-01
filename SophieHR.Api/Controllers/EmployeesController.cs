@@ -86,15 +86,17 @@ namespace SophieHR.Api.Controllers
             return Ok(_mapper.Map<EmployeeDetailDto>(employee));
         }
 
-        [HttpPost("{id}/upload-avatar"), Authorize(Roles = "Admin, Manager"), ProducesResponseType(StatusCodes.Status204NoContent), ProducesResponseType(StatusCodes.Status404NotFound)]
+        [HttpPost("{id}/upload-avatar"), Authorize(Roles = "Admin, Manager")]
+        [Consumes("multipart/form-data")]
+        [Produces(typeof(EmployeeAvatar)), ProducesResponseType(StatusCodes.Status200OK), ProducesResponseType(StatusCodes.Status404NotFound)]
         [RequestFormLimits(MultipartBodyLengthLimit = 5000000)] // Limit to 5mb
-        public async Task<IActionResult> UploadAvatar(Guid id, IFormFile avatar)
+        public async Task<ActionResult<EmployeeAvatar>> UploadAvatar(Guid id, [FromForm] IFormFile avatar)
         {
             _logger.LogInformation($"{nameof(EmployeesController)} > {nameof(UploadAvatar)} Uploading avatar for employee id {id}");
             if (avatar != null)
             {
-                await _context.UploadAvatarToEmployee(id, avatar);
-                return NoContent();
+                var employeeAvatar = await _context.UploadAvatarToEmployee(id, avatar);
+                return Ok(employeeAvatar);
             }
             return BadRequest("No File");
         }
@@ -150,9 +152,9 @@ namespace SophieHR.Api.Controllers
             if (User.IsInRole("Manager"))
             {
                 // Default manager to current user:
-                var username = User.FindFirstValue(ClaimTypes.Name);
-                manager = await _context.GetEmployeeByUsername(username);
-                employeeDto.ManagerId = manager.Id.ToString();
+                //var username = User.FindFirstValue(ClaimTypes.Name);
+                //manager = await _context.GetEmployeeByUsername(username);
+                //employeeDto.ManagerId = manager.Id.ToString();
                 role = "User"; // Managers can't create other managers...
             }
             if (User.IsInRole("CompanyAdmin") && role.ToLower() == "admin")
@@ -169,7 +171,7 @@ namespace SophieHR.Api.Controllers
             {
                 var employee = await _context.CreateEmployee(employeeDto, manager, role);
 
-                return Created();
+                return Ok(employee);
             }
             catch (Exception ex)
             {
@@ -202,7 +204,7 @@ namespace SophieHR.Api.Controllers
             _logger.LogInformation($"{nameof(JobTitleAutoComplete)} finding job titles with {jobTitle}");
             var jobTitles = await _jobTitleService.JobTitlesAsync();
 
-            var jobTitlesFiltered = jobTitles.Where(x => x.Contains(jobTitle)).Select(x => CultureInfo.CurrentCulture.TextInfo.ToTitleCase(x)).ToList();
+            var jobTitlesFiltered = jobTitles.Where(x => x.Contains(jobTitle, StringComparison.CurrentCultureIgnoreCase)).Select(x => CultureInfo.CurrentCulture.TextInfo.ToTitleCase(x)).ToList();
             return Ok(jobTitlesFiltered);
         }
     }

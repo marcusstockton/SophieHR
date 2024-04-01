@@ -15,8 +15,8 @@ namespace SophieHR.UnitTests.Services
     [TestClass]
     public class EmployeeServiceTests
     {
-        private ApplicationDbContext _context;
-        private EmployeeService _service;
+        private ApplicationDbContext _context = default!;
+        private EmployeeService _service = default!;
 
         private Guid _employeeId1 = Guid.NewGuid();
         private Guid _employeeId2 = Guid.NewGuid();
@@ -68,7 +68,7 @@ namespace SophieHR.UnitTests.Services
             }
 
             var UserStoreMock = Mock.Of<IUserStore<ApplicationUser>>();
-            var userMgr = new Mock<UserManager<ApplicationUser>>(UserStoreMock, null, null, null, null, null, null, null, null);
+            var userMgr = new Mock<UserManager<ApplicationUser>>(UserStoreMock);
             var roleManager = new Mock<RoleManager<IdentityRole<Guid>>>();
 
             _service = new EmployeeService(_context, userMgr.Object, roleManager.Object, mapper, mockLogger.Object);
@@ -79,13 +79,11 @@ namespace SophieHR.UnitTests.Services
         {
             // Arrange
             EmployeeCreateDto employeeDto = new EmployeeCreateDto { FirstName = "Damien", LastName = "Rice", WorkEmailAddress = "test@test.com" };
-            Employee manager = null;
-            string role = null;
 
             // Act
             await Assert.ThrowsExceptionAsync<ArgumentException>(() =>
             {
-                return _service.CreateEmployee(employeeDto, manager, role);
+                return _service.CreateEmployee(employeeDto);
             });
         }
 
@@ -94,11 +92,9 @@ namespace SophieHR.UnitTests.Services
         {
             // Arrange
             EmployeeCreateDto employeeDto = new EmployeeCreateDto { FirstName = "Damien", LastName = "Rice", WorkEmailAddress = "test2@test.com" };
-            Employee manager = null;
-            string role = null;
 
             // Act
-            var result = await _service.CreateEmployee(employeeDto, manager, role);
+            var result = await _service.CreateEmployee(employeeDto);
 
             // Assert
             Assert.IsNotNull(result);

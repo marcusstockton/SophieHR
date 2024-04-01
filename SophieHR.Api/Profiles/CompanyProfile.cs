@@ -10,11 +10,10 @@ namespace SophieHR.Api.Profiles
     {
         public CompanyProfile()
         {
-            CreateMap<CompanyCreateDto, Company>().ReverseMap();
+            CreateMap<Company, CompanyCreateDto>().ReverseMap();
             CreateMap<Company, CompanyDetailDto>().ReverseMap();
-            CreateMap<CompanyDetailNoLogo, Company>()
-                .ReverseMap();
-            CreateMap<CompanyIdNameDto, Company>().ReverseMap();
+            CreateMap<Company, CompanyDetailNoLogo>().ReverseMap();
+            CreateMap<Company, CompanyIdNameDto>().ReverseMap();
 
             CreateMap<string?, byte[]?>().ConvertUsing<Base64Converter>();
             CreateMap<byte[]?, string?>().ConvertUsing<Base64Converter>();

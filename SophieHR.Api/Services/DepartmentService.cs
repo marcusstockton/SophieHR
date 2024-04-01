@@ -20,10 +20,12 @@ namespace SophieHR.Api.Services
     public class DepartmentService : IDepartmentService
     {
         private readonly ApplicationDbContext _context;
+        private ILogger<DepartmentService> _logger;
 
-        public DepartmentService(ApplicationDbContext context)
+        public DepartmentService(ApplicationDbContext context, ILogger<DepartmentService> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         public async Task<Department> CreateDepartment(Department department)
@@ -73,6 +75,7 @@ namespace SophieHR.Api.Services
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error updating department");
                 throw;
             }
         }

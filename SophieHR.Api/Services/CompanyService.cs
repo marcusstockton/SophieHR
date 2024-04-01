@@ -183,6 +183,7 @@ namespace SophieHR.Api.Services
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error saving new company");
                 throw;
             }
         }

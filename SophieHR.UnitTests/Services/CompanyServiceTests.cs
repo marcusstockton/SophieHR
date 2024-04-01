@@ -15,8 +15,8 @@ namespace SophieHR.Api.Services.Tests
     [TestClass()]
     public class CompanyServiceTests
     {
-        private ApplicationDbContext _context;
-        private CompanyService _service;
+        private ApplicationDbContext _context = default!;
+        private CompanyService _service = default!;
 
         private Guid _id1;
         private Guid _id2;

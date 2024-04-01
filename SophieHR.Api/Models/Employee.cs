@@ -28,6 +28,7 @@ namespace SophieHR.Api.Models
         public Guid? DepartmentId { get; set; }
         public Guid CompanyId { get; set; }
         public Guid EmployeeAvatarId { get; set; }
+        public Guid? ManagerId { get; set; }
         public virtual EmployeeAddress? Address { get; set; }
         public virtual Employee? Manager { get; set; }
         public virtual Department? Department { get; set; }

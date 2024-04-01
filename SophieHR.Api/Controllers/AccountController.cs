@@ -57,7 +57,7 @@ namespace SophieHR.Api.Controllers
                     _logger.LogInformation($"{nameof(AccountController)} User authentication passed. Generating JWT Payload...");
                     var userExtra = await _context.Employees
                         .Where(x => x.Id == user.Id)
-                        .Select(x => new { CompanyId = x.CompanyId, DepartmentId = x.DepartmentId })
+                        .Select(x => new { x.CompanyId, x.DepartmentId })
                         .FirstOrDefaultAsync();
 
                     Token = JwtHelpers.JwtHelpers.GenTokenkey(new UserTokens()

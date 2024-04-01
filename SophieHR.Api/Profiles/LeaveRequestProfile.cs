@@ -8,7 +8,7 @@ namespace SophieHR.Api.Profiles
     {
         public LeaveRequestProfile()
         {
-            CreateMap<CreateLeaveRequest, LeaveRequest>().ReverseMap();
+            CreateMap<LeaveRequest, CreateLeaveRequest>().ReverseMap();
         }
     }
 }

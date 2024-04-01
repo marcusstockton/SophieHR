@@ -11,8 +11,8 @@ namespace SophieHR.Api.Services.Tests
     [TestClass()]
     public class DepartmentServiceTests
     {
-        private ApplicationDbContext _context;
-        private DepartmentService _service;
+        private ApplicationDbContext _context = default!;
+        private DepartmentService _service = default!;
 
         private Guid CompanyID_1;
         private Guid CompanyID_2;
@@ -66,7 +66,7 @@ namespace SophieHR.Api.Services.Tests
             await _context.Departments.AddRangeAsync(departmentList);
             await _context.SaveChangesAsync();
 
-            _service = new DepartmentService(_context);
+            _service = new DepartmentService(_context, mockLogger.Object);
         }
 
         [TestCleanup()]

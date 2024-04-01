@@ -8,9 +8,9 @@ namespace SophieHR.Api.Profiles
     {
         public DepartmentProfile()
         {
-            CreateMap<DepartmentCreateDto, Department>().ReverseMap();
-            CreateMap<DepartmentDetailDto, Department>().ReverseMap();
-            CreateMap<DepartmentIdNameDto, Department>().ReverseMap();
+            CreateMap<Department, DepartmentCreateDto>().ReverseMap();
+            CreateMap<Department, DepartmentDetailDto>().ReverseMap();
+            CreateMap<Department, DepartmentIdNameDto>().ReverseMap();
         }
     }
 }

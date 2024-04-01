@@ -8,8 +8,8 @@ namespace SophieHR.Api.Profiles
     {
         public NoteProfile()
         {
-            CreateMap<NoteCreateDto, Note>().ReverseMap();
-            CreateMap<NoteDetailDto, Note>().ReverseMap();
+            CreateMap<Note, NoteCreateDto>().ReverseMap();
+            CreateMap<Note, NoteDetailDto>().ReverseMap();
         }
     }
 }
