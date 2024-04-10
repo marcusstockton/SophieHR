@@ -1,4 +1,6 @@
-﻿namespace SophieHR.Api.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace SophieHR.Api.Models
 {
     public class Department : Base
     {

@@ -72,6 +72,7 @@ namespace SophieHR.Api.Controllers
 
         // GET: api/Employees/5
         [HttpGet("get-by-id/{id}"), Authorize(Roles = "Admin, Manager, User, CompanyAdmin"), Produces(typeof(EmployeeDetailDto))]
+        [Authorize(Policy = "CompanyManagement")]
         public async Task<ActionResult<EmployeeDetailDto>> GetEmployee(Guid id)
         {
             _logger.LogInformation($"{nameof(EmployeesController)} > {nameof(GetEmployee)} Getting employees by id {id}");

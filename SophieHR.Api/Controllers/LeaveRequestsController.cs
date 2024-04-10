@@ -98,10 +98,23 @@ namespace SophieHR.Api.Controllers
             {
                 return BadRequest("A Leave Request already exists between these dates.");
             }
-
             _context.LeaveRequests.Add(leaveRequest);
 
             //TODO: calcuate the time to take off of leave allowance:
+            // Things to consider...
+            /*
+             * Company year? - Jan - Jan? Financial Year?
+             * Don't allow employees to book past the current period
+             */
+            TimeSpan difference = leaveRequestDto.EndDate - leaveRequestDto.StartDate;
+            if (leaveRequestDto.StartDateFirstHalf)
+            {
+                // Only a half-day
+            }
+            if (leaveRequestDto.EndDateFirstHalf)
+            {
+                // Only a half-day
+            }
 
             await _context.SaveChangesAsync();
 

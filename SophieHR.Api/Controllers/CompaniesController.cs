@@ -31,7 +31,7 @@ namespace SophieHR.Api.Controllers
             return Ok(await _companyService.GetAllCompaniesNoLogoAsync());
         }
 
-        [HttpGet("GetCompanyNamesForSelect"), Authorize(Roles = "Admin, Manager"), Produces(typeof(IEnumerable<KeyValuePair<Guid, string>>))]
+        [HttpGet("GetCompanyNamesForSelect"), Authorize(Policy = "CompanyManagement"), Produces(typeof(IEnumerable<KeyValuePair<Guid, string>>))]
         public async Task<ActionResult<IEnumerable<KeyValuePair<Guid, string>>>> GetCompanyNames()
         {
             _logger.LogInformation($"{nameof(CompaniesController)} Getting company names");
