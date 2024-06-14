@@ -1,4 +1,6 @@
-﻿namespace SophieHR.Api.Models.DTOs.Company
+﻿using SophieHR.Api.Models.DTOs.Address;
+
+namespace SophieHR.Api.Models.DTOs.Company
 {
     public class CompanyDetailNoLogo
     {
@@ -6,6 +8,6 @@
         public DateTime CreatedDate { get; set; }
         public DateTime UpdatedDate { get; set; }
         public string Name { get; set; }
-        public CompanyAddress Address { get; set; }
+        public AddressBasic Address { get; set; }
     }
 }

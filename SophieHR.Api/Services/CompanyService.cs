@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using SophieHR.Api.Data;
 using SophieHR.Api.Models;
@@ -57,13 +58,18 @@ namespace SophieHR.Api.Services
         public async Task<ICollection<CompanyDetailNoLogo>> GetAllCompaniesNoLogoAsync()
         {
             _logger.LogInformation($"{nameof(GetAllCompaniesNoLogoAsync)} called");
-            return _mapper.Map<List<CompanyDetailNoLogo>>(await _context.Companies.AsNoTracking().Include(x => x.Address).ToListAsync());
+            var companyList = await _context.Companies
+                .AsNoTracking()
+                .Include(x => x.Address)
+                .ProjectTo<CompanyDetailNoLogo>(_mapper.ConfigurationProvider)
+                .ToListAsync();
+            return companyList;
         }
 
         public async Task<ICollection<KeyValuePair<Guid, string>>> GetCompanyNamesAsync(string username, bool isManager = false)
         {
             _logger.LogInformation($"{nameof(GetCompanyNamesAsync)} called");
-            var companies = await _context.Companies.Select(x => new KeyValuePair<Guid, string>(x.Id, x.Name)).ToListAsync();
+            var companies = await _context.Companies.AsNoTracking().Select(x => new KeyValuePair<Guid, string>(x.Id, x.Name)).ToListAsync();
             if (isManager)
             {
                 var companyId = await _context.Employees.AsNoTracking().Where(x => x.UserName == username).Select(x => x.CompanyId).SingleOrDefaultAsync();
@@ -81,23 +87,24 @@ namespace SophieHR.Api.Services
                 .Include(x => x.Employees)
                 .Include(x => x.CompanyConfig)
                 .AsNoTracking()
-                .Select(x => new CompanyDetailDto
-                {
-                    Address = x.Address,
-                    CreatedDate = x.CreatedDate,
-                    EmployeeCount = x.Employees.Count(),
-                    Id = x.Id,
-                    Logo = x.Logo != null ? Convert.ToBase64String(x.Logo) : null,
-                    Name = x.Name,
-                    UpdatedDate = x.UpdatedDate
-                })
+                .ProjectTo<CompanyDetailDto>(_mapper.ConfigurationProvider)
+                //.Select(x => new CompanyDetailDto
+                //{
+                //    Address = x.Address,
+                //    CreatedDate = x.CreatedDate,
+                //    EmployeeCount = x.Employees.Count(),
+                //    Id = x.Id,
+                //    Logo = x.Logo != null ? Convert.ToBase64String(x.Logo) : null,
+                //    Name = x.Name,
+                //    UpdatedDate = x.UpdatedDate
+                //})
                 .FirstOrDefaultAsync(x => x.Id == id);
         }
 
         public async Task<Company> FindCompanyByIdAsync(Guid id)
         {
             _logger.LogInformation($"{nameof(FindCompanyByIdAsync)} called");
-            return await _context.Companies.AsNoTracking().SingleAsync(x => x.Id == id);
+            return await _context.Companies.FindAsync(id);
         }
 
         public async Task<HttpResponseMessage> UpdateCompanyAsync(Guid id, CompanyDetailNoLogo companyDetail)

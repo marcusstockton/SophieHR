@@ -12,6 +12,7 @@ namespace SophieHR.Api.Profiles
             //CreateMap<EmployeeAddress, Address>().ReverseMap();
             CreateMap<AddressCreateDto, CompanyAddress>().ReverseMap();
             CreateMap<AddressCreateDto, EmployeeAddress>().ReverseMap();
+            CreateMap<AddressBasic, CompanyAddress>().ReverseMap();
         }
     }
 }

@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using SophieHR.Api.Data;
 using SophieHR.Api.Models;
+using SophieHR.Api.Models.DTOs.Address;
 using SophieHR.Api.Models.DTOs.Company;
 using SophieHR.Api.Profiles;
 using System.Net;
@@ -101,7 +102,7 @@ namespace SophieHR.Api.Services.Tests
             {
                 Id = company.Id,
                 Name = "Updated Company Name Two",
-                Address = new CompanyAddress { Id = company.Address.Id, Line1 = company.Address.Line1, Line2 = company.Address.Line2, Postcode = company.Address.Postcode, County = "Devon" },
+                Address = new AddressBasic { Line1 = company.Address.Line1, Line2 = company.Address.Line2, Postcode = company.Address.Postcode, County = "Devon" },
                 CreatedDate = company.CreatedDate,
                 UpdatedDate = company.UpdatedDate
             };
@@ -116,13 +117,15 @@ namespace SophieHR.Api.Services.Tests
         [TestMethod()]
         public async Task UpdateCompanyWithInvalidIdsAsyncTestAsync()
         {
-            var company = await _service.FindCompanyByIdAsync(_id2);
+            var company = await _service.GetCompanyByIdNoTrackingAsync(_id2);
 
             var companyUpdate = new CompanyDetailNoLogo
             {
                 Id = Guid.NewGuid(),
                 Name = "Updated Company Name Two",
-                Address = company.Address,
+                Address = new AddressBasic {
+                County= company.Address.County,
+                }, 
                 CreatedDate = company.CreatedDate,
                 UpdatedDate = company.UpdatedDate
             };
@@ -141,7 +144,7 @@ namespace SophieHR.Api.Services.Tests
             {
                 Id = unknownId,
                 Name = "This company doesn't exist",
-                Address = new CompanyAddress { County = "Devon" },
+                Address = new Models.DTOs.Address.AddressBasic { County = "Devon" },
                 CreatedDate = DateTime.Now,
                 UpdatedDate = DateTime.Now
             };
