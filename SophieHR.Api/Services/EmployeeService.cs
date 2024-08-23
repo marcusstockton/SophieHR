@@ -223,12 +223,20 @@ namespace SophieHR.Api.Services
         public async Task<EmployeeAvatar> UploadAvatarToEmployee(Guid id, IFormFile avatar)
         {
             _logger.LogInformation($"{nameof(UploadAvatarToEmployee)} called.");
-            var employee = await _context.Employees.FindAsync(id);
+            var employee = await _context.Employees
+                .Include(x=>x.Avatar)
+                .SingleAsync(x=>x.Id == id);
             if (employee == null)
             {
                 var message = $"Unable to find a employee with the Id of {id}";
                 _logger.LogWarning(message);
                 throw new ArgumentException(message);
+            }
+
+            if(employee.Avatar.Avatar != null)
+            {
+                // existing avatar, so delete it!
+                _context.EmployeeAvatars.Remove(employee.Avatar);
             }
 
             using (var memoryStream = new MemoryStream())
@@ -238,8 +246,22 @@ namespace SophieHR.Api.Services
 
                 employee.Avatar = new EmployeeAvatar { Avatar = bytes };
                 _context.Employees.Update(employee);
-                await _context.SaveChangesAsync();
-                return employee.Avatar;
+                try
+                {
+                    await _context.SaveChangesAsync();
+                    return employee.Avatar;
+                }
+                catch(DbUpdateException ex)
+                {
+                    _logger.LogError(ex, $"{nameof(UploadAvatarToEmployee)} exception thrown.");
+                    return employee.Avatar;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"{nameof(UploadAvatarToEmployee)} exception thrown.");
+                    return employee.Avatar;
+                }
+                
             }
         }
     }

@@ -14,6 +14,7 @@ using SophieHR.Api.Extensions;
 using SophieHR.Api.Models;
 using SophieHR.Api.Services;
 using System.Reflection;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,7 +31,7 @@ builder.Services.TryAddScoped<IJobTitleService, JobTitleServiceCache>();
 
 builder.Services.AddMemoryCache();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(x=> x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 builder.Services.AddEndpointsApiExplorer();
 
 // Register the Swagger services

@@ -8,3 +8,5 @@ Kibana		http://localhost:5601/
 
 
 Seems that automapper is not very well regarded any more...see about getting mapperly added?
+
+Need to remove the deprecated nuget package: Serilog.Sinks.Elasticsearch
