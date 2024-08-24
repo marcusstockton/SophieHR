@@ -32,7 +32,8 @@ namespace SophieHR.Api.Controllers
 
         // GET: api/Employees
         [Authorize(Policy = "CompanyManagement")]
-        [HttpGet("get-by-company/{companyId}"), Produces(typeof(IEnumerable<EmployeeListDto>))]
+        [HttpGet("get-by-company/{companyId}")]
+        [Produces(typeof(IEnumerable<EmployeeListDto>))]
         public async Task<ActionResult<IEnumerable<EmployeeListDto>>> GetEmployeesForCompanyId(Guid companyId)
         {
             _logger.LogInformation($"{nameof(EmployeesController)} > {nameof(GetEmployeesForCompanyId)} getting employees for company {companyId}");
@@ -42,7 +43,8 @@ namespace SophieHR.Api.Controllers
         }
 
         [Authorize(Policy = "CompanyManagement")]
-        [HttpGet("list-of-managers-for-company/{companyId}"), Produces(typeof(IEnumerable<EmployeeListDto>))]
+        [HttpGet("list-of-managers-for-company/{companyId}")]
+        [Produces(typeof(IEnumerable<EmployeeListDto>))]
         public async Task<ActionResult<IEnumerable<EmployeeListDto>>> GetManagersForCompanyId(Guid companyId)
         {
             _logger.LogInformation($"{nameof(EmployeesController)} > {nameof(GetManagersForCompanyId)} Getting managers for company id {companyId}");
@@ -61,7 +63,8 @@ namespace SophieHR.Api.Controllers
             return Ok(managers);
         }
 
-        [HttpGet("list-of-employees-for-manager/{managerId}"), Produces(typeof(IEnumerable<EmployeeListDto>))]
+        [HttpGet("list-of-employees-for-manager/{managerId}")]
+        [Produces(typeof(IEnumerable<EmployeeListDto>))]
         public async Task<ActionResult<IEnumerable<EmployeeListDto>>> GetEmployeesForManager(Guid managerId)
         {
             _logger.LogInformation($"{nameof(EmployeesController)} > {nameof(GetEmployeesForManager)} Getting employees for manager id {managerId}");
@@ -71,7 +74,8 @@ namespace SophieHR.Api.Controllers
         }
 
         // GET: api/Employees/5
-        [HttpGet("get-by-id/{id}"), Authorize(Roles = "Admin, Manager, User, CompanyAdmin"), Produces(typeof(EmployeeDetailDto))]
+        [HttpGet("get-by-id/{id}"), Authorize(Roles = "Admin, Manager, User, CompanyAdmin")]
+        [Produces(typeof(EmployeeDetailDto)), ProducesResponseType(StatusCodes.Status404NotFound)]
         [Authorize(Policy = "CompanyManagement")]
         public async Task<ActionResult<EmployeeDetailDto>> GetEmployee(Guid id)
         {
@@ -104,8 +108,9 @@ namespace SophieHR.Api.Controllers
 
         // PUT: api/Employees/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}"), Produces(typeof(EmployeeDetailDto)), ProducesResponseType(StatusCodes.Status204NoContent), ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<EmployeeDetailDto>> PutEmployee(Guid id, EmployeeDetailDto employeeDetail)
+        [HttpPut("{id}"), Produces(typeof(EmployeeDetailDto))]
+        [ProducesResponseType(StatusCodes.Status200OK), ProducesResponseType(StatusCodes.Status404NotFound), ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<EmployeeDetailDto>> PutEmployee([FromRoute]Guid id, [FromBody]EmployeeDetailDto employeeDetail)
         {
             _logger.LogInformation($"{nameof(EmployeesController)} > {nameof(PutEmployee)} Updating employee {employeeDetail}");
             if (id != employeeDetail.Id)
@@ -181,7 +186,8 @@ namespace SophieHR.Api.Controllers
         }
 
         // DELETE: api/Employees/5
-        [HttpDelete("{id}"), ProducesResponseType(StatusCodes.Status204NoContent), ProducesResponseType(StatusCodes.Status404NotFound)]
+        [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent), ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteEmployee(Guid id)
         {
             _logger.LogInformation($"{nameof(EmployeesController)} > {nameof(DeleteEmployee)} deleting employee {id}");
@@ -191,7 +197,8 @@ namespace SophieHR.Api.Controllers
             return NoContent();
         }
 
-        [HttpGet("GetTitles"), Produces(typeof(List<string>))]
+        [HttpGet("GetTitles")]
+        [Produces(typeof(List<string>))]
         [ResponseCache(Duration = 60, Location = ResponseCacheLocation.Any, NoStore = false)]
         public ActionResult<List<string>> GetTitles()
         {
@@ -199,7 +206,8 @@ namespace SophieHR.Api.Controllers
             return Ok(_context.GetTitles());
         }
 
-        [HttpGet("job-title-autocomplete"), Produces(typeof(List<string>))]
+        [HttpGet("job-title-autocomplete")]
+        [Produces(typeof(List<string>))]
         public async Task<ActionResult> JobTitleAutoComplete(string jobTitle)
         {
             _logger.LogInformation($"{nameof(JobTitleAutoComplete)} finding job titles with {jobTitle}");

@@ -253,7 +253,7 @@ namespace SophieHR.Api.Services
                 }
                 catch(DbUpdateException ex)
                 {
-                    _logger.LogError(ex, $"{nameof(UploadAvatarToEmployee)} exception thrown.");
+                    _logger.LogError(ex, $"{nameof(UploadAvatarToEmployee)} DbUpdateException exception thrown.");
                     return employee.Avatar;
                 }
                 catch (Exception ex)
