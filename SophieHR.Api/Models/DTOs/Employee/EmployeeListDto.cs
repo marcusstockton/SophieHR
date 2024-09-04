@@ -11,10 +11,13 @@ namespace SophieHR.Api.Models.DTOs.Employee
         public string? MiddleName { get; set; }
         public string LastName { get; set; }
         public string JobTitle { get; set; }
+
         [DataType(DataType.EmailAddress)]
         public string WorkEmailAddress { get; set; }
+
         [DataType(DataType.EmailAddress)]
         public string? PersonalEmailAddress { get; set; }
+
         public string WorkPhoneNumber { get; set; }
         public string? WorkMobileNumber { get; set; }
         public string? PersonalMobileNumber { get; set; }

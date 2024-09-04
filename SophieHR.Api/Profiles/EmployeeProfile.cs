@@ -13,15 +13,15 @@ namespace SophieHR.Api.Profiles
         public EmployeeProfile()
         {
             CreateMap<Employee, EmployeeDetailDto>().ReverseMap();
-                //.ForMember(x => x.Avatar.Avatar, opt => opt.MapFrom(src => Convert.ToBase64String(src.Avatar.Avatar)))
-                //.ReverseMap()
-                //.ForMember(x => x.Avatar.Avatar, opt => opt.MapFrom(src => Convert.FromBase64String(src.Avatar.Avatar)));
+            //.ForMember(x => x.Avatar.Avatar, opt => opt.MapFrom(src => Convert.ToBase64String(src.Avatar.Avatar)))
+            //.ReverseMap()
+            //.ForMember(x => x.Avatar.Avatar, opt => opt.MapFrom(src => Convert.FromBase64String(src.Avatar.Avatar)));
 
             CreateMap<Employee, EmployeeListDto>().ReverseMap();
             CreateMap<Employee, EmployeeCreateDto>()
-                .ForMember(x=>x.ManagerId, opt => opt.MapFrom(src=>src.Manager.Id))
-                .ForMember(x=>x.Username, opt => opt.MapFrom(src => src.UserName))
-                .ForMember(x=>x.WorkEmailAddress, opt => opt.MapFrom(src => src.Email))
+                .ForMember(x => x.ManagerId, opt => opt.MapFrom(src => src.Manager.Id))
+                .ForMember(x => x.Username, opt => opt.MapFrom(src => src.UserName))
+                .ForMember(x => x.WorkEmailAddress, opt => opt.MapFrom(src => src.Email))
                 .IgnoreAllVirtual()
                 .ReverseMap();
 

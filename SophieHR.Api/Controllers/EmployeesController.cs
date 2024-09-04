@@ -110,7 +110,7 @@ namespace SophieHR.Api.Controllers
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}"), Produces(typeof(EmployeeDetailDto))]
         [ProducesResponseType(StatusCodes.Status200OK), ProducesResponseType(StatusCodes.Status404NotFound), ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<EmployeeDetailDto>> PutEmployee([FromRoute]Guid id, [FromBody]EmployeeDetailDto employeeDetail)
+        public async Task<ActionResult<EmployeeDetailDto>> PutEmployee([FromRoute] Guid id, [FromBody] EmployeeDetailDto employeeDetail)
         {
             _logger.LogInformation($"{nameof(EmployeesController)} > {nameof(PutEmployee)} Updating employee {employeeDetail}");
             if (id != employeeDetail.Id)

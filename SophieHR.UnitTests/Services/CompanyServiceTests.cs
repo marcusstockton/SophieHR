@@ -123,9 +123,10 @@ namespace SophieHR.Api.Services.Tests
             {
                 Id = Guid.NewGuid(),
                 Name = "Updated Company Name Two",
-                Address = new AddressBasic {
-                County= company.Address.County,
-                }, 
+                Address = new AddressBasic
+                {
+                    County = company.Address.County,
+                },
                 CreatedDate = company.CreatedDate,
                 UpdatedDate = company.UpdatedDate
             };

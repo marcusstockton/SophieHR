@@ -81,17 +81,15 @@ namespace SophieHR.Api.Services
                     {
                         IdentityResult roleResult = await _userManager.AddToRoleAsync(employee, userrole.Name);
                     }
-                    
+
                     await _context.SaveChangesAsync();
                     return employee;
-                   
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Unable to save the user");
                     throw;
                 }
-                
             }
             else
             {
@@ -224,8 +222,8 @@ namespace SophieHR.Api.Services
         {
             _logger.LogInformation($"{nameof(UploadAvatarToEmployee)} called.");
             var employee = await _context.Employees
-                .Include(x=>x.Avatar)
-                .SingleAsync(x=>x.Id == id);
+                .Include(x => x.Avatar)
+                .SingleAsync(x => x.Id == id);
             if (employee == null)
             {
                 var message = $"Unable to find a employee with the Id of {id}";
@@ -233,7 +231,7 @@ namespace SophieHR.Api.Services
                 throw new ArgumentException(message);
             }
 
-            if(employee.Avatar.Avatar != null)
+            if (employee.Avatar.Avatar != null)
             {
                 // existing avatar, so delete it!
                 _context.EmployeeAvatars.Remove(employee.Avatar);
@@ -251,7 +249,7 @@ namespace SophieHR.Api.Services
                     await _context.SaveChangesAsync();
                     return employee.Avatar;
                 }
-                catch(DbUpdateException ex)
+                catch (DbUpdateException ex)
                 {
                     _logger.LogError(ex, $"{nameof(UploadAvatarToEmployee)} DbUpdateException exception thrown.");
                     return employee.Avatar;
@@ -261,7 +259,6 @@ namespace SophieHR.Api.Services
                     _logger.LogError(ex, $"{nameof(UploadAvatarToEmployee)} exception thrown.");
                     return employee.Avatar;
                 }
-                
             }
         }
     }

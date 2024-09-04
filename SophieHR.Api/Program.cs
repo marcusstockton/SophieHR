@@ -33,7 +33,7 @@ builder.Services.TryAddScoped<IJobTitleService, JobTitleServiceCache>();
 
 builder.Services.AddMemoryCache();
 
-builder.Services.AddControllers().AddJsonOptions(x=> x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
+builder.Services.AddControllers().AddJsonOptions(x => x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 builder.Services.AddEndpointsApiExplorer();
 
 // Register the Swagger services
