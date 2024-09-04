@@ -1,3 +1,6 @@
+using Elastic.Ingest.Elasticsearch;
+using Elastic.Ingest.Elasticsearch.DataStreams;
+using Elastic.Serilog.Sinks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -8,7 +11,6 @@ using NSwag.Generation.Processors.Security;
 using Prometheus;
 using Serilog;
 using Serilog.Exceptions;
-using Serilog.Sinks.Elasticsearch;
 using SophieHR.Api.Data;
 using SophieHR.Api.Extensions;
 using SophieHR.Api.Models;
@@ -188,21 +190,14 @@ void ConfigureLogging()
         .Enrich.WithMachineName()
         .WriteTo.Debug()
         .WriteTo.Console()
-        .WriteTo.Elasticsearch(ConfigureElasticSink(configuration, environment))
+        .WriteTo.Elasticsearch(new[] { new Uri(configuration["ElasticConfiguration:Uri"]) }, opts =>
+        {
+            opts.DataStream = new DataStreamName($"{Assembly.GetExecutingAssembly().GetName().Name.ToLower().Replace(".", "-")}", $"{environment?.ToLower().Replace(".", "-")}", $"{DateTime.UtcNow:yyyy-MM}");
+            opts.BootstrapMethod = BootstrapMethod.Failure;
+        }, transport =>
+        {
+        })
         .Enrich.WithProperty("Environment", environment)
         .ReadFrom.Configuration(configuration)
         .CreateLogger();
-}
-
-ElasticsearchSinkOptions ConfigureElasticSink(IConfigurationRoot configuration, string environment)
-{
-    var index = new ElasticsearchSinkOptions(new Uri(configuration["ElasticConfiguration:Uri"]))
-    {
-        AutoRegisterTemplate = true,
-        IndexFormat = $"{Assembly.GetExecutingAssembly().GetName().Name.ToLower().Replace(".", "-")}-{environment?.ToLower().Replace(".", "-")}-{DateTime.UtcNow:yyyy-MM}",
-        FailureCallback = (e, r) => Console.WriteLine("Unable to submit event:- " + e.MessageTemplate),
-        EmitEventFailure = EmitEventFailureHandling.WriteToSelfLog | EmitEventFailureHandling.WriteToFailureSink | EmitEventFailureHandling.RaiseCallback,
-        //FailureSink = new FileSink("./failures.txt", new JsonFormatter(), null),
-    };
-    return index;
 }
