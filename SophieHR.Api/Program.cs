@@ -15,6 +15,7 @@ using SophieHR.Api.Data;
 using SophieHR.Api.Extensions;
 using SophieHR.Api.Models;
 using SophieHR.Api.Services;
+using StackExchange.Redis;
 using System.Reflection;
 using System.Text.Json.Serialization;
 
@@ -53,6 +54,8 @@ builder.Services.AddOpenApiDocument(document =>
         new AspNetCoreOperationSecurityScopeProcessor("JWT"));
 }
 );
+
+
 
 builder.Services.AddAuthentication(option =>
 {
@@ -113,6 +116,8 @@ builder.Services.AddHttpClient("postcodesioClient", client =>
     var url = builder.Configuration.GetSection("ThirdPartyClients:PostcodesIo").GetValue<string>("BaseUrl");
     client.BaseAddress = new Uri(url);
 });
+
+builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect("redis_cache:6379"));
 
 builder.Services.AddResponseCaching();
 

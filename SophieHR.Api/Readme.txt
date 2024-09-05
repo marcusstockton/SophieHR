@@ -7,6 +7,5 @@ Prometheus: http://localhost:9090/
 Kibana		http://localhost:5601/
 
 
-Seems that automapper is not very well regarded any more...see about getting mapperly added?
 
-Need to remove the deprecated nuget package: Serilog.Sinks.Elasticsearch
+HereApi seems to have introduced a new payment platform so need to find a new api for looking up postcodes and gettig info.

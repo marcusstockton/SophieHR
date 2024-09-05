@@ -1,5 +1,6 @@
-version: "3.4"
 services:
+
+
   # sophiehr.ui:
   #   container_name: sophiehr.ui
   #   image: ${DOCKER_REGISTRY-}sophiehr_ui
@@ -27,8 +28,12 @@ services:
       - "443"
       - "80"
     depends_on:
-      - db
-      - elasticsearch
+      db:
+        condition: service_started
+      elasticsearch:
+        condition: service_healthy
+      redis_cache:
+        condition: service_healthy
     networks:
       - docker-network
 
@@ -38,8 +43,8 @@ services:
     image: mcr.microsoft.com/mssql/server:2022-latest
     environment:
       - ACCEPT_EULA=Y
-      - SA_PASSWORD=P@55w0rd123
-      - MSSQL_SA_PASSWORD=P@55w0rd123
+      - SA_PASSWORD=${SQL_Password}
+      - MSSQL_SA_PASSWORD=${SQL_Password}
       - MSSQL_PID=Developer
     ports:
       - 1433:1433
@@ -47,6 +52,20 @@ services:
       - sqlserver_data:/var/opt/mssql
     networks:
       - docker-network
+
+
+  redis_cache:
+    image: redis:latest
+    container_name: redis_cache
+    ports:
+      - "6379:6379"
+    networks:
+      - docker-network
+    healthcheck:
+        test: ["CMD", "redis-cli","ping"]
+        interval: 30s
+        timeout: 10s
+        retries: 5
 
 
   elasticsearch:
@@ -62,6 +81,11 @@ services:
       - node.name=es-node
     networks:
       - docker-network
+    healthcheck:
+       test: curl -s http://elasticsearch:9200 >/dev/null || exit 1
+       interval: 30s
+       timeout: 10s
+       retries: 50
 
 
   kibana:
@@ -73,8 +97,9 @@ services:
       - elasticsearch
     environment:
       - ELASTICSEARCH_HOSTS
-        - "http://localhost:9200/"
-        - "http://127.0.0.1:9200/"
+        - "http://localhost:9200"
+        - "http://127.0.0.1:9200"
+        - "http://elasticsearch:9200"
     networks:
       - docker-network
 

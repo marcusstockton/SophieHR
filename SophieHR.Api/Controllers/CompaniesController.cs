@@ -2,8 +2,10 @@
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Distributed;
 using SophieHR.Api.Models.DTOs.Company;
 using SophieHR.Api.Services;
+using StackExchange.Redis;
 
 namespace SophieHR.Api.Controllers
 {
@@ -16,11 +18,15 @@ namespace SophieHR.Api.Controllers
     {
         private readonly ILogger<CompaniesController> _logger;
         private readonly ICompanyService _companyService;
+        private readonly IDatabase _redis;
+        private readonly IDistributedCache _cache;
 
-        public CompaniesController(ILogger<CompaniesController> logger, ICompanyService companyService)
+        public CompaniesController(ILogger<CompaniesController> logger, ICompanyService companyService, IConnectionMultiplexer muxer, IDistributedCache cache)
         {
             _logger = logger;
             _companyService = companyService;
+            _redis = muxer.GetDatabase();
+            _cache = cache;
         }
 
         // GET: api/Companies
@@ -104,12 +110,22 @@ namespace SophieHR.Api.Controllers
             return await _companyService.DeleteCompanyAsync(id);
         }
 
-        //[AllowAnonymous]
-        [HttpGet, Route("get-location-autosuggestion"), ResponseCache(Duration = 300)]
+        [AllowAnonymous]
+        [HttpGet, Route("get-location-autosuggestion")]
         [ProducesResponseType(typeof(string[]), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAutoSuggestion(string search)
         {
-            return Ok(await _companyService.GetAutoSuggestion(search));
+            string results = string.Empty;
+            results = await _redis.StringGetAsync(search);
+            if (string.IsNullOrWhiteSpace(results))
+            {
+                results = await _companyService.GetAutoSuggestion(search);
+                var setTask = _redis.StringSetAsync(search, results);
+                var expireTask = _redis.KeyExpireAsync(search, TimeSpan.FromSeconds(30));
+                await Task.WhenAll(setTask, expireTask);
+            }
+
+            return Ok(results);
         }
 
         //[AllowAnonymous]
