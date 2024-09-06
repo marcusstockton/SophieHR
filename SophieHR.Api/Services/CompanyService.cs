@@ -118,6 +118,7 @@ namespace SophieHR.Api.Services
                 .Include(x => x.CompanyConfig)
                 .Include(x => x.Address)
                 .Include(x => x.Employees)
+                .AsNoTracking()
                 .SingleOrDefaultAsync(x => x.Id == id);
 
             if (originalCompany == null)
@@ -130,8 +131,11 @@ namespace SophieHR.Api.Services
             {
                 var updatedCompany = _mapper.Map<Company>(companyDetail);
                 updatedCompany.Logo = originalCompany.Logo;
-                _context.Entry(originalCompany).CurrentValues.SetValues(updatedCompany);
-                _context.Entry(originalCompany.Address).CurrentValues.SetValues(updatedCompany.Address);
+
+                _context.Companies.Update(updatedCompany);
+
+                //_context.Entry(originalCompany).CurrentValues.SetValues(updatedCompany);
+                //_context.Entry(originalCompany.Address).CurrentValues.SetValues(updatedCompany.Address);
 
                 await _context.SaveChangesAsync();
                 return new HttpResponseMessage(System.Net.HttpStatusCode.NoContent);

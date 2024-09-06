@@ -27,6 +27,7 @@ services:
     expose:
       - "443"
       - "80"
+    mem_limit: 2g
     depends_on:
       db:
         condition: service_started
@@ -46,8 +47,10 @@ services:
       - SA_PASSWORD=${SQL_Password}
       - MSSQL_SA_PASSWORD=${SQL_Password}
       - MSSQL_PID=Developer
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
     ports:
       - 1433:1433
+    mem_limit: 2g
     volumes:
       - sqlserver_data:/var/opt/mssql
     networks:
@@ -61,9 +64,17 @@ services:
       - "6379:6379"
     networks:
       - docker-network
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: '0.001'
+    #       memory: 50M
+    #     reservations:
+    #       cpus: '0.0001'
+    #       memory: 20M
     healthcheck:
         test: ["CMD", "redis-cli","ping"]
-        interval: 30s
+        interval: 10s
         timeout: 10s
         retries: 5
 
@@ -79,6 +90,7 @@ services:
       - xpack.security.enabled=false
       - discovery.type=single-node
       - node.name=es-node
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
     networks:
       - docker-network
     healthcheck:
@@ -86,6 +98,14 @@ services:
        interval: 30s
        timeout: 10s
        retries: 50
+    # ulimits:
+    #   memlock:
+    #     soft: -1
+    #     hard: -1
+    #   nofile:
+    #     soft: 65536
+    #     hard: 65536
+    mem_limit: 4g
 
 
   kibana:
@@ -95,11 +115,13 @@ services:
       - 5601:5601
     depends_on:
       - elasticsearch
+    mem_limit: 2g
     environment:
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
       - ELASTICSEARCH_HOSTS
-        - "http://localhost:9200"
-        - "http://127.0.0.1:9200"
-        - "http://elasticsearch:9200"
+      - "http://localhost:9200"
+      - "http://127.0.0.1:9200"
+      - "http://elasticsearch:9200"
     networks:
       - docker-network
 
@@ -118,6 +140,7 @@ services:
       - sophiehr.api
     networks:
       - docker-network
+    # mem_limit: 1g
 
 
   grafana:

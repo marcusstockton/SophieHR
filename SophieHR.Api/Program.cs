@@ -4,6 +4,7 @@ using Elastic.Serilog.Sinks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using NSwag;
@@ -16,6 +17,7 @@ using SophieHR.Api.Extensions;
 using SophieHR.Api.Models;
 using SophieHR.Api.Services;
 using StackExchange.Redis;
+using System.IO.Compression;
 using System.Reflection;
 using System.Text.Json.Serialization;
 
@@ -55,7 +57,22 @@ builder.Services.AddOpenApiDocument(document =>
 }
 );
 
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+    options.Providers.Add<BrotliCompressionProvider>();
+    options.Providers.Add<GzipCompressionProvider>();
+});
 
+builder.Services.Configure<BrotliCompressionProviderOptions>(options =>
+{
+    options.Level = CompressionLevel.Fastest;
+});
+
+builder.Services.Configure<GzipCompressionProviderOptions>(options =>
+{
+    options.Level = CompressionLevel.SmallestSize;
+});
 
 builder.Services.AddAuthentication(option =>
 {
@@ -117,7 +134,15 @@ builder.Services.AddHttpClient("postcodesioClient", client =>
     client.BaseAddress = new Uri(url);
 });
 
-builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect("redis_cache:6379"));
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = "redis_cache:6379";
+    options.ConfigurationOptions = new ConfigurationOptions()
+    {
+        AbortOnConnectFail = true,
+        EndPoints = { options.Configuration }
+    };
+});
 
 builder.Services.AddResponseCaching();
 
@@ -161,6 +186,8 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseResponseCompression();
 
 app.MapControllers();
 

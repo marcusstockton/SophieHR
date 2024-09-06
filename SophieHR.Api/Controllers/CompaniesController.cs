@@ -3,9 +3,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
+using SophieHR.Api.Extensions;
 using SophieHR.Api.Models.DTOs.Company;
 using SophieHR.Api.Services;
-using StackExchange.Redis;
 
 namespace SophieHR.Api.Controllers
 {
@@ -18,14 +18,12 @@ namespace SophieHR.Api.Controllers
     {
         private readonly ILogger<CompaniesController> _logger;
         private readonly ICompanyService _companyService;
-        private readonly IDatabase _redis;
         private readonly IDistributedCache _cache;
 
-        public CompaniesController(ILogger<CompaniesController> logger, ICompanyService companyService, IConnectionMultiplexer muxer, IDistributedCache cache)
+        public CompaniesController(ILogger<CompaniesController> logger, ICompanyService companyService, IDistributedCache cache)
         {
             _logger = logger;
             _companyService = companyService;
-            _redis = muxer.GetDatabase();
             _cache = cache;
         }
 
@@ -34,14 +32,37 @@ namespace SophieHR.Api.Controllers
         public async Task<ActionResult<IEnumerable<CompanyDetailNoLogo>>> GetCompanies()
         {
             _logger.LogInformation($"{nameof(CompaniesController)} Getting companies for admin user");
-            return Ok(await _companyService.GetAllCompaniesNoLogoAsync());
+
+            var cacheKey = "companies";
+            var cacheOptions = new DistributedCacheEntryOptions()
+                .SetAbsoluteExpiration(TimeSpan.FromMinutes(20))
+                .SetSlidingExpiration(TimeSpan.FromMinutes(2));
+
+            var companies = await _cache.GetOrSetAsync(cacheKey, async () => {
+                _logger.LogInformation($"Cache miss. Fetching data for key: {cacheKey} from database.");
+                return await _companyService.GetAllCompaniesNoLogoAsync();
+            }, cacheOptions);
+
+            return Ok(companies);
         }
 
         [HttpGet("GetCompanyNamesForSelect"), Authorize(Policy = "CompanyManagement"), Produces(typeof(IEnumerable<KeyValuePair<Guid, string>>))]
         public async Task<ActionResult<IEnumerable<KeyValuePair<Guid, string>>>> GetCompanyNames()
         {
             _logger.LogInformation($"{nameof(CompaniesController)} Getting company names");
-            return Ok(await _companyService.GetCompanyNamesAsync(User.Identity.Name, User.IsInRole("Manager")));
+            
+            var cacheKey = "companyNames";
+            var cacheOptions = new DistributedCacheEntryOptions()
+                .SetAbsoluteExpiration(TimeSpan.FromMinutes(20))
+                .SetSlidingExpiration(TimeSpan.FromMinutes(2));
+
+            var companyNames = await _cache.GetOrSetAsync(cacheKey, async () => {
+                _logger.LogInformation($"Cache miss. Fetching data for key: {cacheKey} from database.");
+                return await _companyService.GetCompanyNamesAsync(User.Identity.Name, User.IsInRole("Manager"));
+            }, cacheOptions);
+
+
+            return Ok(companyNames);
         }
 
         // GET: api/Companies/5
@@ -49,7 +70,14 @@ namespace SophieHR.Api.Controllers
         public async Task<ActionResult<CompanyDetailDto>> GetCompany(Guid id)
         {
             _logger.LogInformation($"{nameof(CompaniesController)} Getting company with id {id}");
-            var company = await _companyService.GetCompanyByIdNoTrackingAsync(id);
+
+            var cacheKey = $"company:{id}";
+            var company = await _cache.GetOrSetAsync(cacheKey,
+            async () =>
+            {
+                _logger.LogInformation($"Cache miss. Fetching data for key: {cacheKey} from database.");
+                return await _companyService.GetCompanyByIdNoTrackingAsync(id);
+            })!;
 
             if (company == null)
             {
@@ -80,6 +108,10 @@ namespace SophieHR.Api.Controllers
         public async Task<HttpResponseMessage> PutCompany(Guid id, CompanyDetailNoLogo companyDetail)
         {
             _logger.LogInformation($"{nameof(CompaniesController)} Updating company with id {id}");
+            await _cache.RemoveAsync("companies");
+            await _cache.RemoveAsync("companyNames");
+            await _cache.RemoveAsync($"company:{id}");
+            
             return await _companyService.UpdateCompanyAsync(id, companyDetail);
         }
 
@@ -94,6 +126,8 @@ namespace SophieHR.Api.Controllers
             try
             {
                 var result = await _companyService.CreateNewCompanyAsync(companyDto);
+                await _cache.RemoveAsync("companies");
+                await _cache.RemoveAsync("companyNames");
                 return Ok(result);
             }
             catch (Exception ex)
@@ -107,57 +141,85 @@ namespace SophieHR.Api.Controllers
         public async Task<HttpResponseMessage> DeleteCompany(Guid id)
         {
             _logger.LogInformation($"{nameof(CompaniesController)} Deleting company with id {id}");
+            await _cache.RemoveAsync("companies");
+            await _cache.RemoveAsync("companyNames");
+            await _cache.RemoveAsync($"company:{id}");
             return await _companyService.DeleteCompanyAsync(id);
         }
 
-        [AllowAnonymous]
+        //[AllowAnonymous]
         [HttpGet, Route("get-location-autosuggestion")]
         [ProducesResponseType(typeof(string[]), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAutoSuggestion(string search)
         {
-            string results = string.Empty;
-            results = await _redis.StringGetAsync(search);
-            if (string.IsNullOrWhiteSpace(results))
-            {
-                results = await _companyService.GetAutoSuggestion(search);
-                var setTask = _redis.StringSetAsync(search, results);
-                var expireTask = _redis.KeyExpireAsync(search, TimeSpan.FromSeconds(30));
-                await Task.WhenAll(setTask, expireTask);
-            }
-
-            return Ok(results);
+            return Ok(await _companyService.GetAutoSuggestion(search));
         }
 
         //[AllowAnonymous]
-        [HttpGet, Route("GetMapFromLatLong"), ResponseCache(Duration = 86400)]// One day
+        [HttpGet, Route("GetMapFromLatLong")]
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetMapFromLatLong(decimal lat, decimal lon, int zoomLevel = 15, int mapType = 3, int width = 2048, short viewType = 1)
         {
-            var result = await _companyService.GetMapFromLatLong(lat, lon, zoomLevel, mapType, width, viewType);
-            if (result.Length > 0)
+            //var cacheKey = $"map-{lat}-{lon}";
+            //var cacheOptions = new DistributedCacheEntryOptions()
+            //    .SetAbsoluteExpiration(TimeSpan.FromMinutes(20))
+            //    .SetSlidingExpiration(TimeSpan.FromMinutes(2));
+
+            //var map = await _cache.GetOrSetAsync(cacheKey,
+            //async () =>
+            //{
+            //    _logger.LogInformation($"Cache miss. Fetching data for key: {cacheKey} from database.");
+            //    return await _companyService.GetMapFromLatLong(lat, lon, zoomLevel, mapType, width, viewType);
+            //},cacheOptions);
+
+            var map = await _companyService.GetMapFromLatLong(lat, lon, zoomLevel, mapType, width, viewType);
+            if (map.Length > 0)
             {
-                return Ok(result);
+                return Ok(map);
             }
             return BadRequest();
         }
 
         //[AllowAnonymous]
-        [HttpGet, Route("postcode-auto-complete"), ResponseCache(Duration = 300)]
+        [HttpGet, Route("postcode-auto-complete")]
         [ProducesResponseType(typeof(string[]), StatusCodes.Status200OK)]
         public async Task<IActionResult> PostcodeAutoComplete(string postcode)
         {
-            var result = await _companyService.PostcodeAutoComplete(postcode);
-            return Ok(result);
+            var cacheKey = $"postcode:{postcode}";
+            var cacheOptions = new DistributedCacheEntryOptions()
+                .SetAbsoluteExpiration(TimeSpan.FromMinutes(20))
+                .SetSlidingExpiration(TimeSpan.FromMinutes(2));
+
+            var postcodes = await _cache.GetOrSetAsync(cacheKey,
+            async () =>
+            {
+                _logger.LogInformation($"Cache miss. Fetching data for key: {cacheKey} from database.");
+                return await _companyService.PostcodeAutoComplete(postcode);
+            }, cacheOptions);
+
+            return Ok(postcodes);
         }
 
         //[AllowAnonymous]
         [ProducesResponseType(200)]
-        [HttpGet, Route("postcode-lookup"), ResponseCache(Duration = 300)] // 5 mins
+        [HttpGet, Route("postcode-lookup")]
         [ProducesResponseType(typeof(PostcodeLookup), StatusCodes.Status200OK)]
         public async Task<IActionResult> PostcodeLookup(string postcode)
         {
-            var result = await _companyService.PostCodeLookup(postcode);
-            return Ok(result);
+            var cacheKey = $"{postcode}";
+            var cacheOptions = new DistributedCacheEntryOptions()
+                .SetAbsoluteExpiration(TimeSpan.FromMinutes(20))
+                .SetSlidingExpiration(TimeSpan.FromMinutes(2));
+
+            var postcodeData = await _cache.GetOrSetAsync(cacheKey,
+            async () =>
+            {
+                _logger.LogInformation($"Cache miss. Fetching data for key: {cacheKey} from database.");
+                return await _companyService.PostCodeLookup(postcode);
+            }, cacheOptions);
+
+            
+            return Ok(postcodeData);
         }
     }
 }
