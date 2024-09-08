@@ -1,22 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SophieHR.Api.Data;
+using SophieHR.Api.Interfaces;
 using SophieHR.Api.Models;
 
 namespace SophieHR.Api.Services
 {
-    public interface IDepartmentService
-    {
-        Task<ICollection<Department>> GetDepartmentsForCompanyId(Guid companyId);
-
-        Task<Department> GetDepartmentById(Guid departmentId);
-
-        Task<Department> UpdateDepartment(Guid id, Department departmentDetail);
-
-        Task<Department> CreateDepartment(Department departmentCreate);
-
-        Task DeleteDepartment(Guid id);
-    }
-
     public class DepartmentService : IDepartmentService
     {
         private readonly ApplicationDbContext _context;

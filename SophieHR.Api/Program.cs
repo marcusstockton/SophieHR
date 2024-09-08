@@ -14,6 +14,7 @@ using Serilog;
 using Serilog.Exceptions;
 using SophieHR.Api.Data;
 using SophieHR.Api.Extensions;
+using SophieHR.Api.Interfaces;
 using SophieHR.Api.Models;
 using SophieHR.Api.Services;
 using StackExchange.Redis;
@@ -29,9 +30,9 @@ builder.Host.UseSerilog();
 // Add services to the container.
 builder.Services.AddJWTTokenServices(builder.Configuration);
 builder.Services.TryAddTransient<IEmailSender, EmailService>();
-builder.Services.TryAddTransient<ICompanyService, CompanyService>();
-builder.Services.TryAddTransient<IDepartmentService, DepartmentService>();
-builder.Services.TryAddTransient<IEmployeeService, EmployeeService>();
+builder.Services.TryAddScoped<ICompanyService, CompanyService>();
+builder.Services.TryAddScoped<IDepartmentService, DepartmentService>();
+builder.Services.TryAddScoped<IEmployeeService, EmployeeService>();
 builder.Services.TryAddScoped<IJobTitleService, JobTitleServiceCache>();
 
 builder.Services.AddMemoryCache();

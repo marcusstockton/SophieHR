@@ -14,5 +14,7 @@ namespace SophieHR.Api.Models.DTOs.Address
 
         public string County { get; set; }
         public string? MapImage { get; set; }
+        public double Lat { get; set; }
+        public double Lon { get; set; }
     }
 }

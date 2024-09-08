@@ -96,7 +96,7 @@ namespace SophieHR.Api.Services.Tests
         [TestMethod()]
         public async Task UpdateCompanyAsyncTestAsync()
         {
-            var company = await _service.GetCompanyByIdNoTrackingAsync(_id2);
+            var company = await _service.GetCompanyById(_id2);
 
             var companyUpdate = new CompanyDetailNoLogo
             {
@@ -109,7 +109,7 @@ namespace SophieHR.Api.Services.Tests
 
             var result = await _service.UpdateCompanyAsync(_id2, companyUpdate);
             Assert.AreEqual(HttpStatusCode.NoContent, result.StatusCode);
-            var updatedCompany = await _service.GetCompanyByIdNoTrackingAsync(_id2);
+            var updatedCompany = await _service.GetCompanyById(_id2);
             Assert.AreEqual("Updated Company Name Two", updatedCompany.Name);
             Assert.AreEqual("Devon", updatedCompany.Address.County);
         }
@@ -117,7 +117,7 @@ namespace SophieHR.Api.Services.Tests
         [TestMethod()]
         public async Task UpdateCompanyWithInvalidIdsAsyncTestAsync()
         {
-            var company = await _service.GetCompanyByIdNoTrackingAsync(_id2);
+            var company = await _service.GetCompanyById(_id2);
 
             var companyUpdate = new CompanyDetailNoLogo
             {

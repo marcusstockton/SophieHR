@@ -64,14 +64,9 @@ services:
       - "6379:6379"
     networks:
       - docker-network
-    # deploy:
-    #   resources:
-    #     limits:
-    #       cpus: '0.001'
-    #       memory: 50M
-    #     reservations:
-    #       cpus: '0.0001'
-    #       memory: 20M
+    mem_limit: 2g
+    environment:
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
     healthcheck:
         test: ["CMD", "redis-cli","ping"]
         interval: 10s
@@ -140,6 +135,9 @@ services:
       - sophiehr.api
     networks:
       - docker-network
+    mem_limit: 2g
+    environment:
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
     # mem_limit: 1g
 
 
@@ -151,9 +149,11 @@ services:
       - "3000:3000"
     volumes:
       - grafana_data:/var/lib/grafana
+    mem_limit: 2g
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=AwkX512Xkcd
       - GF_USERS_ALLOW_SIGN_UP=false
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
     networks:
       - docker-network
 

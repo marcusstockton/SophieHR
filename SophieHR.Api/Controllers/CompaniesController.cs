@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
 using SophieHR.Api.Extensions;
+using SophieHR.Api.Interfaces;
 using SophieHR.Api.Models.DTOs.Company;
 using SophieHR.Api.Services;
 
@@ -76,7 +77,7 @@ namespace SophieHR.Api.Controllers
             async () =>
             {
                 _logger.LogInformation($"Cache miss. Fetching data for key: {cacheKey} from database.");
-                return await _companyService.GetCompanyByIdNoTrackingAsync(id);
+                return await _companyService.GetCompanyById(id);
             })!;
 
             if (company == null)
@@ -97,6 +98,9 @@ namespace SophieHR.Api.Controllers
             var response = await _companyService.UploadLogoForCompanyAsync(id, logo);
             if (response.IsSuccessStatusCode)
             {
+                await _cache.RemoveAsync("companies");
+                await _cache.RemoveAsync("companyNames");
+                await _cache.RemoveAsync($"company:{id}");
                 return Ok(response);
             }
             return BadRequest(response);

@@ -3,9 +3,9 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SophieHR.Api.Interfaces;
 using SophieHR.Api.Models;
 using SophieHR.Api.Models.DTOs.Department;
-using SophieHR.Api.Services;
 
 namespace SophieHR.Api.Controllers
 {

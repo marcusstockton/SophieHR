@@ -2,38 +2,12 @@
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using SophieHR.Api.Data;
+using SophieHR.Api.Interfaces;
 using SophieHR.Api.Models;
 using SophieHR.Api.Models.DTOs.Company;
 
 namespace SophieHR.Api.Services
 {
-    public interface ICompanyService
-    {
-        Task<ICollection<CompanyDetailNoLogo>> GetAllCompaniesNoLogoAsync();
-
-        Task<ICollection<KeyValuePair<Guid, string>>> GetCompanyNamesAsync(string username, bool isManager = false);
-
-        Task<CompanyDetailDto> GetCompanyByIdNoTrackingAsync(Guid id);
-
-        Task<Company> FindCompanyByIdAsync(Guid id);
-
-        Task<HttpResponseMessage> UpdateCompanyAsync(Guid id, CompanyDetailNoLogo companyDetail);
-
-        Task<HttpResponseMessage> UploadLogoForCompanyAsync(Guid id, IFormFile logo);
-
-        Task<CompanyDetailDto> CreateNewCompanyAsync(CompanyCreateDto companyDto);
-
-        Task<HttpResponseMessage> DeleteCompanyAsync(Guid companyId);
-
-        Task<string> GetAutoSuggestion(string search);
-
-        Task<string> GetMapFromLatLong(decimal lat, decimal lon, int zoomLevel = 15, int mapType = 3, int width = 2048, short viewType = 1);
-
-        Task<string[]> PostcodeAutoComplete(string postcode);
-
-        Task<PostcodeLookup> PostCodeLookup(string postcode);
-    }
-
     public class CompanyService : ICompanyService
     {
         private readonly ApplicationDbContext _context;
@@ -78,26 +52,16 @@ namespace SophieHR.Api.Services
             return companies;
         }
 
-        public async Task<CompanyDetailDto> GetCompanyByIdNoTrackingAsync(Guid id)
+        public async Task<CompanyDetailDto> GetCompanyById(Guid id)
         {
-            _logger.LogInformation($"{nameof(GetCompanyByIdNoTrackingAsync)} called");
+            _logger.LogInformation($"{nameof(GetCompanyById)} called");
 
             return await _context.Companies
                 .Include(x => x.Address)
                 .Include(x => x.Employees)
                 .Include(x => x.CompanyConfig)
-                .AsNoTracking()
+                //.AsNoTracking()
                 .ProjectTo<CompanyDetailDto>(_mapper.ConfigurationProvider)
-                //.Select(x => new CompanyDetailDto
-                //{
-                //    Address = x.Address,
-                //    CreatedDate = x.CreatedDate,
-                //    EmployeeCount = x.Employees.Count(),
-                //    Id = x.Id,
-                //    Logo = x.Logo != null ? Convert.ToBase64String(x.Logo) : null,
-                //    Name = x.Name,
-                //    UpdatedDate = x.UpdatedDate
-                //})
                 .FirstOrDefaultAsync(x => x.Id == id);
         }
 
@@ -132,10 +96,8 @@ namespace SophieHR.Api.Services
                 var updatedCompany = _mapper.Map<Company>(companyDetail);
                 updatedCompany.Logo = originalCompany.Logo;
 
-                _context.Companies.Update(updatedCompany);
-
-                //_context.Entry(originalCompany).CurrentValues.SetValues(updatedCompany);
-                //_context.Entry(originalCompany.Address).CurrentValues.SetValues(updatedCompany.Address);
+                _context.Attach(updatedCompany);
+                _context.Entry(updatedCompany).State = EntityState.Modified;
 
                 await _context.SaveChangesAsync();
                 return new HttpResponseMessage(System.Net.HttpStatusCode.NoContent);
@@ -163,7 +125,6 @@ namespace SophieHR.Api.Services
                     return result;
                 }
 
-                // Resize the image to be 256 * 256...
                 using (var memoryStream = new MemoryStream())
                 {
                     await logo.CopyToAsync(memoryStream);
@@ -182,7 +143,7 @@ namespace SophieHR.Api.Services
         {
             _logger.LogInformation($"{nameof(CreateNewCompanyAsync)} called");
             var company = _mapper.Map<Company>(companyDto);
-            if (_context.Companies.Any(x => x.Name == companyDto.Name))
+            if (_context.Companies.Any(x => x.Name.Equals(companyDto.Name, StringComparison.OrdinalIgnoreCase)))
             {
                 throw new Exception("Company with this name already exists!");
             }
