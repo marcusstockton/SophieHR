@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using SophieHR.Api.Data;
 using SophieHR.Api.Models;
@@ -17,6 +18,10 @@ namespace SophieHR.UnitTests.Services
     {
         private ApplicationDbContext _context = default!;
         private EmployeeService _service = default!;
+        private IMapper _mapper = default!;
+        private Mock<ILogger<EmployeeService>> _loggerMock = new Mock<ILogger<EmployeeService>>();
+        private Mock<UserManager<ApplicationUser>> _userManagerMock = new Mock<UserManager<ApplicationUser>>();
+        private Mock<RoleManager<IdentityRole<Guid>>> _roleManagerMock = new Mock<RoleManager<IdentityRole<Guid>>>();
 
         private Guid _employeeId1 = Guid.NewGuid();
         private Guid _employeeId2 = Guid.NewGuid();
@@ -41,9 +46,7 @@ namespace SophieHR.UnitTests.Services
                 cfg.AddProfile(new CompanyProfile());
                 cfg.AddProfile(new AddressProfile());
             });
-            var mapper = config.CreateMapper();
-
-            var mockLogger = new Mock<ILogger<EmployeeService>>();
+            _mapper = config.CreateMapper();
 
             var company1 = new Company { Id = _companyId1, Name = "Test Company One", Address = new CompanyAddress { Line1 = "Line 1", Line2 = "Line 2", Postcode = "EX11EX" } };
             var company2 = new Company { Id = _companyId2, Name = "Test Company Two", Address = new CompanyAddress { Line1 = "Line 1", Line2 = "Line 2", Postcode = "EX11EX" } };
@@ -67,18 +70,32 @@ namespace SophieHR.UnitTests.Services
                 throw;
             }
 
-            var UserStoreMock = Mock.Of<IUserStore<ApplicationUser>>();
-            var userMgr = new Mock<UserManager<ApplicationUser>>(UserStoreMock);
-            var roleManager = new Mock<RoleManager<IdentityRole<Guid>>>();
+            var userManagerMock = new Mock<UserManager<ApplicationUser>>(
+                new Mock<IUserStore<ApplicationUser>>().Object,
+                new Mock<IOptions<IdentityOptions>>().Object,
+                new Mock<IPasswordHasher<ApplicationUser>>().Object,
+                new IUserValidator<ApplicationUser>[0],
+                new IPasswordValidator<ApplicationUser>[0],
+                new Mock<ILookupNormalizer>().Object,
+                new Mock<IdentityErrorDescriber>().Object,
+                new Mock<IServiceProvider>().Object,
+                new Mock<ILogger<UserManager<ApplicationUser>>>().Object);
 
-            _service = new EmployeeService(_context, userMgr.Object, roleManager.Object, mapper, mockLogger.Object);
+            var roleManagerMock = new Mock<RoleManager<IdentityRole<Guid>>>(
+                new Mock<IRoleStore<IdentityRole<Guid>>>().Object,
+                new IRoleValidator<IdentityRole<Guid>>[0],
+                new Mock<ILookupNormalizer>().Object,
+                new Mock<IdentityErrorDescriber>().Object,
+                new Mock<ILogger<RoleManager<IdentityRole<Guid>>>>().Object);
+
+            _service = new EmployeeService(_context, userManagerMock.Object, roleManagerMock.Object, _mapper, _loggerMock.Object);
         }
 
         [TestMethod]
         public async Task CreateEmployee_ThrowsException_When_Existing_Username_Passed_In()
         {
             // Arrange
-            EmployeeCreateDto employeeDto = new EmployeeCreateDto { FirstName = "Damien", LastName = "Rice", WorkEmailAddress = "test@test.com" };
+            var employeeDto = new EmployeeCreateDto { FirstName = "Damien", LastName = "Rice", WorkEmailAddress = "test@test.com" };
 
             // Act
             await Assert.ThrowsExceptionAsync<ArgumentException>(() =>
@@ -156,117 +173,5 @@ namespace SophieHR.UnitTests.Services
             // Assert
             Assert.AreEqual(result.UserName, "test1@test.com");
         }
-
-        //[TestMethod]
-        //public async Task GetEmployeeByUsername_StateUnderTest_ExpectedBehavior()
-        //{
-        //    // Arrange
-        //    var service = this.CreateService();
-        //    string username = null;
-
-        //    // Act
-        //    var result = await service.GetEmployeeByUsername(
-        //        username);
-
-        //    // Assert
-        //    Assert.Fail();
-        //    this.mockRepository.VerifyAll();
-        //}
-
-        //[TestMethod]
-        //public async Task GetEmployeesForCompanyId_StateUnderTest_ExpectedBehavior()
-        //{
-        //    // Arrange
-        //    var service = this.CreateService();
-        //    Guid companyId = default(global::System.Guid);
-
-        //    // Act
-        //    var result = await service.GetEmployeesForCompanyId(
-        //        companyId);
-
-        //    // Assert
-        //    Assert.Fail();
-        //    this.mockRepository.VerifyAll();
-        //}
-
-        //[TestMethod]
-        //public async Task GetEmployeesForManager_StateUnderTest_ExpectedBehavior()
-        //{
-        //    // Arrange
-        //    var service = this.CreateService();
-        //    Guid managerId = default(global::System.Guid);
-
-        //    // Act
-        //    var result = await service.GetEmployeesForManager(
-        //        managerId);
-
-        //    // Assert
-        //    Assert.Fail();
-        //    this.mockRepository.VerifyAll();
-        //}
-
-        //[TestMethod]
-        //public async Task GetManagersForCompanyId_StateUnderTest_ExpectedBehavior()
-        //{
-        //    // Arrange
-        //    var service = this.CreateService();
-        //    Guid companyId = default(global::System.Guid);
-
-        //    // Act
-        //    var result = await service.GetManagersForCompanyId(
-        //        companyId);
-
-        //    // Assert
-        //    Assert.Fail();
-        //    this.mockRepository.VerifyAll();
-        //}
-
-        //[TestMethod]
-        //public void GetTitles_StateUnderTest_ExpectedBehavior()
-        //{
-        //    // Arrange
-        //    var service = this.CreateService();
-
-        //    // Act
-        //    var result = service.GetTitles();
-
-        //    // Assert
-        //    Assert.Fail();
-        //    this.mockRepository.VerifyAll();
-        //}
-
-        //[TestMethod]
-        //public async Task UpdateEmployee_StateUnderTest_ExpectedBehavior()
-        //{
-        //    // Arrange
-        //    var service = this.CreateService();
-        //    EmployeeDetailDto employeeDto = null;
-
-        //    // Act
-        //    var result = await service.UpdateEmployee(
-        //        employeeDto);
-
-        //    // Assert
-        //    Assert.Fail();
-        //    this.mockRepository.VerifyAll();
-        //}
-
-        //[TestMethod]
-        //public async Task UploadAvatarToEmployee_StateUnderTest_ExpectedBehavior()
-        //{
-        //    // Arrange
-        //    var service = this.CreateService();
-        //    Guid id = default(global::System.Guid);
-        //    IFormFile avatar = null;
-
-        //    // Act
-        //    await service.UploadAvatarToEmployee(
-        //        id,
-        //        avatar);
-
-        //    // Assert
-        //    Assert.Fail();
-        //    this.mockRepository.VerifyAll();
-        //}
     }
 }

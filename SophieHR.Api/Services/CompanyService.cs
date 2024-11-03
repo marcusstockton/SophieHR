@@ -55,14 +55,23 @@ namespace SophieHR.Api.Services
         public async Task<CompanyDetailDto> GetCompanyById(Guid id)
         {
             _logger.LogInformation($"{nameof(GetCompanyById)} called");
-
-            return await _context.Companies
+            try
+            {
+                var company = await _context.Companies
                 .Include(x => x.Address)
                 .Include(x => x.Employees)
                 .Include(x => x.CompanyConfig)
-                //.AsNoTracking()
-                .ProjectTo<CompanyDetailDto>(_mapper.ConfigurationProvider)
+                .AsNoTracking()
+                //.ProjectTo<CompanyDetailDto>(_mapper.ConfigurationProvider)
                 .FirstOrDefaultAsync(x => x.Id == id);
+
+                return _mapper.Map<CompanyDetailDto>(company);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
+                return null;
+            }
         }
 
         public async Task<Company> FindCompanyByIdAsync(Guid id)

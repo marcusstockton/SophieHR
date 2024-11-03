@@ -8,6 +8,7 @@ using SophieHR.Api.Models;
 using SophieHR.Api.Models.DTOs.Address;
 using SophieHR.Api.Models.DTOs.Company;
 using SophieHR.Api.Profiles;
+using System;
 using System.Net;
 using System.Text;
 
@@ -22,7 +23,7 @@ namespace SophieHR.Api.Services.Tests
         private Guid _id1;
         private Guid _id2;
 
-        [TestInitialize()]
+        [TestInitialize]
         public async Task SetupDataAsync()
         {
             var _options = new DbContextOptionsBuilder<ApplicationDbContext>()
@@ -49,51 +50,56 @@ namespace SophieHR.Api.Services.Tests
             _id2 = Guid.NewGuid();
             var companyList = new List<Company>
             {
-                new Company{ Id = _id1, Name = "Test Company One", Address = new CompanyAddress{ Line1 = "Line 1", Line2 = "Line 2", Postcode = "EX11EX" } },
-                new Company{ Id = _id2, Name = "Test Company Two", Address = new CompanyAddress{ Line1 = "Line 1", Line2 = "Line 2", Postcode = "EX22EX" } },
+                new Company{ Id = _id1, Name = "Test Company One", Address = new CompanyAddress{ Line1 = "Line 1", Line2 = "Line 2", Postcode = "EX11EX" }, Employees = new List<Employee>(), CompanyConfig = new CompanyConfig{ } },
+                new Company{ Id = _id2, Name = "Test Company Two", Address = new CompanyAddress{ Line1 = "Line 1", Line2 = "Line 2", Postcode = "EX22EX" }, Employees = new List<Employee>(), CompanyConfig = new CompanyConfig{ } },
             };
 
             await _context.Companies.AddRangeAsync(companyList);
             await _context.SaveChangesAsync();
 
+            foreach (var entity in _context.ChangeTracker.Entries())
+            {
+                entity.State = EntityState.Detached;
+            }
+
             _service = new CompanyService(_context, mapper, mockLogger.Object, mockHttpClientFactory.Object);
         }
 
-        [TestCleanup()]
+        [TestCleanup]
         public void Cleanup()
         {
             _context.Dispose();
         }
 
-        [TestMethod()]
+        [TestMethod]
         public async Task GetAllCompaniesNoLogoAsyncTestAsync()
         {
             var results = await _service.GetAllCompaniesNoLogoAsync();
             Assert.AreEqual(2, results.Count);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public async Task GetCompanyNamesAsyncTest()
         {
             var results = await _service.GetCompanyNamesAsync("adminUser");
             Assert.AreEqual(2, results.Count);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public async Task GetCompanyByIdNoTrackingAsyncTest()
         {
             var company = await _service.FindCompanyByIdAsync(_id1);
             Assert.AreEqual("Test Company One", company.Name);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public async Task FindCompanyByIdAsyncTestAsync()
         {
             var company = await _service.FindCompanyByIdAsync(_id2);
             Assert.AreEqual("Test Company Two", company.Name);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public async Task UpdateCompanyAsyncTestAsync()
         {
             var company = await _service.GetCompanyById(_id2);
@@ -114,7 +120,7 @@ namespace SophieHR.Api.Services.Tests
             Assert.AreEqual("Devon", updatedCompany.Address.County);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public async Task UpdateCompanyWithInvalidIdsAsyncTestAsync()
         {
             var company = await _service.GetCompanyById(_id2);
@@ -137,7 +143,7 @@ namespace SophieHR.Api.Services.Tests
             Assert.AreEqual("Id's do not match!", resultContent);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public async Task UpdateCompanyWithInvalidCompanyIdAsyncTestAsync()
         {
             var unknownId = Guid.NewGuid();
@@ -156,7 +162,7 @@ namespace SophieHR.Api.Services.Tests
             Assert.AreEqual($"Unable to find company with id {unknownId}", resultContent);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public async Task UploadLogoForCompanyAsyncTestAsync()
         {
             var bytes = Encoding.UTF8.GetBytes("This is a dummy file");
@@ -169,7 +175,7 @@ namespace SophieHR.Api.Services.Tests
             Assert.AreEqual("Sucessfully added logo", contentResult);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public async Task UploadLogoForInvalidCompanyAsyncTestAsync()
         {
             var bytes = Encoding.UTF8.GetBytes("This is a dummy file");
@@ -183,7 +189,7 @@ namespace SophieHR.Api.Services.Tests
             Assert.AreEqual($"Unable to find company with id {badId}", contentResult);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public async Task CreateNewCompanyAsyncTestAsync()
         {
             var newCompany = new CompanyCreateDto
@@ -201,7 +207,7 @@ namespace SophieHR.Api.Services.Tests
             Assert.IsNotNull(result.Id);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public async Task DeleteCompanyAsyncTestAsync()
         {
             var result = await _service.DeleteCompanyAsync(_id2);
@@ -209,7 +215,7 @@ namespace SophieHR.Api.Services.Tests
             Assert.AreEqual(HttpStatusCode.NoContent, result.StatusCode);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public async Task DeleteCompanyAsyncTestFailsCorrectlyAsync()
         {
             var result = await _service.DeleteCompanyAsync(Guid.NewGuid());
