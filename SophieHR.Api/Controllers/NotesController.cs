@@ -83,8 +83,16 @@ namespace SophieHR.Api.Controllers
         // POST: api/Notes
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost("{employeeId}")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<NoteDetailDto>> PostNotes([FromBody] NoteCreateDto noteInput, [FromRoute] Guid employeeId)
         {
+            var employee = await _context.Employees.FindAsync(employeeId);
+            if(employee is null)
+            {
+                return BadRequest("Unable to find employee");
+            }
+
             var note = _mapper.Map<Note>(noteInput);
             note.EmployeeId = employeeId;
             _context.Notes.Add(note);

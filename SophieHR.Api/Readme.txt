@@ -11,3 +11,7 @@ Uses Redis caching (currently only in CompanyController)
 
 
 HereApi seems to have introduced a new payment platform so need to find a new api for looking up postcodes and gettig info.
+
+TODO:
+Replace all DTO's with Records.
+Remove automapper - do it my self seems to be the preferred way currently.

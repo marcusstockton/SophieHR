@@ -176,10 +176,17 @@ namespace SophieHR.Api.Controllers
             //    return await _companyService.GetMapFromLatLong(lat, lon, zoomLevel, mapType, width, viewType);
             //},cacheOptions);
 
-            var map = await _companyService.GetMapFromLatLong(lat, lon, zoomLevel, mapType, width, viewType);
-            if (map.Length > 0)
+            var cacheKey = $"company-map-{lat}-{lon}-{zoomLevel}";
+            var image = await _cache.GetOrSetAsync(cacheKey,
+            async () =>
             {
-                return Ok(map);
+                return await _companyService.GetMapFromLatLong(lat, lon, zoomLevel, mapType, width, viewType);
+
+            })!;
+
+            if (image.Length > 0)
+            {
+                return Ok(image);
             }
             return BadRequest();
         }
