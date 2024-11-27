@@ -149,22 +149,6 @@ builder.Services.AddResponseCaching();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    if (builder.Configuration.GetValue<bool>("ReseedDummyData"))
-    {
-        using (var scope = app.Services.CreateScope())
-        {
-            Log.Information("Reseeding the database");
-            var services = scope.ServiceProvider;
-            var context = services.GetRequiredService<ApplicationDbContext>();
-            await context.Database.EnsureDeletedAsync();
-            context.Database.Migrate();
-            await DataSeeder.Initialize(services);
-        }
-    }
-}
 
 // Register the Swagger generator and the Swagger UI middlewares
 app.UseOpenApi();
@@ -204,6 +188,21 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+if (app.Environment.IsDevelopment())
+{
+    if (builder.Configuration.GetValue<bool>("ReseedDummyData"))
+    {
+        using (var scope = app.Services.CreateScope())
+        {
+            Log.Information("Reseeding the database");
+            var services = scope.ServiceProvider;
+            var context = services.GetRequiredService<ApplicationDbContext>();
+            await context.Database.EnsureCreatedAsync();
+            await DataSeeder.Initialize(services);
+        }
+    }
+}
+
 app.Run();
 
 void ConfigureLogging()
@@ -222,7 +221,7 @@ void ConfigureLogging()
         .Enrich.WithEnvironmentName()
         .Enrich.WithMachineName()
         .WriteTo.Debug()
-        .WriteTo.Console()
+        //.WriteTo.Console()
         .WriteTo.Elasticsearch(new[] { new Uri(configuration["ElasticConfiguration:Uri"]) }, opts =>
         {
             opts.DataStream = new DataStreamName($"{Assembly.GetExecutingAssembly().GetName().Name.ToLower().Replace(".", "-")}", $"{environment?.ToLower().Replace(".", "-")}", $"{DateTime.UtcNow:yyyy-MM}");

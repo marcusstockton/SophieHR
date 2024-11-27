@@ -3,7 +3,6 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SophieHR.Api.Data;
 
@@ -12,17 +11,16 @@ using SophieHR.Api.Data;
 namespace SophieHR.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20220605191410_Updating Employee obj")]
-    partial class UpdatingEmployeeobj
+    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
     {
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.5")
+                .HasAnnotation("ProductVersion", "9.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
-            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", b =>
                 {
@@ -58,7 +56,7 @@ namespace SophieHR.Api.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ClaimType")
                         .HasColumnType("nvarchar(max)");
@@ -82,7 +80,7 @@ namespace SophieHR.Api.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ClaimType")
                         .HasColumnType("nvarchar(max)");
@@ -103,12 +101,10 @@ namespace SophieHR.Api.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<System.Guid>", b =>
                 {
                     b.Property<string>("LoginProvider")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("ProviderKey")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("ProviderDisplayName")
                         .HasColumnType("nvarchar(max)");
@@ -144,12 +140,10 @@ namespace SophieHR.Api.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("LoginProvider")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Name")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Value")
                         .HasColumnType("nvarchar(max)");
@@ -177,7 +171,11 @@ namespace SophieHR.Api.Migrations
 
                     b.Property<string>("Discriminator")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(21)
+                        .HasColumnType("nvarchar(21)");
+
+                    b.Property<double>("Lat")
+                        .HasColumnType("float");
 
                     b.Property<string>("Line1")
                         .IsRequired()
@@ -196,6 +194,9 @@ namespace SophieHR.Api.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<double>("Lon")
+                        .HasColumnType("float");
+
                     b.Property<string>("Postcode")
                         .IsRequired()
                         .HasMaxLength(8)
@@ -208,7 +209,9 @@ namespace SophieHR.Api.Migrations
 
                     b.ToTable("Address");
 
-                    b.HasDiscriminator<string>("Discriminator").HasValue("Address");
+                    b.HasDiscriminator().HasValue("Address");
+
+                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("SophieHR.Api.Models.ApplicationUser", b =>
@@ -226,7 +229,8 @@ namespace SophieHR.Api.Migrations
 
                     b.Property<string>("Discriminator")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(21)
+                        .HasColumnType("nvarchar(21)");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
@@ -236,14 +240,12 @@ namespace SophieHR.Api.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("LastName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
@@ -292,7 +294,9 @@ namespace SophieHR.Api.Migrations
 
                     b.ToTable("AspNetUsers", (string)null);
 
-                    b.HasDiscriminator<string>("Discriminator").HasValue("ApplicationUser");
+                    b.HasDiscriminator().HasValue("ApplicationUser");
+
+                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("SophieHR.Api.Models.Company", b =>
@@ -326,6 +330,32 @@ namespace SophieHR.Api.Migrations
                         .IsUnique();
 
                     b.ToTable("Companies");
+                });
+
+            modelBuilder.Entity("SophieHR.Api.Models.CompanyConfig", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("GdprRetentionPeriodInYears")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompanyId")
+                        .IsUnique();
+
+                    b.ToTable("CompanyConfigs");
                 });
 
             modelBuilder.Entity("SophieHR.Api.Models.Department", b =>
@@ -383,18 +413,113 @@ namespace SophieHR.Api.Migrations
                     b.ToTable("EmployeeAvatars");
                 });
 
+            modelBuilder.Entity("SophieHR.Api.Models.LeaveRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("Approved")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid?>("ApprovedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Comments")
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("EmployeeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("EndDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<bool>("EndDateFirstHalf")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("EndDateSecondHalf")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("LeaveType")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("StartDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<bool>("StartDateFirstHalf")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("StartDateSecondHalf")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.ToTable("LeaveRequests");
+                });
+
+            modelBuilder.Entity("SophieHR.Api.Models.Note", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Content")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("EmployeeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("NoteType")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.ToTable("Notes");
+                });
+
             modelBuilder.Entity("SophieHR.Api.Models.CompanyAddress", b =>
                 {
                     b.HasBaseType("SophieHR.Api.Models.Address");
 
+                    b.Property<string>("MapImage")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasDiscriminator().HasValue("CompanyAddress");
+                });
+
+            modelBuilder.Entity("SophieHR.Api.Models.EmployeeAddress", b =>
+                {
+                    b.HasBaseType("SophieHR.Api.Models.Address");
+
+                    b.HasDiscriminator().HasValue("EmployeeAddress");
                 });
 
             modelBuilder.Entity("SophieHR.Api.Models.Employee", b =>
                 {
                     b.HasBaseType("SophieHR.Api.Models.ApplicationUser");
 
-                    b.Property<Guid?>("AddressId")
+                    b.Property<Guid>("AddressId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("CompanyId")
@@ -465,7 +590,9 @@ namespace SophieHR.Api.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.HasIndex("AddressId");
+                    b.HasIndex("AddressId")
+                        .IsUnique()
+                        .HasFilter("[AddressId] IS NOT NULL");
 
                     b.HasIndex("CompanyId");
 
@@ -474,13 +601,6 @@ namespace SophieHR.Api.Migrations
                     b.HasIndex("ManagerId");
 
                     b.HasDiscriminator().HasValue("Employee");
-                });
-
-            modelBuilder.Entity("SophieHR.Api.Models.EmployeeAddress", b =>
-                {
-                    b.HasBaseType("SophieHR.Api.Models.Address");
-
-                    b.HasDiscriminator().HasValue("EmployeeAddress");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
@@ -543,6 +663,17 @@ namespace SophieHR.Api.Migrations
                     b.Navigation("Address");
                 });
 
+            modelBuilder.Entity("SophieHR.Api.Models.CompanyConfig", b =>
+                {
+                    b.HasOne("SophieHR.Api.Models.Company", "Company")
+                        .WithOne("CompanyConfig")
+                        .HasForeignKey("SophieHR.Api.Models.CompanyConfig", "CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Company");
+                });
+
             modelBuilder.Entity("SophieHR.Api.Models.Department", b =>
                 {
                     b.HasOne("SophieHR.Api.Models.Company", "Company")
@@ -565,11 +696,22 @@ namespace SophieHR.Api.Migrations
                     b.Navigation("Employee");
                 });
 
+            modelBuilder.Entity("SophieHR.Api.Models.Note", b =>
+                {
+                    b.HasOne("SophieHR.Api.Models.Employee", null)
+                        .WithMany("Notes")
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("SophieHR.Api.Models.Employee", b =>
                 {
                     b.HasOne("SophieHR.Api.Models.EmployeeAddress", "Address")
-                        .WithMany()
-                        .HasForeignKey("AddressId");
+                        .WithOne()
+                        .HasForeignKey("SophieHR.Api.Models.Employee", "AddressId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("SophieHR.Api.Models.Company", "Company")
                         .WithMany("Employees")
@@ -584,7 +726,8 @@ namespace SophieHR.Api.Migrations
 
                     b.HasOne("SophieHR.Api.Models.Employee", "Manager")
                         .WithMany()
-                        .HasForeignKey("ManagerId");
+                        .HasForeignKey("ManagerId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Address");
 
@@ -597,12 +740,16 @@ namespace SophieHR.Api.Migrations
 
             modelBuilder.Entity("SophieHR.Api.Models.Company", b =>
                 {
+                    b.Navigation("CompanyConfig");
+
                     b.Navigation("Employees");
                 });
 
             modelBuilder.Entity("SophieHR.Api.Models.Employee", b =>
                 {
                     b.Navigation("Avatar");
+
+                    b.Navigation("Notes");
                 });
 #pragma warning restore 612, 618
         }
