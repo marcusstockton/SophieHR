@@ -35,7 +35,25 @@ namespace SophieHR.Api.Services
             var companyList = await _context.Companies
                 .AsNoTracking()
                 .Include(x => x.Address)
-                .ProjectTo<CompanyDetailNoLogo>(_mapper.ConfigurationProvider)
+                .Select(x=> new CompanyDetailNoLogo
+                {
+                    Address = new Models.DTOs.Address.AddressBasic
+                    {
+                        County = x.Address.County,
+                        Lat = x.Address.Lat,
+                        Lon = x.Address.Lon,
+                        Line1 = x.Address.Line1,
+                        Line2 = x.Address.Line2,
+                        Line3 = x.Address.Line3,
+                        Line4 = x.Address.Line4,
+                        MapImage = x.Address.MapImage,
+                        Postcode = x.Address.Postcode
+                    },
+                    CreatedDate = x.CreatedDate,
+                   Id= x.Id,
+                   Name = x.Name,
+                   UpdatedDate = x.UpdatedDate
+                })
                 .ToListAsync();
             return companyList;
         }
@@ -57,15 +75,22 @@ namespace SophieHR.Api.Services
             _logger.LogInformation($"{nameof(GetCompanyById)} called");
             try
             {
-                var company = await _context.Companies
+                return await _context.Companies
                 .Include(x => x.Address)
                 .Include(x => x.Employees)
                 .Include(x => x.CompanyConfig)
                 .AsNoTracking()
-                //.ProjectTo<CompanyDetailDto>(_mapper.ConfigurationProvider)
+                .Select(company => new CompanyDetailDto
+                {
+                    Address = company.Address,
+                    CreatedDate = company.CreatedDate,
+                    EmployeeCount = company.Employees.Count(),
+                    Id = company.Id,
+                    Logo = Convert.ToBase64String(company.Logo),
+                    Name = company.Name,
+                    UpdatedDate = company.UpdatedDate
+                })
                 .FirstOrDefaultAsync(x => x.Id == id);
-
-                return _mapper.Map<CompanyDetailDto>(company);
             }
             catch (Exception ex)
             {
@@ -88,34 +113,42 @@ namespace SophieHR.Api.Services
                 return new HttpResponseMessage(System.Net.HttpStatusCode.NotFound) { Content = new StringContent($"Id's do not match!") };
             }
             var originalCompany = await _context.Companies
-                .Include(x => x.CompanyConfig)
+                //.Include(x => x.CompanyConfig)
                 .Include(x => x.Address)
-                .Include(x => x.Employees)
-                .AsNoTracking()
+                //.Include(x => x.Employees)
                 .SingleOrDefaultAsync(x => x.Id == id);
 
             if (originalCompany == null)
             {
                 _logger.LogWarning($"{nameof(UpdateCompanyAsync)} Unable to find company with id {id}");
-                return new HttpResponseMessage(System.Net.HttpStatusCode.NotFound) { Content = new StringContent($"Unable to find company with id {id}") };
+                return new HttpResponseMessage(System.Net.HttpStatusCode.NotFound) 
+                { 
+                    Content = new StringContent($"Unable to find company with id {id}") 
+                };
             }
 
             try
             {
-                var updatedCompany = _mapper.Map<Company>(companyDetail);
-                updatedCompany.Logo = originalCompany.Logo;
-
-                _context.Attach(updatedCompany);
-                _context.Entry(updatedCompany).State = EntityState.Modified;
+                _context.Entry(originalCompany).CurrentValues.SetValues(companyDetail);
+                _context.Entry(originalCompany.Address).CurrentValues.SetValues(companyDetail.Address);
+                _context.Entry(originalCompany).State = EntityState.Modified;
+                _context.Entry(originalCompany.Address).State = EntityState.Modified;
 
                 await _context.SaveChangesAsync();
                 return new HttpResponseMessage(System.Net.HttpStatusCode.NoContent);
             }
+            catch (DbUpdateException ex)
+            {
+                _logger.LogError(ex, $"An error occured updating Company id {id}.");
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"An exception was thrown when trying to update Company id {id}");
-                throw;
             }
+            return new HttpResponseMessage(System.Net.HttpStatusCode.InternalServerError) 
+            { 
+                Content = new StringContent($"An error occured updating company {companyDetail.Name}") 
+            };
         }
 
         public async Task<HttpResponseMessage> UploadLogoForCompanyAsync(Guid id, IFormFile logo)
