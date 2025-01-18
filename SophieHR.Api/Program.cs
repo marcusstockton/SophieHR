@@ -224,7 +224,7 @@ void ConfigureLogging()
         //.WriteTo.Console()
         .WriteTo.Elasticsearch(new[] { new Uri(configuration["ElasticConfiguration:Uri"]) }, opts =>
         {
-            opts.DataStream = new DataStreamName($"{Assembly.GetExecutingAssembly().GetName().Name.ToLower().Replace(".", "-")}", $"{environment?.ToLower().Replace(".", "-")}", $"{DateTime.UtcNow:yyyy-MM}");
+            opts.DataStream = new DataStreamName($"{Assembly.GetExecutingAssembly().GetName().Name.ToLower().Replace(".", "-")}", $"{environment?.ToLower().Replace(".", "-")}");
             opts.BootstrapMethod = BootstrapMethod.Failure;
         }, transport =>
         {
