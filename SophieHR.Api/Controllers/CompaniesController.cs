@@ -84,7 +84,7 @@ namespace SophieHR.Api.Controllers
             {
                 var error = $"Unable to find company with id {id}";
                 _logger.LogWarning($"{nameof(CompaniesController)} {error}");
-                return NotFound();
+                return NotFound(error);
             }
 
             return Ok(company);
