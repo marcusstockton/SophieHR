@@ -3,14 +3,15 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
+using Moq.Protected;
 using SophieHR.Api.Data;
 using SophieHR.Api.Models;
 using SophieHR.Api.Models.DTOs.Address;
 using SophieHR.Api.Models.DTOs.Company;
 using SophieHR.Api.Profiles;
-using System;
 using System.Net;
 using System.Text;
+using static StackExchange.Redis.Role;
 
 namespace SophieHR.Api.Services.Tests
 {
@@ -19,6 +20,9 @@ namespace SophieHR.Api.Services.Tests
     {
         private ApplicationDbContext _context = default!;
         private CompanyService _service = default!;
+        private Mock<ILogger<CompanyService>> _logger = default!;
+        private IMapper _mapper = default!;
+        private Mock<IHttpClientFactory> _mockHttpClientFactory = default!;
 
         private Guid _id1;
         private Guid _id2;
@@ -40,11 +44,11 @@ namespace SophieHR.Api.Services.Tests
                 cfg.AddProfile(new CompanyProfile());
                 cfg.AddProfile(new AddressProfile());
             });
-            var mapper = config.CreateMapper();
+            _mapper = config.CreateMapper();
 
-            var mockLogger = new Mock<ILogger<CompanyService>>();
+            _logger = new Mock<ILogger<CompanyService>>();
 
-            var mockHttpClientFactory = new Mock<IHttpClientFactory>();
+            _mockHttpClientFactory = new Mock<IHttpClientFactory>();
 
             _id1 = Guid.NewGuid();
             _id2 = Guid.NewGuid();
@@ -62,7 +66,7 @@ namespace SophieHR.Api.Services.Tests
                 entity.State = EntityState.Detached;
             }
 
-            _service = new CompanyService(_context, mapper, mockLogger.Object, mockHttpClientFactory.Object);
+            _service = new CompanyService(_context, _mapper, _logger.Object, _mockHttpClientFactory.Object);
         }
 
         [TestCleanup]
@@ -222,5 +226,101 @@ namespace SophieHR.Api.Services.Tests
 
             Assert.AreEqual(HttpStatusCode.BadRequest, result.StatusCode);
         }
+
+        [TestMethod]
+        public async Task GetAutoSuggestionTestAsync()
+        {
+            var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
+            mockHttpMessageHandler
+                .Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = new StringContent("[\"suggestion1\", \"suggestion2\"]")
+                });
+
+            var client = new HttpClient(mockHttpMessageHandler.Object);
+            client.BaseAddress = new Uri("http://test");
+            _mockHttpClientFactory.Setup(_ => _.CreateClient(It.IsAny<string>())).Returns(client);
+
+            _service = new CompanyService(_context, _mapper, _logger.Object, _mockHttpClientFactory.Object);
+
+            //_context, mapper, mockLogger.Object, mockHttpClientFactory.Object
+
+            var result = await _service.GetAutoSuggestion("test");
+            Assert.IsNotNull(result);
+        }
+
+        [TestMethod]
+        public async Task GetMapFromLatLongTestAsync()
+        {
+            var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
+            mockHttpMessageHandler
+                .Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = new ByteArrayContent(Encoding.UTF8.GetBytes("dummy image data"))
+                });
+
+            var client = new HttpClient(mockHttpMessageHandler.Object);
+            client.BaseAddress = new Uri("http://test");
+            _mockHttpClientFactory.Setup(_ => _.CreateClient(It.IsAny<string>())).Returns(client);
+
+            _service = new CompanyService(_context, _mapper, _logger.Object, _mockHttpClientFactory.Object);
+
+            var result = await _service.GetMapFromLatLong(55.3781m, 3.4360m);
+            Assert.IsNotNull(result);
+        }
+
+        [TestMethod]
+        public async Task PostcodeAutoCompleteTestAsync()
+        {
+            var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
+            mockHttpMessageHandler
+                .Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = new StringContent("{\"status\":200,\"result\":[\"postcode1\",\"postcode2\"]}")
+                });
+
+            var client = new HttpClient(mockHttpMessageHandler.Object);
+            client.BaseAddress = new Uri("http://test");
+            _mockHttpClientFactory.Setup(_ => _.CreateClient("postcodesioClient")).Returns(client);
+
+            _service = new CompanyService(_context, _mapper, _logger.Object, _mockHttpClientFactory.Object);
+
+            var result = await _service.PostcodeAutoComplete("EX11EX");
+            Assert.IsNotNull(result);
+            Assert.AreEqual(2, result.Length);
+        }
+
+        //[TestMethod]
+        //public async Task PostCodeLookupTestAsync()
+        //{
+        //    var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
+        //    mockHttpMessageHandler
+        //        .Protected()
+        //        .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+        //        .ReturnsAsync(new HttpResponseMessage
+        //        {
+        //            StatusCode = HttpStatusCode.OK,
+        //            Content = new StringContent("{\"status\":200,\"result\":\"true\"}")
+        //        });
+
+        //    var client = new HttpClient(mockHttpMessageHandler.Object);
+
+        //    _mockHttpClientFactory.Setup(_ => _.CreateClient(It.IsAny<string>())).Returns(client);
+
+        //    _service = new CompanyService(_context, _mapper, _logger.Object, _mockHttpClientFactory.Object);
+
+        //    var result = await _service.PostCodeLookup("EX11EX");
+        //    Assert.IsNotNull(result);
+        //    Assert.AreEqual("EX11EX", result.result.postcode);
+        //}
     }
 }
