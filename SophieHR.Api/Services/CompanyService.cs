@@ -86,7 +86,7 @@ namespace SophieHR.Api.Services
                     CreatedDate = company.CreatedDate,
                     EmployeeCount = company.Employees.Count(),
                     Id = company.Id,
-                    Logo = Convert.ToBase64String(company.Logo),
+                    Logo = (company.Logo != null && company.Logo.Any()) ? Convert.ToBase64String(company.Logo) : null,
                     Name = company.Name,
                     UpdatedDate = company.UpdatedDate
                 })
