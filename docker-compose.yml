@@ -1,6 +1,6 @@
-services:
-  
+version: '3.8'
 
+services:
   # sophiehr.ui:
   #   container_name: sophiehr.ui
   #   image: ${DOCKER_REGISTRY-}sophiehr_ui
@@ -12,11 +12,10 @@ services:
   #   depends_on:
   #     - sophiehr.api
   #   mem_limit: 256m
-  #   mem_reservation: 128M
+  #   mem_reservation: 128m
   #   memswap_limit: 256m
   #   cpus: "0.5"
   #   cpuset: "1"
-
 
   sophiehr.api:
     container_name: sophiehr.api
@@ -25,7 +24,7 @@ services:
       context: .
       dockerfile: SophieHR.Api/Dockerfile
     environment:
-      HERE_Maps_API_Key: ${HERE_Maps_API_Key}  # Read from .env file. Styled like: HERE_Maps_API_Key=1234
+      HERE_Maps_API_Key: ${HERE_Maps_API_Key}
     ports:
       - 7189:443
       - 7189:80
@@ -43,7 +42,6 @@ services:
     networks:
       - docker-network
 
-
   db:
     container_name: sophiehr.db
     image: mcr.microsoft.com/mssql/server:2022-latest
@@ -52,7 +50,6 @@ services:
       - SA_PASSWORD=${SQL_Password}
       - MSSQL_SA_PASSWORD=${SQL_Password}
       - MSSQL_PID=Developer
-      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
     ports:
       - 1433:1433
     mem_limit: 2g
@@ -61,7 +58,6 @@ services:
     networks:
       - docker-network
 
-
   redis_cache:
     image: redis:latest
     container_name: redis_cache
@@ -69,23 +65,20 @@ services:
       - "6379:6379"
     networks:
       - docker-network
-    mem_limit: 128M
-    mem_reservation: 128M
-    memswap_limit: 128M
+    mem_limit: 128m
+    mem_reservation: 128m
+    memswap_limit: 128m
     cpus: "0.5"
     cpuset: "1"
-    environment:
-      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
     healthcheck:
-        test: ["CMD", "redis-cli","ping"]
-        interval: 5s
-        timeout: 10s
-        retries: 5
-
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
 
   elasticsearch:
     container_name: elasticsearch
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.17.0
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.17.3
     ports:
       - 9200:9200
     volumes:
@@ -98,37 +91,24 @@ services:
     networks:
       - docker-network
     healthcheck:
-       test: curl -s http://elasticsearch:9200 >/dev/null || exit 1
-       interval: 30s
-       timeout: 10s
-       retries: 50
-    # ulimits:
-    #   memlock:
-    #     soft: -1
-    #     hard: -1
-    #   nofile:
-    #     soft: 65536
-    #     hard: 65536
+      test: curl -s http://elasticsearch:9200 >/dev/null || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 50
     mem_limit: 4g
-
 
   kibana:
     container_name: kibana
-    image: docker.elastic.co/kibana/kibana:8.17.0
+    image: docker.elastic.co/kibana/kibana:8.17.3
     ports:
       - 5601:5601
     depends_on:
       - elasticsearch
     mem_limit: 2g
     environment:
-      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
-      - ELASTICSEARCH_HOSTS
-      - "http://localhost:9200"
-      - "http://127.0.0.1:9200"
-      - "http://elasticsearch:9200"
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
     networks:
       - docker-network
-
 
   prometheus:
     image: quay.io/prometheus/prometheus:latest
@@ -146,32 +126,27 @@ services:
       - docker-network
       - monitoring
     mem_limit: 256m
-    mem_reservation: 128M
+    mem_reservation: 128m
     memswap_limit: 256m
     cpus: "0.5"
     cpuset: "1"
-    environment:
-      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
-    # mem_limit: 1g
-
 
   grafana:
-    image : grafana/grafana
-    depends_on: 
+    image: grafana/grafana
+    depends_on:
       - prometheus
     ports:
       - "3000:3000"
     volumes:
       - grafana_data:/var/lib/grafana
     mem_limit: 256m
-    mem_reservation: 128M
+    mem_reservation: 128m
     memswap_limit: 256m
     cpus: "0.5"
     cpuset: "1"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=AwkX512Xkcd
       - GF_USERS_ALLOW_SIGN_UP=false
-      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
     networks:
       - docker-network
       - monitoring
@@ -181,14 +156,13 @@ networks:
     driver: bridge
   monitoring:
     external: true
-  
+
 volumes:
   elasticsearch-data:
     driver: local
   sqlserver_data:
   prometheus_data:
   grafana_data:
-
 
 configs:
   prometheus_config:
