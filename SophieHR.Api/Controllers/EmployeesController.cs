@@ -54,8 +54,10 @@ namespace SophieHR.Api.Controllers
             {
                 var username = User.FindFirstValue(ClaimTypes.Name);
                 var user = await _context.GetEmployeeByUsername(username);
-                var result = new List<EmployeeListDto>();
-                result.Add(new EmployeeListDto { Id = user.Id, FirstName = user.FirstName, LastName = user.LastName });
+                var result = new List<EmployeeListDto>
+                {
+                    new EmployeeListDto { Id = user.Id, FirstName = user.FirstName, LastName = user.LastName }
+                };
                 return Ok(result);
             }
 

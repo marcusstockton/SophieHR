@@ -103,6 +103,7 @@ namespace SophieHR.Api.Controllers
                 await _cache.RemoveAsync($"company:{id}");
                 return Ok(response);
             }
+            _logger.LogError($"{nameof(CompaniesController)} Error uploading logo for company with id {id}. Response: {response.Content.ReadAsStringAsync().Result}");
             return BadRequest(response);
         }
 
@@ -136,6 +137,7 @@ namespace SophieHR.Api.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, $"{nameof(CompaniesController)} Error creating a new company with name {companyDto.Name}");
                 return BadRequest(ex);
             }
         }

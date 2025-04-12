@@ -21,7 +21,6 @@ namespace SophieHR.Api.Services.Tests
         private ApplicationDbContext _context = default!;
         private CompanyService _service = default!;
         private Mock<ILogger<CompanyService>> _logger = default!;
-        private IMapper _mapper = default!;
         private Mock<IHttpClientFactory> _mockHttpClientFactory = default!;
 
         private Guid _id1;
@@ -44,7 +43,6 @@ namespace SophieHR.Api.Services.Tests
                 cfg.AddProfile(new CompanyProfile());
                 cfg.AddProfile(new AddressProfile());
             });
-            _mapper = config.CreateMapper();
 
             _logger = new Mock<ILogger<CompanyService>>();
 
@@ -66,7 +64,7 @@ namespace SophieHR.Api.Services.Tests
                 entity.State = EntityState.Detached;
             }
 
-            _service = new CompanyService(_context, _mapper, _logger.Object, _mockHttpClientFactory.Object);
+            _service = new CompanyService(_context, _logger.Object, _mockHttpClientFactory.Object);
         }
 
         [TestCleanup]
@@ -244,7 +242,7 @@ namespace SophieHR.Api.Services.Tests
             client.BaseAddress = new Uri("http://test");
             _mockHttpClientFactory.Setup(_ => _.CreateClient(It.IsAny<string>())).Returns(client);
 
-            _service = new CompanyService(_context, _mapper, _logger.Object, _mockHttpClientFactory.Object);
+            _service = new CompanyService(_context, _logger.Object, _mockHttpClientFactory.Object);
 
             //_context, mapper, mockLogger.Object, mockHttpClientFactory.Object
 
@@ -269,7 +267,7 @@ namespace SophieHR.Api.Services.Tests
             client.BaseAddress = new Uri("http://test");
             _mockHttpClientFactory.Setup(_ => _.CreateClient(It.IsAny<string>())).Returns(client);
 
-            _service = new CompanyService(_context, _mapper, _logger.Object, _mockHttpClientFactory.Object);
+            _service = new CompanyService(_context, _logger.Object, _mockHttpClientFactory.Object);
 
             var result = await _service.GetMapFromLatLong(55.3781m, 3.4360m);
             Assert.IsNotNull(result);
@@ -292,7 +290,7 @@ namespace SophieHR.Api.Services.Tests
             client.BaseAddress = new Uri("http://test");
             _mockHttpClientFactory.Setup(_ => _.CreateClient("postcodesioClient")).Returns(client);
 
-            _service = new CompanyService(_context, _mapper, _logger.Object, _mockHttpClientFactory.Object);
+            _service = new CompanyService(_context, _logger.Object, _mockHttpClientFactory.Object);
 
             var result = await _service.PostcodeAutoComplete("EX11EX");
             Assert.IsNotNull(result);

@@ -1,6 +1,4 @@
-﻿using AutoMapper;
-using AutoMapper.QueryableExtensions;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using SophieHR.Api.Data;
 using SophieHR.Api.Interfaces;
 using SophieHR.Api.Models;
@@ -11,17 +9,15 @@ namespace SophieHR.Api.Services
     public class CompanyService : ICompanyService
     {
         private readonly ApplicationDbContext _context;
-        public readonly IMapper _mapper;
         private readonly ILogger<CompanyService> _logger;
         private string _apiKey;
         private string _ukLatLong;
         private string _countryCode;
         private readonly IHttpClientFactory _httpClientFactory;
 
-        public CompanyService(ApplicationDbContext context, IMapper mapper, ILogger<CompanyService> logger, IHttpClientFactory httpClientFactory)
+        public CompanyService(ApplicationDbContext context, ILogger<CompanyService> logger, IHttpClientFactory httpClientFactory)
         {
             _context = context;
-            _mapper = mapper;
             _logger = logger;
             _apiKey = Environment.GetEnvironmentVariable("HERE_Maps_API_Key");
             _ukLatLong = "55.3781,3.4360"; // UK lat/lon
@@ -107,7 +103,7 @@ namespace SophieHR.Api.Services
 
         public async Task<HttpResponseMessage> UpdateCompanyAsync(Guid id, CompanyDetailNoLogo companyDetail)
         {
-            _logger.LogInformation($"{nameof(UpdateCompanyAsync)} called");
+            _logger.LogInformation("{nameof} called", nameof(UpdateCompanyAsync));
             if (companyDetail.Id != id)
             {
                 return new HttpResponseMessage(System.Net.HttpStatusCode.NotFound) { Content = new StringContent($"Id's do not match!") };
@@ -160,7 +156,7 @@ namespace SophieHR.Api.Services
                 var company = await _context.Companies.FindAsync(id);
                 if (company == null)
                 {
-                    _logger.LogWarning($"{nameof(UpdateCompanyAsync)} Unable to find company with id {id}");
+                    _logger.LogWarning("{nameof} Unable to find company with id {id}", nameof(UpdateCompanyAsync), id);
                     //return NotFound($"Unable to find a company with the Id of {id}");
                     result.StatusCode = System.Net.HttpStatusCode.NotFound;
                     result.Content = new StringContent($"Unable to find company with id {id}");
@@ -183,8 +179,24 @@ namespace SophieHR.Api.Services
 
         public async Task<CompanyDetailDto> CreateNewCompanyAsync(CompanyCreateDto companyDto)
         {
-            _logger.LogInformation($"{nameof(CreateNewCompanyAsync)} called");
-            var company = _mapper.Map<Company>(companyDto);
+            _logger.LogInformation("{nameof} called", nameof(CreateNewCompanyAsync));
+            var company = new Company
+            {
+                Address = new CompanyAddress
+                {
+                    AddressType = AddressType.Company,
+                    County = companyDto.Address.County,
+                    Line1 = companyDto.Address.Line1,
+                    Line2 = companyDto.Address.Line2,
+                    Line3 = companyDto.Address.Line3,
+                    Line4 = companyDto.Address.Line4,
+                    Postcode = companyDto.Address.Postcode,
+                    Lat = companyDto.Address.Lat,
+                    Lon = companyDto.Address.Lon
+                },
+                Name = companyDto.Name
+            };
+
             if (_context.Companies.Any(x => x.Name.Equals(companyDto.Name, StringComparison.OrdinalIgnoreCase)))
             {
                 throw new Exception("Company with this name already exists!");
@@ -193,7 +205,33 @@ namespace SophieHR.Api.Services
             try
             {
                 await _context.SaveChangesAsync();
-                return _mapper.Map<CompanyDetailDto>(company);
+                var companyDetail = new CompanyDetailDto
+                {
+                    Id = company.Id,
+                    Name = company.Name,
+                    CreatedDate = company.CreatedDate,
+                    UpdatedDate = company.UpdatedDate,
+                    Address = new CompanyAddress
+                    {
+                        AddressType = company.Address.AddressType,
+                        County = company.Address.County,
+                        Line1 = company.Address.Line1,
+                        Line2 = company.Address.Line2,
+                        Line3 = company.Address.Line3,
+                        Line4 = company.Address.Line4,
+                        MapImage = company.Address.MapImage,
+                        Postcode = company.Address.Postcode,
+                        Lat = company.Address.Lat,
+                        Lon = company.Address.Lon,
+                        Id = company.Address.Id,
+                        CreatedDate = company.Address.CreatedDate,
+                        UpdatedDate = company.Address.UpdatedDate,
+                      
+                    },
+                    EmployeeCount = company.Employees.Count(),
+                    Logo = (company.Logo != null && company.Logo.Any()) ? Convert.ToBase64String(company.Logo) : null
+                };
+                return companyDetail;
             }
             catch (Exception ex)
             {
@@ -208,7 +246,7 @@ namespace SophieHR.Api.Services
             var company = await _context.Companies.FindAsync(companyId);
             if (company == null)
             {
-                _logger.LogWarning($"Unable to find company with id {companyId}");
+                _logger.LogWarning("Unable to find company with id {companyId}", companyId);
                 return new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest) { Content = new StringContent($"Unable to find company with id {companyId}") };
             }
 
@@ -233,7 +271,7 @@ namespace SophieHR.Api.Services
             return null;
         }
 
-        public async Task<string> GetMapFromLatLong(decimal lat, decimal lon, int zoomLevel = 15, int mapType = 3, int width = 2048, short viewType = 1)
+        public async Task<string> GetMapFromLatLong(decimal lat, decimal lon, int zoomLevel = 15, int mapType = 3, int width = 400, short viewType = 1)
         {
             if (_apiKey == null)
             {
@@ -241,12 +279,21 @@ namespace SophieHR.Api.Services
                 return string.Empty;
             }
             _logger.LogInformation($"{nameof(GetMapFromLatLong)} Getting Map for lat lon {lat} {lon}");
-            var height = 300;
+            var height = 800;
             var client = _httpClientFactory.CreateClient("imageHereApiClient");
-            var url = $"?apiKey={_apiKey}&c={lat},{lon}&vt={viewType}&z={zoomLevel}&h={height}&w={width}";
-            var response = await client.GetByteArrayAsync(url);
 
-            return Convert.ToBase64String(response);
+            var url = $"mc/center:{lat},{lon};zoom={zoomLevel}/{height}x{width}/png?apiKey={_apiKey}&style=explore.satellite.day";
+            try
+            {
+                var response = await client.GetByteArrayAsync(url);
+
+                return Convert.ToBase64String(response);
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogError(ex, "Error calling the hereapi");
+                return string.Empty;
+            }
         }
 
         public async Task<string[]> PostcodeAutoComplete(string postcode)
@@ -278,6 +325,7 @@ namespace SophieHR.Api.Services
                 }
                 else
                 {
+                    _logger.LogError("{nameof} call to postcodesio returned an error: {error}", nameof(PostCodeLookup), response.result.ToString());
                     throw new ArgumentException("Invalid Postcode");
                 }
             }

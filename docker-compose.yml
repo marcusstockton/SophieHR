@@ -1,21 +1,21 @@
 version: '3.8'
 
 services:
-  # sophiehr.ui:
-  #   container_name: sophiehr.ui
-  #   image: ${DOCKER_REGISTRY-}sophiehr_ui
-  #   build:
-  #     context: ../sophieHR-angular-material
-  #     dockerfile: dockerfile
-  #   ports:
-  #     - 4200:80
-  #   depends_on:
-  #     - sophiehr.api
-  #   mem_limit: 256m
-  #   mem_reservation: 128m
-  #   memswap_limit: 256m
-  #   cpus: "0.5"
-  #   cpuset: "1"
+  sophiehr.ui:
+    container_name: sophiehr.ui
+    image: ${DOCKER_REGISTRY-}sophiehr_ui
+    build:
+      context: ../sophieHR-angular-material
+      dockerfile: dockerfile
+    ports:
+      - 4200:80
+    depends_on:
+      - sophiehr.api
+    mem_limit: 256m
+    mem_reservation: 128m
+    memswap_limit: 256m
+    cpus: "0.5"
+    cpuset: "1"
 
   sophiehr.api:
     container_name: sophiehr.api
@@ -106,7 +106,7 @@ services:
       - elasticsearch
     mem_limit: 2g
     environment:
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+        elasticsearch.hosts: 'http://elasticsearch:9200'
     networks:
       - docker-network
 
