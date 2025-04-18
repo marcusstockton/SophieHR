@@ -164,7 +164,7 @@ namespace SophieHR.Api.Controllers
         //[AllowAnonymous]
         [HttpGet, Route("GetMapFromLatLong")]
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetMapFromLatLong(decimal lat, decimal lon, int zoomLevel = 15, int mapType = 3, int width = 2048, short viewType = 1)
+        public async Task<IActionResult> GetMapFromLatLong(decimal lat, decimal lon, int zoomLevel = 15, int width = 2048, int height = 200)
         {
             //var cacheKey = $"map-{lat}-{lon}";
             //var cacheOptions = new DistributedCacheEntryOptions()
@@ -182,7 +182,7 @@ namespace SophieHR.Api.Controllers
             var image = await _cache.GetOrSetAsync(cacheKey,
             async () =>
             {
-                return await _companyService.GetMapFromLatLong(lat, lon, zoomLevel, mapType, width, viewType);
+                return await _companyService.GetMapFromLatLong(lat, lon, zoomLevel, width, height);
 
             })!;
 

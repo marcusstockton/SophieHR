@@ -6,7 +6,7 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Bogus" Version="35.6.2" />
+    <PackageReference Include="Bogus" Version="35.6.3" />
     <PackageReference Include="Elastic.Serilog.Sinks" Version="8.12.3" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.4" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.4" />

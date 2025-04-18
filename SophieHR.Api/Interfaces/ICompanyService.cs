@@ -23,7 +23,7 @@ namespace SophieHR.Api.Interfaces
 
         Task<string> GetAutoSuggestion(string search);
 
-        Task<string> GetMapFromLatLong(decimal lat, decimal lon, int zoomLevel = 15, int mapType = 3, int width = 2048, short viewType = 1);
+        Task<string> GetMapFromLatLong(decimal lat, decimal lon, int zoomLevel = 15, int width = 2048, int height = 200);
 
         Task<string[]> PostcodeAutoComplete(string postcode);
 

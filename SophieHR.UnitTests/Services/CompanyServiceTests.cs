@@ -11,7 +11,6 @@ using SophieHR.Api.Models.DTOs.Company;
 using SophieHR.Api.Profiles;
 using System.Net;
 using System.Text;
-using static StackExchange.Redis.Role;
 
 namespace SophieHR.Api.Services.Tests
 {
@@ -197,7 +196,7 @@ namespace SophieHR.Api.Services.Tests
             var newCompany = new CompanyCreateDto
             {
                 Name = "Company Three",
-                Address = new Models.DTOs.Address.AddressCreateDto
+                Address = new AddressCreateDto
                 {
                     County = "Devon",
                     Line1 = "Line1",

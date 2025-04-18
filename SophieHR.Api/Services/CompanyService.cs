@@ -197,7 +197,7 @@ namespace SophieHR.Api.Services
                 Name = companyDto.Name
             };
 
-            if (_context.Companies.Any(x => x.Name.Equals(companyDto.Name, StringComparison.OrdinalIgnoreCase)))
+            if (_context.Companies.Any(x => EF.Functions.Like(x.Name, companyDto.Name)))
             {
                 throw new Exception("Company with this name already exists!");
             }
@@ -228,7 +228,7 @@ namespace SophieHR.Api.Services
                         UpdatedDate = company.Address.UpdatedDate,
                       
                     },
-                    EmployeeCount = company.Employees.Count(),
+                    EmployeeCount = company.Employees != null ? company.Employees.Count() : 0,
                     Logo = (company.Logo != null && company.Logo.Any()) ? Convert.ToBase64String(company.Logo) : null
                 };
                 return companyDetail;
@@ -271,7 +271,7 @@ namespace SophieHR.Api.Services
             return null;
         }
 
-        public async Task<string> GetMapFromLatLong(decimal lat, decimal lon, int zoomLevel = 15, int mapType = 3, int width = 400, short viewType = 1)
+        public async Task<string> GetMapFromLatLong(decimal lat, decimal lon, int zoomLevel = 15, int width = 2048, int height = 200)
         {
             if (_apiKey == null)
             {
@@ -279,10 +279,9 @@ namespace SophieHR.Api.Services
                 return string.Empty;
             }
             _logger.LogInformation($"{nameof(GetMapFromLatLong)} Getting Map for lat lon {lat} {lon}");
-            var height = 800;
             var client = _httpClientFactory.CreateClient("imageHereApiClient");
 
-            var url = $"mc/center:{lat},{lon};zoom={zoomLevel}/{height}x{width}/png?apiKey={_apiKey}&style=explore.satellite.day";
+            var url = $"mc/center:{lat},{lon};zoom={zoomLevel}/{width}x{height}/png?apiKey={_apiKey}&style=explore.satellite.day";
             try
             {
                 var response = await client.GetByteArrayAsync(url);
