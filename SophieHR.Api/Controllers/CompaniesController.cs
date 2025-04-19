@@ -5,8 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
 using SophieHR.Api.Extensions;
 using SophieHR.Api.Interfaces;
+using SophieHR.Api.Models;
 using SophieHR.Api.Models.DTOs.Company;
-using SophieHR.Api.Services;
+using System.Security.Claims;
 
 namespace SophieHR.Api.Controllers
 {
@@ -20,12 +21,14 @@ namespace SophieHR.Api.Controllers
         private readonly ILogger<CompaniesController> _logger;
         private readonly ICompanyService _companyService;
         private readonly IDistributedCache _cache;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public CompaniesController(ILogger<CompaniesController> logger, ICompanyService companyService, IDistributedCache cache)
+        public CompaniesController(ILogger<CompaniesController> logger, ICompanyService companyService, IDistributedCache cache, IHttpContextAccessor httpContextAccessor)
         {
             _logger = logger;
             _companyService = companyService;
             _cache = cache;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         // GET: api/Companies
@@ -51,15 +54,16 @@ namespace SophieHR.Api.Controllers
         public async Task<ActionResult<IEnumerable<KeyValuePair<Guid, string>>>> GetCompanyNames()
         {
             _logger.LogInformation($"{nameof(CompaniesController)} Getting company names");
-            
-            var cacheKey = "companyNames";
+
+            var userId = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var cacheKey = $"companyNames-{userId}";
             var cacheOptions = new DistributedCacheEntryOptions()
                 .SetAbsoluteExpiration(TimeSpan.FromMinutes(20))
                 .SetSlidingExpiration(TimeSpan.FromMinutes(2));
 
             var companyNames = await _cache.GetOrSetAsync(cacheKey, async () => {
                 _logger.LogInformation($"Cache miss. Fetching data for key: {cacheKey} from database.");
-                return await _companyService.GetCompanyNamesAsync(User.Identity.Name, User.IsInRole("Manager"));
+                return await _companyService.GetCompanyNamesAsync(User.Identity.Name, (User.IsInRole("Manager") || User.IsInRole("CompanyAdmin")));
             }, cacheOptions);
 
 
@@ -153,7 +157,6 @@ namespace SophieHR.Api.Controllers
             return await _companyService.DeleteCompanyAsync(id);
         }
 
-        //[AllowAnonymous]
         [HttpGet, Route("get-location-autosuggestion")]
         [ProducesResponseType(typeof(string[]), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAutoSuggestion(string search)
@@ -161,29 +164,15 @@ namespace SophieHR.Api.Controllers
             return Ok(await _companyService.GetAutoSuggestion(search));
         }
 
-        //[AllowAnonymous]
         [HttpGet, Route("GetMapFromLatLong")]
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetMapFromLatLong(decimal lat, decimal lon, int zoomLevel = 15, int width = 2048, int height = 200)
         {
-            //var cacheKey = $"map-{lat}-{lon}";
-            //var cacheOptions = new DistributedCacheEntryOptions()
-            //    .SetAbsoluteExpiration(TimeSpan.FromMinutes(20))
-            //    .SetSlidingExpiration(TimeSpan.FromMinutes(2));
-
-            //var map = await _cache.GetOrSetAsync(cacheKey,
-            //async () =>
-            //{
-            //    _logger.LogInformation($"Cache miss. Fetching data for key: {cacheKey} from database.");
-            //    return await _companyService.GetMapFromLatLong(lat, lon, zoomLevel, mapType, width, viewType);
-            //},cacheOptions);
-
             var cacheKey = $"company-map-{lat}-{lon}-{zoomLevel}";
             var image = await _cache.GetOrSetAsync(cacheKey,
             async () =>
             {
                 return await _companyService.GetMapFromLatLong(lat, lon, zoomLevel, width, height);
-
             })!;
 
             if (image.Length > 0)
@@ -193,7 +182,6 @@ namespace SophieHR.Api.Controllers
             return BadRequest();
         }
 
-        //[AllowAnonymous]
         [HttpGet, Route("postcode-auto-complete")]
         [ProducesResponseType(typeof(string[]), StatusCodes.Status200OK)]
         public async Task<IActionResult> PostcodeAutoComplete(string postcode)
@@ -213,7 +201,6 @@ namespace SophieHR.Api.Controllers
             return Ok(postcodes);
         }
 
-        //[AllowAnonymous]
         [ProducesResponseType(200)]
         [HttpGet, Route("postcode-lookup")]
         [ProducesResponseType(typeof(PostcodeLookup), StatusCodes.Status200OK)]
@@ -233,6 +220,23 @@ namespace SophieHR.Api.Controllers
 
             
             return Ok(postcodeData);
+        }
+
+        [HttpGet, Route("GetCompanyEmployeeCountByMonth")]
+        [ProducesResponseType(typeof(List<CompanyEmployeeCount>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetCompanyEmployeeCountByMonth(Guid companyId)
+        {
+            var result = await _cache.GetOrSetAsync($"employee_count_{companyId}",
+            async () =>
+            {
+                return await _companyService.GetCompanyEmployeeCountByMonth(companyId);
+            })!;
+
+            if (result != null)
+            {
+                return Ok(result);
+            }
+            return BadRequest();
         }
     }
 }

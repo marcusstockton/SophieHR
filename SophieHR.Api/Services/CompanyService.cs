@@ -331,6 +331,22 @@ namespace SophieHR.Api.Services
             throw new ArgumentException("Invalid Postcode supplied");
         }
 
+        public async Task<List<CompanyEmployeeCount>> GetCompanyEmployeeCountByMonth(Guid companyId)
+        {
+            _logger.LogInformation($"{nameof(GetCompanyEmployeeCountByMonth)} called");
+            var employeeCount = await _context.Employees
+                .Where(x => x.CompanyId == companyId)
+                .GroupBy(x => new { x.StartOfEmployment.Month, x.StartOfEmployment.Year })
+                .Select(g => new { g.Key.Month, g.Key.Year, Count = g.Count() })
+                .ToListAsync();
+            return employeeCount.Select(x => new CompanyEmployeeCount
+            {
+                Month = x.Month,
+                Year = x.Year,
+                Count = x.Count
+            }).ToList();
+        }
+
         private async Task<bool> VerifyPostcode(string postcode)
         {
             var client = _httpClientFactory.CreateClient("postcodesioClient");
