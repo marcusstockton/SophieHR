@@ -225,7 +225,7 @@ namespace SophieHR.Api.Services
                 throw new ArgumentException(message);
             }
 
-            if (employee.Avatar.Avatar != null)
+            if (employee.Avatar?.Avatar != null)
             {
                 // existing avatar, so delete it!
                 _context.EmployeeAvatars.Remove(employee.Avatar);
@@ -305,7 +305,18 @@ namespace SophieHR.Api.Services
                 Id = employee.Id,
                 FirstName = employee.FirstName,
                 MiddleName = employee.MiddleName,
-                LastName = employee.LastName
+                LastName = employee.LastName,
+                //Address = employee.Address,
+                CompanyId = employee.CompanyId,
+                DateOfBirth = employee.DateOfBirth,
+                //DepartmentId = employee.DepartmentId,
+                JobTitle = employee.JobTitle,
+                //PersonalEmailAddress = employee.PersonalEmailAddress,
+                //PersonalMobileNumber = employee.PersonalMobileNumber,
+                WorkEmailAddress = employee.WorkEmailAddress,
+                WorkMobileNumber = employee.WorkMobileNumber,
+                HolidayAllowance = employee.HolidayAllowance,
+                StartOfEmployment = employee.StartOfEmployment
             };
         }
 

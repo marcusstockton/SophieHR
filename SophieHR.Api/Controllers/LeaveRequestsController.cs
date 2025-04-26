@@ -107,15 +107,7 @@ namespace SophieHR.Api.Controllers
              * Don't allow employees to book past the current period
              */
             TimeSpan difference = leaveRequestDto.EndDate - leaveRequestDto.StartDate;
-            if (leaveRequestDto.StartDateFirstHalf)
-            {
-                // Only a half-day
-            }
-            if (leaveRequestDto.EndDateFirstHalf)
-            {
-                // Only a half-day
-            }
-
+           
             await _context.SaveChangesAsync();
 
             return Created();

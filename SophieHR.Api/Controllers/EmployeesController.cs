@@ -15,7 +15,7 @@ namespace SophieHR.Api.Controllers
     [ApiExplorerSettings(GroupName = "v1")]
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Admin, Manager, CompanyAdmin, HRManager")]
+    [Authorize(Policy = "CompanyManagement")]
     public class EmployeesController : ControllerBase
     {
         private readonly IEmployeeService _context;
@@ -94,7 +94,7 @@ namespace SophieHR.Api.Controllers
             return Ok(_mapper.Map<EmployeeDetailDto>(employee));
         }
 
-        [HttpPost("{id}/upload-avatar"), Authorize(Roles = "Admin, Manager")]
+        [HttpPost("{id}/upload-avatar"), Authorize(Roles = "Admin, Manager, CompanyAdmin, HRManager")]
         [Consumes("multipart/form-data")]
         [Produces(typeof(EmployeeAvatar)), ProducesResponseType(StatusCodes.Status200OK), ProducesResponseType(StatusCodes.Status404NotFound)]
         [RequestFormLimits(MultipartBodyLengthLimit = 5000000)] // Limit to 5mb

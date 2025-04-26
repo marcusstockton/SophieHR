@@ -331,20 +331,52 @@ namespace SophieHR.Api.Services
             throw new ArgumentException("Invalid Postcode supplied");
         }
 
+        /// <summary>
+        /// List the employee churn over time incrementing when new employees start and decrementing when they leave.
+        /// </summary>
+        /// <param name="companyId">CompanyID</param>
+        /// <returns>A List of data showing the total number of employees over a date range.</returns>
         public async Task<List<CompanyEmployeeCount>> GetCompanyEmployeeCountByMonth(Guid companyId)
         {
             _logger.LogInformation($"{nameof(GetCompanyEmployeeCountByMonth)} called");
-            var employeeCount = await _context.Employees
+
+            var employees = await _context.Employees
                 .Where(x => x.CompanyId == companyId)
-                .GroupBy(x => new { x.StartOfEmployment.Month, x.StartOfEmployment.Year })
-                .Select(g => new { g.Key.Month, g.Key.Year, Count = g.Count() })
+                .Select(x => new { x.StartOfEmployment, x.EndOfEmployment })
                 .ToListAsync();
-            return employeeCount.Select(x => new CompanyEmployeeCount
+
+            if (!employees.Any())
             {
-                Month = x.Month,
-                Year = x.Year,
-                Count = x.Count
-            }).ToList();
+                return new List<CompanyEmployeeCount>();
+            }
+
+            // Determine the date range
+            var startDate = employees.Min(x => x.StartOfEmployment);
+            var endDate = employees.Max(x => x.EndOfEmployment ?? DateTime.UtcNow);
+
+            var results = new List<CompanyEmployeeCount>();
+            var currentDate = new DateTime(startDate.Year, startDate.Month, 1);
+
+            // Iterate through each month in the range
+            while (currentDate <= new DateTime(endDate.Year, endDate.Month, 1))
+            {
+                var starters = employees.Count(x => x.StartOfEmployment.Year == currentDate.Year && x.StartOfEmployment.Month == currentDate.Month);
+                var leavers = employees.Count(x => x.EndOfEmployment.HasValue && x.EndOfEmployment.Value.Year == currentDate.Year && x.EndOfEmployment.Value.Month == currentDate.Month);
+
+                // Calculate the net count
+                var netCount = (results.LastOrDefault()?.Count ?? 0) + starters - leavers;
+
+                results.Add(new CompanyEmployeeCount
+                {
+                    Month = currentDate.Month,
+                    Year = currentDate.Year,
+                    Count = netCount
+                });
+
+                // Move to the next month
+                currentDate = currentDate.AddMonths(1);
+            }
+            return results;
         }
 
         private async Task<bool> VerifyPostcode(string postcode)

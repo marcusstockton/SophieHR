@@ -268,8 +268,8 @@ namespace SophieHR.Api.Data
             var leaveFaker = new Faker<LeaveRequest>("en_GB")
                 .RuleFor(x => x.StartDate, f => f.Date.Future())
                 .RuleFor(x => x.EndDate, (f, u) => f.Date.Soon(1, u.StartDate.Date))
-                .RuleFor(x => x.StartDateFirstHalf, f => f.Random.Bool())
-                .RuleFor(x => x.EndDateFirstHalf, f => f.Random.Bool())
+                .RuleFor(x => x.Hours, f => f.PickRandom(1,8))
+                .RuleFor(x => x.NormalHoursPerDay, f => f.PickRandom(8,10))
                 .RuleFor(x => x.EmployeeId, f => f.PickRandom(users.Select(x => x.Id)))
                 .RuleFor(x => x.LeaveType, f => f.PickRandom<LeaveType>());
 
