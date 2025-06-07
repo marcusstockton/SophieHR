@@ -78,7 +78,11 @@ namespace SophieHR.Api.Controllers
                 else
                 {
                     _logger.LogWarning("{nameof} Attempt made to log in to valid username {username} with bad password {password}", nameof(AccountController), user.UserName, userLogins.Password);
-                    return BadRequest("Invalid Username or password");
+                    return Problem(
+                        type: $"https://httpstatuses.com/404",
+                        title: "Invalid Username or password",
+                        detail: "Invalid Username or password",
+                        statusCode: StatusCodes.Status404NotFound);
                 }
                 _logger.LogInformation($"{nameof(AccountController)} Payload generated for {Token.UserName}...returning.");
                 return Ok(Token);
