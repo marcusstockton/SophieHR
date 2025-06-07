@@ -1,5 +1,6 @@
 ﻿#nullable disable
 
+using Azure;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
@@ -88,7 +89,12 @@ namespace SophieHR.Api.Controllers
             {
                 var error = $"Unable to find company with id {id}";
                 _logger.LogWarning($"{nameof(CompaniesController)} {error}");
-                return NotFound(error);
+                //return NotFound(error);
+                return Problem(
+                    type: $"https://httpstatuses.com/404",
+                    title: "Company not found",
+                    detail: error,
+                    statusCode: StatusCodes.Status404NotFound);
             }
 
             return Ok(company);
@@ -108,7 +114,12 @@ namespace SophieHR.Api.Controllers
                 return Ok(response);
             }
             _logger.LogError($"{nameof(CompaniesController)} Error uploading logo for company with id {id}. Response: {response.Content.ReadAsStringAsync().Result}");
-            return BadRequest(response);
+            //return BadRequest(response);
+            return Problem(
+                type: $"https://httpstatuses.com/400",
+                title: "Logo Upload Error",
+                detail: $"Error uploading logo for company with id {id}. Response: {response.Content.ReadAsStringAsync().Result}",
+                statusCode: StatusCodes.Status400BadRequest);
         }
 
         // PUT: api/Companies/5
@@ -142,7 +153,12 @@ namespace SophieHR.Api.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"{nameof(CompaniesController)} Error creating a new company with name {companyDto.Name}");
-                return BadRequest(ex);
+                //return BadRequest(ex);
+                return Problem(
+                    type: $"https://httpstatuses.com/500",
+                    title: "Something went wrong our end.",
+                    detail: $"Error creating a new company with name {companyDto.Name}",
+                    statusCode: StatusCodes.Status500InternalServerError);
             }
         }
 
@@ -179,7 +195,12 @@ namespace SophieHR.Api.Controllers
             {
                 return Ok(image);
             }
-            return BadRequest();
+            //return BadRequest();
+            return Problem(
+                type: $"https://httpstatuses.com/400",
+                title: "Unable to find a map.",
+                detail: $"Error fetching map from lat:{lat} lon{lon}",
+                statusCode: StatusCodes.Status400BadRequest);
         }
 
         [HttpGet, Route("postcode-auto-complete")]
@@ -236,7 +257,12 @@ namespace SophieHR.Api.Controllers
             {
                 return Ok(result);
             }
-            return BadRequest();
+            //return BadRequest();
+            return Problem(
+               type: $"https://httpstatuses.com/400",
+               title: "Unable to calculate employee counts",
+               detail: $"Error fetching employee counts",
+               statusCode: StatusCodes.Status400BadRequest);
         }
     }
 }

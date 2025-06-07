@@ -3,6 +3,7 @@ using Elastic.Ingest.Elasticsearch.DataStreams;
 using Elastic.Serilog.Sinks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
@@ -12,12 +13,14 @@ using NSwag.Generation.Processors.Security;
 using Prometheus;
 using Serilog;
 using Serilog.Exceptions;
+using SophieHR.Api;
 using SophieHR.Api.Data;
 using SophieHR.Api.Extensions;
 using SophieHR.Api.Interfaces;
 using SophieHR.Api.Models;
 using SophieHR.Api.Services;
 using StackExchange.Redis;
+using System.Diagnostics;
 using System.IO.Compression;
 using System.Reflection;
 using System.Text.Json.Serialization;
@@ -147,6 +150,21 @@ builder.Services.AddStackExchangeRedisCache(options =>
 
 builder.Services.AddResponseCaching();
 
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails(options =>
+{
+    options.CustomizeProblemDetails = context =>
+    {
+        context.ProblemDetails.Instance =
+            $"{context.HttpContext.Request.Method} {context.HttpContext.Request.Path}";
+
+        context.ProblemDetails.Extensions.TryAdd("requestId", context.HttpContext.TraceIdentifier);
+
+        Activity? activity = context.HttpContext.Features.Get<IHttpActivityFeature>()?.Activity;
+        context.ProblemDetails.Extensions.TryAdd("traceId", activity?.Id);
+    };
+});
+
 var app = builder.Build();
 
 
@@ -173,6 +191,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.UseResponseCompression();
+
+app.UseExceptionHandler();
 
 app.MapControllers();
 

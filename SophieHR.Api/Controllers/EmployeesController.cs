@@ -94,7 +94,7 @@ namespace SophieHR.Api.Controllers
             return Ok(_mapper.Map<EmployeeDetailDto>(employee));
         }
 
-        [HttpPost("{id}/upload-avatar"), Authorize(Roles = "Admin, Manager, CompanyAdmin, HRManager")]
+        [HttpPost("{id}/upload-avatar")]
         [Consumes("multipart/form-data")]
         [Produces(typeof(EmployeeAvatar)), ProducesResponseType(StatusCodes.Status200OK), ProducesResponseType(StatusCodes.Status404NotFound)]
         [RequestFormLimits(MultipartBodyLengthLimit = 5000000)] // Limit to 5mb

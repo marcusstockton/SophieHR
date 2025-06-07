@@ -47,7 +47,12 @@ namespace SophieHR.Api.Controllers
                 if (user == null)
                 {
                     _logger.LogWarning("{nameof} Someone is trying to log in with an account that doesn't exist: {username}", nameof(AccountController), userLogins.UserName);
-                    return NotFound("Invalid Username or password");
+
+                    return Problem(
+                        type: $"https://httpstatuses.com/404",
+                        title: "Invalid Username or password",
+                        detail: "Invalid Username or password",
+                        statusCode: StatusCodes.Status404NotFound);
                 }
                 _logger.LogInformation($"User found...getting roles.");
                 var roles = await _userManager.GetRolesAsync(user);
@@ -81,7 +86,12 @@ namespace SophieHR.Api.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "{nameof} An Exception was thrown {message}", nameof(AccountController), ex.Message);
-                return BadRequest("Invalid Username or password");
+                //return BadRequest("Invalid Username or password");
+                return Problem(
+                    type: $"https://httpstatuses.com/500",
+                    title: "Something went wrong...",
+                    detail: string.Format("{0}", ex.Message),
+                    statusCode: StatusCodes.Status500InternalServerError);
             }
         }
 
@@ -97,7 +107,12 @@ namespace SophieHR.Api.Controllers
             if (!ModelState.IsValid)
             {
                 _logger.LogError($"{nameof(AccountController)} Invalid form data passed in.");
-                return BadRequest(userData);
+                //return BadRequest(userData);
+                return Problem(
+                    type: $"https://httpstatuses.com/400",
+                    title: "Invalid data",
+                    detail: string.Format("{0}", userData),
+                    statusCode: StatusCodes.Status400BadRequest);
             }
 
             var user = new ApplicationUser
@@ -110,7 +125,12 @@ namespace SophieHR.Api.Controllers
             var existingUser = await _userManager.FindByEmailAsync(user.Email);
             if (existingUser != null)
             {
-                return BadRequest("A User with that email address already exists in the system.");
+                //return BadRequest("A User with that email address already exists in the system.");
+                return Problem(
+                    type: $"https://httpstatuses.com/400",
+                    title: "Existing User",
+                    detail: "A User with that email address already exists in the system.",
+                    statusCode: StatusCodes.Status400BadRequest);
             }
             try
             {
@@ -128,12 +148,22 @@ namespace SophieHR.Api.Controllers
                 }
                 else
                 {
-                    return BadRequest(result.Errors.Select(x => x.Description).ToList());
+                    //return BadRequest(result.Errors.Select(x => x.Description).ToList());
+                    return Problem(
+                    type: $"https://httpstatuses.com/400",
+                    title: "Existing User",
+                    detail: result.Errors.Select(x => x.Description).ToList().ToString(),
+                    statusCode: StatusCodes.Status400BadRequest);
                 }
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                //return BadRequest(ex.Message);
+                return Problem(
+                    type: $"https://httpstatuses.com/500",
+                    title: "Something went wrong our end",
+                    detail: ex.Message,
+                    statusCode: StatusCodes.Status500InternalServerError);
             }
         }
 
