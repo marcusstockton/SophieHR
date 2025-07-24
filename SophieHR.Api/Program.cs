@@ -117,7 +117,6 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 }).AddRoles<IdentityRole<Guid>>()
   .AddEntityFrameworkStores<ApplicationDbContext>();
 
-builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddTransient<DataSeeder>();
 
 builder.Services.AddHttpClient("autosuggestHereApiClient", client =>

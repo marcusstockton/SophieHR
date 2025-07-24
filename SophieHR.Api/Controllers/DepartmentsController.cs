@@ -1,6 +1,5 @@
 ﻿#nullable disable
 
-using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SophieHR.Api.Interfaces;
@@ -16,13 +15,11 @@ namespace SophieHR.Api.Controllers
     public class DepartmentsController : ControllerBase
     {
         private readonly IDepartmentService _context;
-        public readonly IMapper _mapper;
         private readonly ILogger<DepartmentsController> _logger;
 
-        public DepartmentsController(IDepartmentService context, IMapper mapper, ILogger<DepartmentsController> logger)
+        public DepartmentsController(IDepartmentService context, ILogger<DepartmentsController> logger)
         {
             _context = context;
-            _mapper = mapper;
             _logger = logger;
         }
 
@@ -31,7 +28,15 @@ namespace SophieHR.Api.Controllers
         {
             _logger.LogInformation($"{nameof(DepartmentsController)} > {nameof(GetDepartmentsByCompanyId)} getting Departments for company {companyId}");
 
-            return _mapper.Map<List<DepartmentDetailDto>>(await _context.GetDepartmentsForCompanyId(companyId));
+            var departments = await _context.GetDepartmentsForCompanyId(companyId);
+            var results = departments.Select(d => new DepartmentDetailDto
+            {
+                Id = d.Id,
+                Name = d.Name,
+                CompanyId = companyId
+            }).ToList();
+
+            return Ok(results);
         }
 
         // GET: api/Departments/5
@@ -47,7 +52,14 @@ namespace SophieHR.Api.Controllers
                 return NotFound();
             }
 
-            return _mapper.Map<DepartmentDetailDto>(department);
+            var results = new DepartmentDetailDto
+            {
+                Id = department.Id,
+                Name = department.Name,
+                CompanyId = department.Company.Id
+            };
+
+            return Ok(results);
         }
 
         // PUT: api/Departments/5
@@ -61,7 +73,13 @@ namespace SophieHR.Api.Controllers
                 _logger.LogError($"{nameof(DepartmentsController)} > {nameof(PutDepartment)} failed...Id's don't match");
                 return BadRequest();
             }
-            var department = _mapper.Map<Department>(departmentDetail);
+            var department = new Department
+            {
+                Id = departmentDetail.Id,
+                Name = departmentDetail.Name,
+                CompanyId = departmentDetail.CompanyId,
+            };
+
             await _context.UpdateDepartment(id, department);
 
             return NoContent();
@@ -75,10 +93,19 @@ namespace SophieHR.Api.Controllers
         {
             _logger.LogInformation($"{nameof(DepartmentsController)} > {nameof(PostDepartment)} creating Department {departmentCreateDto.Name} against companyid {departmentCreateDto.CompanyId}");
 
-            var department = _mapper.Map<Department>(departmentCreateDto);
+            var department = new Department
+            {
+                Name = departmentCreateDto.Name,
+                CompanyId = departmentCreateDto.CompanyId
+            };
             await _context.CreateDepartment(department);
 
-            var dept = _mapper.Map<DepartmentDetailDto>(department);
+            var dept = new DepartmentDetailDto
+            {
+                Id = department.Id,
+                Name = department.Name,
+                CompanyId = department.CompanyId
+            };
             return CreatedAtAction(nameof(GetDepartment), new { id = department.Id }, dept);
         }
 

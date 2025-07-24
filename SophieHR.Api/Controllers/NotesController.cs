@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SophieHR.Api.Data;
@@ -14,12 +13,10 @@ namespace SophieHR.Api.Controllers
     public class NotesController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
-        public readonly IMapper _mapper;
 
-        public NotesController(ApplicationDbContext context, IMapper mapper)
+        public NotesController(ApplicationDbContext context)
         {
             _context = context;
-            _mapper = mapper;
         }
 
         // GET: api/Notes
@@ -27,8 +24,21 @@ namespace SophieHR.Api.Controllers
         public async Task<ActionResult<IEnumerable<NoteDetailDto>>> GetNotesForEmployee(Guid employeeId)
         {
             var notes = await _context.Notes.Where(x => x.EmployeeId == employeeId).ToListAsync();
-
-            return Ok(_mapper.Map<IEnumerable<NoteDetailDto>>(notes));
+            if(notes == null || !notes.Any())
+            {
+                return new List<NoteDetailDto>();
+            }
+            var results = notes.Select(n => new NoteDetailDto
+            {
+                Id = n.Id,
+                EmployeeId = n.EmployeeId,
+                NoteType = n.NoteType,
+                Content = n.Content,
+                CreatedDate = n.CreatedDate,
+                Title = n.Title,
+                UpdatedDate = n.UpdatedDate,
+            }).ToList();
+            return Ok(results);
         }
 
         // GET: api/Notes/5
@@ -43,8 +53,17 @@ namespace SophieHR.Api.Controllers
             {
                 return NotFound();
             }
-
-            return Ok(_mapper.Map<NoteDetailDto>(note));
+            var result = new NoteDetailDto
+            {
+                Id = note.Id,
+                EmployeeId = note.EmployeeId,
+                NoteType = note.NoteType,
+                Content = note.Content,
+                CreatedDate = note.CreatedDate,
+                Title = note.Title,
+                UpdatedDate = note.UpdatedDate,
+            };
+            return Ok(result);
         }
 
         // PUT: api/Notes/5
@@ -58,7 +77,18 @@ namespace SophieHR.Api.Controllers
             {
                 return BadRequest();
             }
-            var note = _mapper.Map<Note>(noteDto);
+
+            var note = new Note
+            {
+                Id = noteDto.Id,
+                EmployeeId = noteDto.EmployeeId,
+                NoteType = noteDto.NoteType,
+                Content = noteDto.Content,
+                CreatedDate = noteDto.CreatedDate,
+                Title = noteDto.Title,
+                UpdatedDate = DateTime.UtcNow // Update the updated date to now
+            };
+
             _context.Entry(note).State = EntityState.Modified;
 
             try
@@ -93,7 +123,16 @@ namespace SophieHR.Api.Controllers
                 return BadRequest("Unable to find employee");
             }
 
-            var note = _mapper.Map<Note>(noteInput);
+            var note = new Note
+            {
+                Id = Guid.NewGuid(),
+                EmployeeId = employeeId,
+                NoteType = noteInput.NoteType,
+                Content = noteInput.Content,
+                CreatedDate = DateTime.UtcNow,
+                Title = noteInput.Title,
+                UpdatedDate = DateTime.UtcNow // Set the updated date to now
+            };
             note.EmployeeId = employeeId;
             _context.Notes.Add(note);
             await _context.SaveChangesAsync();

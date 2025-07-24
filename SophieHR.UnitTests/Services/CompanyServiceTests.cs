@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -8,7 +7,6 @@ using SophieHR.Api.Data;
 using SophieHR.Api.Models;
 using SophieHR.Api.Models.DTOs.Address;
 using SophieHR.Api.Models.DTOs.Company;
-using SophieHR.Api.Profiles;
 using System.Net;
 using System.Text;
 
@@ -36,12 +34,6 @@ namespace SophieHR.Api.Services.Tests
 
             _context.Database.EnsureDeleted();
             _context.Database.EnsureCreated();
-
-            var config = new MapperConfiguration(cfg =>
-            {
-                cfg.AddProfile(new CompanyProfile());
-                cfg.AddProfile(new AddressProfile());
-            });
 
             _logger = new Mock<ILogger<CompanyService>>();
 
@@ -243,8 +235,6 @@ namespace SophieHR.Api.Services.Tests
 
             _service = new CompanyService(_context, _logger.Object, _mockHttpClientFactory.Object);
 
-            //_context, mapper, mockLogger.Object, mockHttpClientFactory.Object
-
             var result = await _service.GetAutoSuggestion("test");
             Assert.IsNotNull(result);
         }
@@ -313,7 +303,7 @@ namespace SophieHR.Api.Services.Tests
 
         //    _mockHttpClientFactory.Setup(_ => _.CreateClient(It.IsAny<string>())).Returns(client);
 
-        //    _service = new CompanyService(_context, _mapper, _logger.Object, _mockHttpClientFactory.Object);
+        //    _service = new CompanyService(_context, _logger.Object, _mockHttpClientFactory.Object);
 
         //    var result = await _service.PostCodeLookup("EX11EX");
         //    Assert.IsNotNull(result);

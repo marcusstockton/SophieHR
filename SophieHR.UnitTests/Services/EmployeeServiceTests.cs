@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -8,7 +7,6 @@ using SophieHR.Api.Data;
 using SophieHR.Api.Models;
 using SophieHR.Api.Models.DTOs.Address;
 using SophieHR.Api.Models.DTOs.Employee;
-using SophieHR.Api.Profiles;
 using SophieHR.Api.Services;
 using System.Security.Claims;
 
@@ -19,7 +17,6 @@ namespace SophieHR.UnitTests.Services
     {
         private ApplicationDbContext _context = default!;
         private EmployeeService _service = default!;
-        private IMapper _mapper = default!;
         private Mock<ILogger<EmployeeService>> _loggerMock = new Mock<ILogger<EmployeeService>>();
         private Mock<UserManager<ApplicationUser>> _userManagerMock = new Mock<UserManager<ApplicationUser>>();
         private Mock<RoleManager<IdentityRole<Guid>>> _roleManagerMock = new Mock<RoleManager<IdentityRole<Guid>>>();
@@ -40,14 +37,6 @@ namespace SophieHR.UnitTests.Services
 
             _context.Database.EnsureDeleted();
             _context.Database.EnsureCreated();
-
-            var config = new MapperConfiguration(cfg =>
-            {
-                cfg.AddProfile(new EmployeeProfile());
-                cfg.AddProfile(new CompanyProfile());
-                cfg.AddProfile(new AddressProfile());
-            });
-            _mapper = config.CreateMapper();
 
             var company1 = new Company { Id = _companyId1, Name = "Test Company One", Address = new CompanyAddress { Line1 = "Line 1", Line2 = "Line 2", Postcode = "EX11EX" } };
             var company2 = new Company { Id = _companyId2, Name = "Test Company Two", Address = new CompanyAddress { Line1 = "Line 1", Line2 = "Line 2", Postcode = "EX11EX" } };
@@ -89,14 +78,21 @@ namespace SophieHR.UnitTests.Services
                 new Mock<IdentityErrorDescriber>().Object,
                 new Mock<ILogger<RoleManager<IdentityRole<Guid>>>>().Object);
 
-            _service = new EmployeeService(_context, _userManagerMock.Object, _roleManagerMock.Object, _mapper, _loggerMock.Object);
+            _service = new EmployeeService(_context, _userManagerMock.Object, _roleManagerMock.Object, _loggerMock.Object);
         }
 
         [TestMethod]
         public async Task CreateEmployee_ThrowsException_When_Existing_Username_Passed_In()
         {
             // Arrange
-            var employeeDto = new EmployeeCreateDto { FirstName = "Damien", LastName = "Rice", WorkEmailAddress = "test@test.com" };
+            var employeeDto = new EmployeeCreateDto { 
+                FirstName = "Damien", 
+                LastName = "Rice", 
+                WorkEmailAddress = "test@test.com", 
+                Title = Title.Mr.ToString(), 
+                Gender = Gender.Male.ToString(), 
+                ManagerId = Guid.NewGuid().ToString() 
+            };
 
             // Act
             await Assert.ThrowsExceptionAsync<ArgumentException>(() =>
@@ -109,11 +105,19 @@ namespace SophieHR.UnitTests.Services
         public async Task CreateEmployee_Creates_New_Employee_When_Valid_Username_Passed_In()
         {
             // Arrange
-            EmployeeCreateDto employeeDto = new EmployeeCreateDto { FirstName = "Damien", LastName = "Rice", WorkEmailAddress = "test2@test.com", Address = new AddressCreateDto { Line1 = "Line 1", Line2 = "Line 2", Postcode = "EX11EX" } };
+            EmployeeCreateDto employeeDto = new EmployeeCreateDto { 
+                FirstName = "Damien", 
+                LastName = "Rice", 
+                WorkEmailAddress = "test2@test.com", 
+                Address = new AddressCreateDto { Line1 = "Line 1", Line2 = "Line 2", Postcode = "EX11EX" },
+                Title = Title.Mr.ToString(),
+                Gender = Gender.Male.ToString(),
+                ManagerId = Guid.NewGuid().ToString()
+            };
 
             _userManagerMock.Setup(x=>x.CreateAsync(It.IsAny<ApplicationUser>(), "P@55w0rd1")).ReturnsAsync(IdentityResult.Success);
 
-            _service = new EmployeeService(_context, _userManagerMock.Object, _roleManagerMock.Object, _mapper, _loggerMock.Object);
+            _service = new EmployeeService(_context, _userManagerMock.Object, _roleManagerMock.Object, _loggerMock.Object);
             // Act
             var result = await _service.CreateEmployee(employeeDto, null, "Manager");
 

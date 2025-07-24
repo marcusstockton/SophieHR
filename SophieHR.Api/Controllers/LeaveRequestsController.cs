@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SophieHR.Api.Data;
 using SophieHR.Api.Models;
@@ -12,12 +11,10 @@ namespace SophieHR.Api.Controllers
     public class LeaveRequestsController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
-        public readonly IMapper _mapper;
 
-        public LeaveRequestsController(ApplicationDbContext context, IMapper mapper)
+        public LeaveRequestsController(ApplicationDbContext context)
         {
             _context = context;
-            _mapper = mapper;
         }
 
         [HttpGet("GetLeaveTypes")]
@@ -91,7 +88,18 @@ namespace SophieHR.Api.Controllers
         [HttpPost]
         public async Task<ActionResult<LeaveRequest>> PostLeaveRequest(CreateLeaveRequest leaveRequestDto)
         {
-            var leaveRequest = _mapper.Map<LeaveRequest>(leaveRequestDto);
+            var leaveRequest = new LeaveRequest
+            {
+                Id = Guid.NewGuid(),
+                EmployeeId = leaveRequestDto.EmployeeId,
+                StartDate = leaveRequestDto.StartDate,
+                EndDate = leaveRequestDto.EndDate,
+                LeaveType = (LeaveType)leaveRequestDto.LeaveType,
+                Approved = false,
+                NormalHoursPerDay = leaveRequestDto.NormalHoursPerDay,
+                Comments = leaveRequestDto.Comments,
+                Hours = leaveRequestDto.Hours,
+            };
 
             var existingLeave = _context.LeaveRequests.Where(x => x.EmployeeId == leaveRequest.EmployeeId && (x.StartDate == leaveRequestDto.StartDate || x.EndDate == leaveRequestDto.EndDate)).AsEnumerable();
             if (existingLeave.Any())
