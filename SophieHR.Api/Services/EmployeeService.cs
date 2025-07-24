@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SophieHR.Api.Data;
 using SophieHR.Api.Interfaces;
@@ -18,7 +17,7 @@ namespace SophieHR.Api.Services
         private readonly RoleManager<IdentityRole<Guid>> _roleManager;
         private readonly ILogger<EmployeeService> _logger;
 
-        public EmployeeService(ApplicationDbContext context, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole<Guid>> roleManager, IMapper mapper, ILogger<EmployeeService> logger)
+        public EmployeeService(ApplicationDbContext context, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole<Guid>> roleManager, ILogger<EmployeeService> logger)
         {
             _context = context;
             _userManager = userManager;
@@ -38,6 +37,7 @@ namespace SophieHR.Api.Services
                 }
                 employee.Email = employeeDto.WorkEmailAddress;
                 employee.UserName = employeeDto.Username;
+                employee.ManagerId = Guid.Parse(employeeDto.ManagerId);
                 try
                 {
                     var address = MapToEmployeeAddress(employeeDto.Address);
@@ -279,7 +279,8 @@ namespace SophieHR.Api.Services
                 NationalInsuranceNumber = dto.NationalInsuranceNumber,
                 DepartmentId = dto.DepartmentId,
                 CompanyId = dto.CompanyId,
-                JobTitle = dto.JobTitle
+                JobTitle = dto.JobTitle,
+                ManagerId = Guid.Parse(dto.ManagerId)
             };
         }
 

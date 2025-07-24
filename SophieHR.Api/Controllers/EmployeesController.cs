@@ -1,11 +1,11 @@
 ﻿#nullable disable
 
-using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SophieHR.Api.Interfaces;
 using SophieHR.Api.Models;
 using SophieHR.Api.Models.DTOs.Employee;
+using SophieHR.Api.Models.DTOs.Employee.EmployeeAvatar;
 using SophieHR.Api.Services;
 using System.Globalization;
 using System.Security.Claims;
@@ -19,14 +19,12 @@ namespace SophieHR.Api.Controllers
     public class EmployeesController : ControllerBase
     {
         private readonly IEmployeeService _context;
-        public readonly IMapper _mapper;
         private readonly ILogger<EmployeesController> _logger;
         private readonly IJobTitleService _jobTitleService;
 
-        public EmployeesController(IEmployeeService context, IMapper mapper, ILogger<EmployeesController> logger, IJobTitleService jobTitleService)
+        public EmployeesController(IEmployeeService context, ILogger<EmployeesController> logger, IJobTitleService jobTitleService)
         {
             _context = context;
-            _mapper = mapper;
             _logger = logger;
             _jobTitleService = jobTitleService;
         }
@@ -91,7 +89,54 @@ namespace SophieHR.Api.Controllers
                 return NotFound();
             }
 
-            return Ok(_mapper.Map<EmployeeDetailDto>(employee));
+            var result = new EmployeeDetailDto
+            {
+                Id = employee.Id,
+                FirstName = employee.FirstName,
+                LastName = employee.LastName,
+                WorkEmailAddress = employee.Email,
+                JobTitle = employee.JobTitle,
+                DepartmentId = employee.DepartmentId,
+                ManagerId = employee.ManagerId,
+                Address = employee.Address,
+                PhoneNumber = employee.PhoneNumber,
+                EmployeeAvatarId = employee.Avatar.Id,
+                Avatar = new EmployeeAvatarDetail
+                {
+                    Avatar = Convert.ToBase64String(employee.Avatar.Avatar),
+                    Id = employee.Avatar.Id,
+                    CreatedDate = employee.Avatar.CreatedDate,
+                    UpdatedDate = employee.Avatar.UpdatedDate
+                },
+                Company = new Models.DTOs.Company.CompanyIdNameDto
+                {
+                    Id = employee.Company.Id,
+                    Name = employee.Company.Name
+                },
+                DateOfBirth = employee.DateOfBirth,
+                Department = new Models.DTOs.Department.DepartmentIdNameDto
+                {
+                    Id = employee.Department.Id,
+                    Name = employee.Department.Name
+                },
+                Gender = employee.Gender.ToString(),
+                HolidayAllowance = employee.HolidayAllowance,
+                AddressId = employee.AddressId,
+                CompanyId = employee.CompanyId,
+                EndOfEmployment = employee.EndOfEmployment,
+                MiddleName = employee.MiddleName,
+                NationalInsuranceNumber = employee.NationalInsuranceNumber,
+                PassportNumber = employee.PassportNumber,
+                PersonalEmailAddress = employee.PersonalEmailAddress,
+                PersonalMobileNumber = employee.PersonalMobileNumber,
+                StartOfEmployment = employee.StartOfEmployment,
+                Title = employee.JobTitle,
+                UserName = employee.UserName,
+                WorkMobileNumber = employee.WorkMobileNumber,
+                WorkPhoneNumber = employee.WorkPhoneNumber
+            };
+
+            return Ok(result);
         }
 
         [HttpPost("{id}/upload-avatar")]
@@ -136,7 +181,6 @@ namespace SophieHR.Api.Controllers
         }
 
         // POST: api/Employees
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [Authorize(Roles = "Admin, Manager, CompanyAdmin, HRManager")]
         [HttpPost("create-employee")]
         [ProducesResponseType(StatusCodes.Status201Created), ProducesResponseType(StatusCodes.Status400BadRequest), Produces(typeof(EmployeeDetailDto))]

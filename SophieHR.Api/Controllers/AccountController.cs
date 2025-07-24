@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -21,16 +20,14 @@ namespace SophieHR.Api.Controllers
         private readonly JwtSettings jwtSettings;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ApplicationDbContext _context;
-        public readonly IMapper _mapper;
         private readonly IEmailSender _emailSender;
         private readonly ILogger<AccountController> _logger;
 
-        public AccountController(JwtSettings jwtSettings, UserManager<ApplicationUser> userManager, ApplicationDbContext context, IMapper mapper, IEmailSender emailSender, ILogger<AccountController> logger)
+        public AccountController(JwtSettings jwtSettings, UserManager<ApplicationUser> userManager, ApplicationDbContext context, IEmailSender emailSender, ILogger<AccountController> logger)
         {
             this.jwtSettings = jwtSettings;
             _userManager = userManager;
             _context = context;
-            _mapper = mapper;
             _emailSender = emailSender;
             _logger = logger;
         }
@@ -195,8 +192,40 @@ namespace SophieHR.Api.Controllers
                 var managerId = _userManager.GetUserId(User);
                 //users = users.Where(x => x.Manager != null && x.Manager?.Id == managerId);
             }
-
-            return Ok(_mapper.Map<List<EmployeeListDto>>(users.ToList()));
+            var results = users.Select(x => new EmployeeListDto
+            {
+                Id = x.Id,
+                FirstName = x.FirstName,
+                LastName = x.LastName,
+                WorkEmailAddress = x.WorkEmailAddress,
+                DepartmentId = x.Department.Id,
+                CompanyId = x.CompanyId,
+                Company = new Models.DTOs.Company.CompanyIdNameDto                 {
+                    Id = x.Company.Id,
+                    Name = x.Company.Name
+                },
+                Address = new EmployeeAddress
+                {
+                    Line1 = x.Address.Line1,
+                    Line2 = x.Address.Line2,
+                    Postcode = x.Address.Postcode
+                },
+                DateOfBirth = x.DateOfBirth,
+                HolidayAllowance = x.HolidayAllowance,
+                JobTitle = x.JobTitle,
+                MiddleName = x.MiddleName,
+                PersonalEmailAddress = x.PersonalEmailAddress,
+                StartOfEmployment = x.StartOfEmployment,
+                Department = new Models.DTOs.Department.DepartmentIdNameDto
+                {
+                    Id = x.Department.Id,
+                    Name = x.Department.Name
+                },
+                PersonalMobileNumber = x.PersonalMobileNumber,
+                WorkMobileNumber = x.WorkMobileNumber,
+                WorkPhoneNumber = x.WorkPhoneNumber
+            }).ToList();
+            return Ok(results);
         }
 
         [HttpGet("GetListOfManagers")] // ToDo - delete!
@@ -207,7 +236,9 @@ namespace SophieHR.Api.Controllers
             _logger.LogInformation($"{nameof(GetListOfManagersAsync)} Called");
             var managers = await _userManager.GetUsersInRoleAsync("Manager");
 
-            return Ok(_mapper.Map<List<string>>(managers.Select(x => x.UserName).ToList()));
+            var results = managers.Select(x => x.UserName).ToList();
+
+            return Ok(results);
         }
 
         [HttpGet("GetListOfCompanyAdmin")] // ToDo - delete!
@@ -218,7 +249,7 @@ namespace SophieHR.Api.Controllers
             _logger.LogInformation($"{nameof(GetListOfCompanyAdminsAsync)} Called");
             var companyAdmins = await _userManager.GetUsersInRoleAsync("CompanyAdmin");
 
-            return Ok(_mapper.Map<List<string>>(companyAdmins.Select(x => x.UserName).ToList()));
+            return Ok(companyAdmins.Select(x => x.UserName).ToList());
         }
     }
 }

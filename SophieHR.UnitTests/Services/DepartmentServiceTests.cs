@@ -1,10 +1,8 @@
-﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
 using SophieHR.Api.Data;
 using SophieHR.Api.Models;
-using SophieHR.Api.Profiles;
 
 namespace SophieHR.Api.Services.Tests
 {
@@ -30,13 +28,6 @@ namespace SophieHR.Api.Services.Tests
 
             _context.Database.EnsureDeleted();
             _context.Database.EnsureCreated();
-
-            var config = new MapperConfiguration(cfg =>
-            {
-                cfg.AddProfile(new DepartmentProfile());
-                cfg.AddProfile(new CompanyProfile());
-            });
-            var mapper = config.CreateMapper();
 
             var mockLogger = new Mock<ILogger<DepartmentService>>();
 
