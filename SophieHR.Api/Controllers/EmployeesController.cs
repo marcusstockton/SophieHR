@@ -100,14 +100,6 @@ namespace SophieHR.Api.Controllers
                 ManagerId = employee.ManagerId,
                 Address = employee.Address,
                 PhoneNumber = employee.PhoneNumber,
-                EmployeeAvatarId = employee.Avatar.Id,
-                Avatar = new EmployeeAvatarDetail
-                {
-                    Avatar = Convert.ToBase64String(employee.Avatar.Avatar),
-                    Id = employee.Avatar.Id,
-                    CreatedDate = employee.Avatar.CreatedDate,
-                    UpdatedDate = employee.Avatar.UpdatedDate
-                },
                 Company = new Models.DTOs.Company.CompanyIdNameDto
                 {
                     Id = employee.Company.Id,
@@ -135,6 +127,18 @@ namespace SophieHR.Api.Controllers
                 WorkMobileNumber = employee.WorkMobileNumber,
                 WorkPhoneNumber = employee.WorkPhoneNumber
             };
+
+            if (employee.Avatar != null)
+            {
+                result.EmployeeAvatarId = employee.Avatar?.Id;
+                result.Avatar = new EmployeeAvatarDetail
+                {
+                    Avatar = Convert.ToBase64String(employee?.Avatar?.Avatar),
+                    Id = employee.Avatar.Id,
+                    CreatedDate = employee.Avatar.CreatedDate,
+                    UpdatedDate = employee.Avatar.UpdatedDate
+                };
+            }
 
             return Ok(result);
         }
