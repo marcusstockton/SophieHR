@@ -16,8 +16,8 @@ jobs:
       with:
         dotnet-version: 9.0.x
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore .\SophieHR.Api\
     - name: Build
-      run: dotnet build --no-restore
+      run: dotnet build .\SophieHR.Api\ --no-restore
     - name: Test
-      run: dotnet test --no-build --verbosity normal
+      run: dotnet test .\SophieHR.UnitTests\ --no-build --verbosity normal
