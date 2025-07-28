@@ -7,26 +7,21 @@ on:
 jobs:
   build:
  
-    runs-on: windows-latest
- 
+    runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 9.0.x
+      - name: 🛠️ Checkout Repository
+        uses: actions/checkout@v4
 
-    - name: Restore dependencies
-      run: dotnet restore .\SophieHR.Api\
+      - name: ⚙️ Setup .NET 9 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.x
 
-    - name: Build
-      run: dotnet build .\SophieHR.Api\ --no-restore
-    
-    - name: Restore Test Project dependencies
-      run: dotnet restore .\SophieHR.UnitTests\
+      - name: 📦 Restore Dependencies
+        run: dotnet restore ./SophieHR.Api/SophieHR.Api.csproj
 
-    - name: Build Test Project
-      run: dotnet build .\SophieHR.UnitTests\ --no-restore
+      - name: 🏗️ Build Project
+        run: dotnet build ./SophieHR.Api/SophieHR.Api.csproj --no-restore
 
-    - name: Test
-      run: dotnet test .\SophieHR.UnitTests\ --no-build --verbosity normal
+      - name: ✅ Run Tests
+        run: dotnet test ./SophieHR.UnitTests/SophieHR.UnitTests.csproj --no-build --verbosity normal
