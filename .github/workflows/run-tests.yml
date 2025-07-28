@@ -7,7 +7,7 @@ on:
 jobs:
   build:
  
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
  
     steps:
     - uses: actions/checkout@v4
@@ -15,9 +15,12 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 9.0.x
+
     - name: Restore dependencies
       run: dotnet restore .\SophieHR.Api\
+
     - name: Build
       run: dotnet build .\SophieHR.Api\ --no-restore
+    
     - name: Test
       run: dotnet test .\SophieHR.UnitTests\ --no-build --verbosity normal
