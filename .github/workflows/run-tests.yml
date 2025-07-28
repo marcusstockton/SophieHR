@@ -24,4 +24,4 @@ jobs:
         run: dotnet build ./SophieHR.Api/SophieHR.Api.csproj --no-restore
 
       - name: ✅ Run Tests
-        run: dotnet test ./SophieHR.UnitTests/SophieHR.UnitTests.csproj --no-build --verbosity normal
+        run: dotnet test ./SophieHR.UnitTests/SophieHR.UnitTests.csproj --no-build --verbosity detailed
