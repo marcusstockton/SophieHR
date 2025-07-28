@@ -23,5 +23,8 @@ jobs:
       - name: 🏗️ Build Project
         run: dotnet build ./SophieHR.Api/SophieHR.Api.csproj --no-restore
 
+      - name: 📦 Restore Test Dependencies
+        run: dotnet restore ./SophieHR.UnitTests/SophieHR.UnitTests.csproj
+
       - name: ✅ Run Tests
         run: dotnet test ./SophieHR.UnitTests/SophieHR.UnitTests.csproj --no-build --verbosity detailed
