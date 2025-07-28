@@ -23,4 +23,4 @@ jobs:
       run: dotnet build .\SophieHR.Api\ --no-restore
     
     - name: Test
-      run: dotnet test .\SophieHR.UnitTests\ --no-build --verbosity normal
+      run: dotnet test .\SophieHR.UnitTests\ -d --no-build --verbosity normal
