@@ -17,14 +17,17 @@ jobs:
         with:
           dotnet-version: 9.x
 
-      - name: 📦 Restore Dependencies
+      - name: 📦 Restore API Dependencies
         run: dotnet restore ./SophieHR.Api/SophieHR.Api.csproj
 
-      - name: 🏗️ Build Project
+      - name: 🏗️ Build API Project
         run: dotnet build ./SophieHR.Api/SophieHR.Api.csproj --no-restore
 
       - name: 📦 Restore Test Dependencies
         run: dotnet restore ./SophieHR.UnitTests/SophieHR.UnitTests.csproj
+      
+      - name: 🏗️ Build Test Project
+        run: dotnet build ./SophieHR.UnitTests/SophieHR.UnitTests.csproj --no-restore
 
       - name: ✅ Run Tests
         run: dotnet test ./SophieHR.UnitTests/SophieHR.UnitTests.csproj --no-build --verbosity detailed
