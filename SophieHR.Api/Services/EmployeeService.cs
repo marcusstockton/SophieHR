@@ -25,7 +25,7 @@ namespace SophieHR.Api.Services
             _logger = logger;
         }
 
-        public async Task<Employee> CreateEmployee(EmployeeCreateDto employeeDto, Employee manager = null, string role = "User")
+        public async Task<Employee> CreateEmployee(EmployeeCreateDto employeeDto, Employee? manager = null, string role = "User")
         {
             _logger.LogInformation($"{nameof(CreateEmployee)} called.");
             var employee = MapToEmployee(employeeDto);
@@ -37,7 +37,11 @@ namespace SophieHR.Api.Services
                 }
                 employee.Email = employeeDto.WorkEmailAddress;
                 employee.UserName = employeeDto.Username;
-                employee.ManagerId = Guid.Parse(employeeDto.ManagerId);
+                if (!string.IsNullOrEmpty(employeeDto.ManagerId))
+                {
+                    employee.ManagerId = Guid.Parse(employeeDto.ManagerId);
+                }
+                
                 try
                 {
                     var address = MapToEmployeeAddress(employeeDto.Address);
@@ -99,7 +103,7 @@ namespace SophieHR.Api.Services
                .Include(x => x.Company)
                .Include(x => x.Manager)
                .AsNoTracking()
-               .SingleOrDefaultAsync(x =>
+               .FirstOrDefaultAsync(x =>
                     user.IsInRole("User") ? x.UserName == user.Identity.Name
                     : x.Id == employeeId);
         }
@@ -280,7 +284,7 @@ namespace SophieHR.Api.Services
                 DepartmentId = dto.DepartmentId,
                 CompanyId = dto.CompanyId,
                 JobTitle = dto.JobTitle,
-                ManagerId = Guid.Parse(dto.ManagerId)
+                ManagerId = !string.IsNullOrEmpty(dto.ManagerId) ? Guid.Parse(dto.ManagerId) : null
             };
         }
 

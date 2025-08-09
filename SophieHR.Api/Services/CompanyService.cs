@@ -30,6 +30,7 @@ namespace SophieHR.Api.Services
             _logger.LogInformation($"{nameof(GetAllCompaniesNoLogoAsync)} called");
             var companyList = await _context.Companies
                 .AsNoTracking()
+                .AsSplitQuery()
                 .Include(x => x.Address)
                 .Select(x=> new CompanyDetailNoLogo
                 {
@@ -42,7 +43,7 @@ namespace SophieHR.Api.Services
                         Line2 = x.Address.Line2,
                         Line3 = x.Address.Line3,
                         Line4 = x.Address.Line4,
-                        MapImage = x.Address.MapImage,
+                        //MapImage = x.Address.MapImage,
                         Postcode = x.Address.Postcode
                     },
                     CreatedDate = x.CreatedDate,
@@ -57,10 +58,19 @@ namespace SophieHR.Api.Services
         public async Task<ICollection<KeyValuePair<Guid, string>>> GetCompanyNamesAsync(string username, bool isManager = false)
         {
             _logger.LogInformation($"{nameof(GetCompanyNamesAsync)} called");
-            var companies = await _context.Companies.AsNoTracking().Select(x => new KeyValuePair<Guid, string>(x.Id, x.Name)).ToListAsync();
+            var companies = await _context.Companies
+                .AsNoTracking()
+                .Select(x => new KeyValuePair<Guid, string>(x.Id, x.Name))
+                .ToListAsync();
+
             if (isManager)
             {
-                var companyId = await _context.Employees.AsNoTracking().Where(x => x.UserName == username).Select(x => x.CompanyId).SingleOrDefaultAsync();
+                var companyId = await _context.Employees
+                    .AsNoTracking()
+                    .Where(x => x.UserName == username)
+                    .Select(x => x.CompanyId)
+                    .SingleOrDefaultAsync();
+
                 companies = companies.Where(x => x.Key == companyId).ToList();
             }
             return companies;
@@ -84,7 +94,7 @@ namespace SophieHR.Api.Services
                     Id = company.Id,
                     Logo = (company.Logo != null && company.Logo.Any()) ? Convert.ToBase64String(company.Logo) : null,
                     Name = company.Name,
-                    UpdatedDate = company.UpdatedDate
+                    UpdatedDate = company.UpdatedDate,
                 })
                 .FirstOrDefaultAsync(x => x.Id == id);
             }
@@ -271,6 +281,7 @@ namespace SophieHR.Api.Services
             return null;
         }
 
+        [Obsolete("HereAPI is forcing me to sign up so this map service will stop working shortly")]
         public async Task<string> GetMapFromLatLong(decimal lat, decimal lon, int zoomLevel = 15, int width = 2048, int height = 200)
         {
             if (_apiKey == null)

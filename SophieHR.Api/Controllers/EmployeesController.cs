@@ -192,8 +192,8 @@ namespace SophieHR.Api.Controllers
         {
             _logger.LogInformation($"{nameof(EmployeesController)} > {nameof(CreateEmployee)} creating employee {employeeDto}");
             Employee manager = null;
-
-            if (role.ToLower() == "user" && !User.IsInRole("Manager"))
+            
+            if (role.ToLower() == "user" && !(User.IsInRole("Manager") || User.IsInRole("CompanyAdmin")))
             {
                 if (string.IsNullOrEmpty(employeeDto.ManagerId) || !Guid.TryParse(employeeDto.ManagerId, out var managerGuid))
                 {

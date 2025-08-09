@@ -20,7 +20,7 @@ namespace SophieHR.Api.Interfaces
 
         Task<EmployeeDetailDto> UpdateEmployee(EmployeeDetailDto employeeDto);
 
-        Task<Employee> CreateEmployee(EmployeeCreateDto employeeDto, Employee manager = null, string role = "User");
+        Task<Employee> CreateEmployee(EmployeeCreateDto employeeDto, Employee? manager = null, string role = "User");
 
         Task DeleteEmployee(Guid employeeId);
 

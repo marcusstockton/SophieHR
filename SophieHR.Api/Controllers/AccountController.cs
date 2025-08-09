@@ -216,11 +216,6 @@ namespace SophieHR.Api.Controllers
                 MiddleName = x.MiddleName,
                 PersonalEmailAddress = x.PersonalEmailAddress,
                 StartOfEmployment = x.StartOfEmployment,
-                Department = new Models.DTOs.Department.DepartmentIdNameDto
-                {
-                    Id = x.Department.Id,
-                    Name = x.Department.Name
-                },
                 PersonalMobileNumber = x.PersonalMobileNumber,
                 WorkMobileNumber = x.WorkMobileNumber,
                 WorkPhoneNumber = x.WorkPhoneNumber

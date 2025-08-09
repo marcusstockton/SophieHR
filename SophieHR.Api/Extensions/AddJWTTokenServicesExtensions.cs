@@ -21,6 +21,9 @@ namespace SophieHR.Api.Extensions
             {
                 options.RequireHttpsMetadata = false;
                 options.SaveToken = true;
+                options.TokenValidationParameters.ValidAlgorithms = new[] { SecurityAlgorithms.HmacSha256 };
+                // Explicitly disallow unsigned tokens (e.g. 'alg': 'none')
+                options.TokenValidationParameters.RequireSignedTokens = true;
                 options.TokenValidationParameters = new TokenValidationParameters()
                 {
                     ValidateIssuerSigningKey = bindJwtSettings.ValidateIssuerSigningKey,
@@ -32,6 +35,7 @@ namespace SophieHR.Api.Extensions
                     RequireExpirationTime = bindJwtSettings.RequireExpirationTime,
                     ValidateLifetime = bindJwtSettings.RequireExpirationTime,
                     ClockSkew = TimeSpan.FromDays(1),
+                    ValidAlgorithms = new[] {SecurityAlgorithms.HmacSha256 },
                 };
             });
         }
