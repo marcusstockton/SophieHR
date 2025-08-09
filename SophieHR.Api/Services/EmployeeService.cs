@@ -260,6 +260,12 @@ namespace SophieHR.Api.Services
             }
         }
 
+        public async Task<List<string>> GetRoles()
+        {
+            _logger.LogInformation($"{nameof(GetRoles)} called.");
+            return await _roleManager.Roles.Select(x => x.Name).ToListAsync();
+        }
+
         // Helper Methods for Manual Mapping
         private Employee MapToEmployee(EmployeeCreateDto dto)
         {

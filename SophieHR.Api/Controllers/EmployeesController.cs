@@ -267,5 +267,14 @@ namespace SophieHR.Api.Controllers
             var jobTitlesFiltered = jobTitles.Where(x => x.Contains(jobTitle, StringComparison.CurrentCultureIgnoreCase)).Select(x => CultureInfo.CurrentCulture.TextInfo.ToTitleCase(x)).ToList();
             return Ok(jobTitlesFiltered);
         }
+
+        [HttpGet("get-roles")]
+        [Produces(typeof(List<string>))]
+        public async Task<ActionResult<List<string>>> GetRoles()
+        {
+            _logger.LogInformation($"{nameof(EmployeesController)} > {nameof(GetRoles)} getting roles");
+            var roles = await _context.GetRoles();
+            return Ok(roles);
+        }
     }
 }

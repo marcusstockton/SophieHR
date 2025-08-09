@@ -25,5 +25,6 @@ namespace SophieHR.Api.Interfaces
         Task DeleteEmployee(Guid employeeId);
 
         ICollection<string> GetTitles();
+        Task<List<string>> GetRoles();
     }
 }
