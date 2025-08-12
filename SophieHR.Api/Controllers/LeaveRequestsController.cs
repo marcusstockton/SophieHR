@@ -44,7 +44,10 @@ namespace SophieHR.Api.Controllers
 
             if (leaveRequest == null)
             {
-                return NotFound();
+                //return NotFound();
+                var errorMessage = $"Leave Request with Id {id} not found.";
+                return Problem(detail: errorMessage, statusCode: StatusCodes.Status404NotFound);
+
             }
 
             return leaveRequest;
@@ -59,7 +62,9 @@ namespace SophieHR.Api.Controllers
         {
             if (id != leaveRequest.Id)
             {
-                return BadRequest();
+                //return BadRequest();
+                return Problem(statusCode: StatusCodes.Status400BadRequest);
+
             }
 
             _context.Entry(leaveRequest).State = EntityState.Modified;
@@ -72,7 +77,8 @@ namespace SophieHR.Api.Controllers
             {
                 if (!LeaveRequestExists(id))
                 {
-                    return NotFound();
+                    //return NotFound();
+                    return Problem(statusCode: StatusCodes.Status404NotFound);
                 }
                 else
                 {
@@ -104,7 +110,9 @@ namespace SophieHR.Api.Controllers
             var existingLeave = _context.LeaveRequests.Where(x => x.EmployeeId == leaveRequest.EmployeeId && (x.StartDate == leaveRequestDto.StartDate || x.EndDate == leaveRequestDto.EndDate)).AsEnumerable();
             if (existingLeave.Any())
             {
-                return BadRequest("A Leave Request already exists between these dates.");
+                //return BadRequest("A Leave Request already exists between these dates.");
+                return Problem(detail: "A Leave Request already exists between these dates.", statusCode: StatusCodes.Status400BadRequest);
+
             }
             _context.LeaveRequests.Add(leaveRequest);
 
@@ -130,7 +138,9 @@ namespace SophieHR.Api.Controllers
             var leaveRequest = await _context.LeaveRequests.FindAsync(id);
             if (leaveRequest == null)
             {
-                return NotFound();
+                //return NotFound();
+                return Problem(statusCode: StatusCodes.Status404NotFound);
+
             }
 
             _context.LeaveRequests.Remove(leaveRequest);

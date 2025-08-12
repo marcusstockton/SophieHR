@@ -86,7 +86,7 @@ namespace SophieHR.Api.Controllers
             if (employee == null)
             {
                 _logger.LogInformation($"No employee found by id {id}");
-                return NotFound();
+                return Problem(detail: "No employee found by id {id}", statusCode: StatusCodes.Status404NotFound);
             }
 
             var result = new EmployeeDetailDto
@@ -155,7 +155,7 @@ namespace SophieHR.Api.Controllers
                 var employeeAvatar = await _context.UploadAvatarToEmployee(id, avatar);
                 return Ok(employeeAvatar);
             }
-            return BadRequest("No File");
+            return Problem(detail: "No File", statusCode: StatusCodes.Status400BadRequest);
         }
 
         // PUT: api/Employees/5
@@ -167,12 +167,12 @@ namespace SophieHR.Api.Controllers
             _logger.LogInformation($"{nameof(EmployeesController)} > {nameof(PutEmployee)} Updating employee {employeeDetail}");
             if (id != employeeDetail.Id)
             {
-                return BadRequest();
+                return Problem(statusCode: StatusCodes.Status400BadRequest, detail: "The provided employee ID does not match the route ID.");
             }
             var userid = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if ((!User.IsInRole("Admin") && userid == id.ToString())) // Admin user can...
             {
-                return BadRequest("Cannot update your own record");
+                return Problem(detail: "Cannot update your own record", statusCode: StatusCodes.Status400BadRequest);
             }
 
             var employee = await _context.UpdateEmployee(employeeDetail);
@@ -198,7 +198,7 @@ namespace SophieHR.Api.Controllers
                 if (string.IsNullOrEmpty(employeeDto.ManagerId) || !Guid.TryParse(employeeDto.ManagerId, out var managerGuid))
                 {
                     ModelState.AddModelError(employeeDto.ManagerId, "You need to supply a manager id");
-                    return BadRequest(ModelState);
+                    return Problem(detail: "Invalid Request", statusCode: StatusCodes.Status400BadRequest, extensions: new Dictionary<string, object> { { "errors", ModelState } });
                 }
                 else
                 {
@@ -217,12 +217,16 @@ namespace SophieHR.Api.Controllers
             if (User.IsInRole("CompanyAdmin") && role.ToLower() == "admin")
             {
                 ModelState.AddModelError(role, "You do not have the permission to create this type of user");
-                return BadRequest(ModelState);
+                //return Problem(detail: "Permissions Error", statusCode: StatusCodes.Status400BadRequest, extensions: new Dictionary<string, object> { { "errors", ModelState } });
+                return Problem(
+                    detail: "Model validation failed", 
+                    statusCode: StatusCodes.Status400BadRequest, 
+                    extensions: new Dictionary<string, object> { { "errors", ModelState } });
             }
             if (User.IsInRole("HRManager") && new[] { "admin", "companyadmin", "hrmanager" }.Any(c => role.Contains(c.ToLower())))
             {
                 ModelState.AddModelError(role, "You do not have the permission to create this type of user");
-                return BadRequest(ModelState);
+                return Problem(detail: "Permissions Error", statusCode: StatusCodes.Status400BadRequest, extensions: new Dictionary<string, object> { { "errors", ModelState } });
             }
             try
             {

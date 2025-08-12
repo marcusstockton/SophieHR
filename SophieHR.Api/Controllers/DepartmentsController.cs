@@ -48,8 +48,12 @@ namespace SophieHR.Api.Controllers
 
             if (department == null)
             {
-                _logger.LogError($"{nameof(DepartmentsController)} > {nameof(GetDepartment)} failed...Unable to find department by Id {id}");
-                return NotFound();
+                var errorMessage = $"Department with Id {id} not found.";
+                //_logger.LogError($"{nameof(DepartmentsController)} > {nameof(GetDepartment)} failed...{errorMessage}");
+                _logger.LogError("{nameof} > {nameofdept} failed...{errorMessage}", nameof(DepartmentsController), nameof(GetDepartment), errorMessage);
+                //return NotFound();
+                return Problem(detail: errorMessage, statusCode: StatusCodes.Status404NotFound);
+
             }
 
             var results = new DepartmentDetailDto
@@ -71,7 +75,9 @@ namespace SophieHR.Api.Controllers
             if (id != departmentDetail.Id)
             {
                 _logger.LogError($"{nameof(DepartmentsController)} > {nameof(PutDepartment)} failed...Id's don't match");
-                return BadRequest();
+                //return BadRequest();
+                return Problem(detail: "ID's do not match. Check your inputs", statusCode: StatusCodes.Status400BadRequest);
+
             }
             var department = new Department
             {

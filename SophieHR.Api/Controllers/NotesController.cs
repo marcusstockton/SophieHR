@@ -51,7 +51,8 @@ namespace SophieHR.Api.Controllers
 
             if (note == null)
             {
-                return NotFound();
+                //return NotFound();
+                return Problem(statusCode: StatusCodes.Status404NotFound);
             }
             var result = new NoteDetailDto
             {
@@ -75,7 +76,9 @@ namespace SophieHR.Api.Controllers
         {
             if (id != noteDto.Id)
             {
-                return BadRequest();
+                //return BadRequest();
+                return Problem(statusCode: StatusCodes.Status404NotFound);
+
             }
 
             var note = new Note
@@ -99,7 +102,9 @@ namespace SophieHR.Api.Controllers
             {
                 if (!NotesExists(id))
                 {
-                    return NotFound();
+                    //return NotFound();
+                    return Problem(statusCode: StatusCodes.Status404NotFound);
+
                 }
                 else
                 {
@@ -120,7 +125,9 @@ namespace SophieHR.Api.Controllers
             var employee = await _context.Employees.FindAsync(employeeId);
             if(employee is null)
             {
-                return BadRequest("Unable to find employee");
+                //return BadRequest("Unable to find employee");
+                return Problem(detail: "Unable to find employee", statusCode: StatusCodes.Status400BadRequest);
+
             }
 
             var note = new Note
@@ -147,7 +154,8 @@ namespace SophieHR.Api.Controllers
             var notes = await _context.Notes.FindAsync(id);
             if (notes == null)
             {
-                return NotFound();
+                //return NotFound();
+                return Problem(statusCode: StatusCodes.Status404NotFound);
             }
 
             _context.Notes.Remove(notes);

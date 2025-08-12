@@ -28,7 +28,9 @@ namespace SophieHR.Api.Controllers
 
             if (companyConfig == null)
             {
-                return NotFound();
+                //return NotFound();
+                return Problem(statusCode: StatusCodes.Status404NotFound);
+
             }
 
             return companyConfig;
@@ -41,7 +43,9 @@ namespace SophieHR.Api.Controllers
         {
             if (id != companyConfig.Id)
             {
-                return BadRequest();
+                //return BadRequest();
+                return Problem(detail: "ID's do not match. Check your inputs", statusCode: StatusCodes.Status400BadRequest);
+
             }
 
             _context.Entry(companyConfig).State = EntityState.Modified;
@@ -54,7 +58,9 @@ namespace SophieHR.Api.Controllers
             {
                 if (!CompanyConfigExists(id))
                 {
-                    return NotFound();
+                    //return NotFound();
+                    return Problem(detail: "Not Found", statusCode: StatusCodes.Status404NotFound);
+
                 }
                 else
                 {
@@ -83,7 +89,9 @@ namespace SophieHR.Api.Controllers
             var companyConfig = await _context.CompanyConfigs.FindAsync(id);
             if (companyConfig == null)
             {
-                return NotFound();
+                //return NotFound();
+                return Problem(detail: "Not Found", statusCode: StatusCodes.Status404NotFound);
+
             }
 
             _context.CompanyConfigs.Remove(companyConfig);
