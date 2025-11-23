@@ -33,67 +33,66 @@ namespace SophieHR.Api.Controllers
         }
 
         [HttpPost]
-        [AllowAnonymous, Produces(typeof(UserTokens)), ProducesResponseType(StatusCodes.Status404NotFound), ProducesResponseType(StatusCodes.Status400BadRequest),]
+        [ProducesResponseType(typeof(ProblemDetails), 401)]
+        [AllowAnonymous, Produces(typeof(UserTokens))]
         public async Task<IActionResult> GetToken(UserLogins userLogins)
         {
-            try
-            {
-                Log.Information($"{nameof(AccountController)} > {nameof(GetToken)} Finding user with username {userLogins.UserName}");
-                var Token = new UserTokens();
-                var user = await _userManager.FindByNameAsync(userLogins.UserName);
-                if (user == null)
-                {
-                    _logger.LogWarning("{nameof} Someone is trying to log in with an account that doesn't exist: {username}", nameof(AccountController), userLogins.UserName);
 
-                    return Problem(
-                        type: $"https://httpstatuses.com/404",
-                        title: "Invalid Username or password",
-                        detail: "Invalid Username or password",
-                        statusCode: StatusCodes.Status404NotFound);
-                }
-                _logger.LogInformation($"User found...getting roles.");
-                var roles = await _userManager.GetRolesAsync(user);
-                var _passwordHasher = new PasswordHasher<ApplicationUser>();
-                if (_passwordHasher.VerifyHashedPassword(user, user.PasswordHash, userLogins.Password) == PasswordVerificationResult.Success)
-                {
-                    _logger.LogInformation($"{nameof(AccountController)} User authentication passed. Generating JWT Payload...");
-                    var userExtra = await _context.Employees
-                        .Where(x => x.Id == user.Id)
-                        .Select(x => new { x.CompanyId, x.DepartmentId })
-                        .FirstOrDefaultAsync();
-
-                    Token = JwtHelpers.JwtHelpers.GenTokenkey(new UserTokens()
-                    {
-                        Email = user.Email,
-                        UserName = user.UserName,
-                        Id = user.Id,
-                        Role = roles.First(),
-                        CompanyId = userExtra?.CompanyId,
-                        DepartmentId = userExtra?.DepartmentId
-                    }, jwtSettings);
-                }
-                else
-                {
-                    _logger.LogWarning("{nameof} Attempt made to log in to valid username {username} with bad password {password}", nameof(AccountController), user.UserName, userLogins.Password);
-                    return Problem(
-                        type: $"https://httpstatuses.com/404",
-                        title: "Invalid Username or password",
-                        detail: "Invalid Username or password",
-                        statusCode: StatusCodes.Status404NotFound);
-                }
-                _logger.LogInformation($"{nameof(AccountController)} Payload generated for {Token.UserName}...returning.");
-                return Ok(Token);
-            }
-            catch (Exception ex)
+            Log.Information($"{nameof(AccountController)} > {nameof(GetToken)} Finding user with username {userLogins.UserName}");
+            var Token = new UserTokens();
+            var user = await _userManager.FindByNameAsync(userLogins.UserName);
+            if (user == null)
             {
-                _logger.LogError(ex, "{nameof} An Exception was thrown {message}", nameof(AccountController), ex.Message);
-                //return BadRequest("Invalid Username or password");
-                return Problem(
-                    type: $"https://httpstatuses.com/500",
-                    title: "Something went wrong...",
-                    detail: string.Format("{0}", ex.Message),
-                    statusCode: StatusCodes.Status500InternalServerError);
+                _logger.LogWarning("{nameof} Someone is trying to log in with an account that doesn't exist: {username}", nameof(AccountController), userLogins.UserName);
+
+                var pd = new ProblemDetails
+                {
+                    Title = "Invalid Username or password",
+                    Detail = "Invalid Username or password",
+                    Status = StatusCodes.Status401Unauthorized,
+                    Instance = HttpContext.Request.Path
+                };
+
+                return new JsonResult(pd) { StatusCode = pd.Status };
             }
+            _logger.LogInformation($"User found...getting roles.");
+            var roles = await _userManager.GetRolesAsync(user);
+            var _passwordHasher = new PasswordHasher<ApplicationUser>();
+            if (_passwordHasher.VerifyHashedPassword(user, user.PasswordHash, userLogins.Password) == PasswordVerificationResult.Success)
+            {
+                _logger.LogInformation($"{nameof(AccountController)} User authentication passed. Generating JWT Payload...");
+                var userExtra = await _context.Employees
+                    .Where(x => x.Id == user.Id)
+                    .Select(x => new { x.CompanyId, x.DepartmentId })
+                    .FirstOrDefaultAsync();
+
+                Token = JwtHelpers.JwtHelpers.GenTokenkey(new UserTokens()
+                {
+                    Email = user.Email,
+                    UserName = user.UserName,
+                    Id = user.Id,
+                    Role = roles.First(),
+                    CompanyId = userExtra?.CompanyId,
+                    DepartmentId = userExtra?.DepartmentId
+                }, jwtSettings);
+            }
+            else
+            {
+                _logger.LogWarning("{nameof} Attempt made to log in to valid username {username} with bad password {password}", nameof(AccountController), user.UserName, userLogins.Password);
+                
+                var pd = new ProblemDetails
+                {
+                    Title = "Invalid Username or password",
+                    Detail = "Invalid Username or password",
+                    Status = StatusCodes.Status401Unauthorized,
+                    Instance = HttpContext.Request.Path
+                };
+
+                return new JsonResult(pd) { StatusCode = pd.Status };
+            }
+            _logger.LogInformation($"{nameof(AccountController)} Payload generated for {Token.UserName}...returning.");
+            return Ok(Token);
+
         }
 
         /// <summary>
@@ -101,6 +100,7 @@ namespace SophieHR.Api.Controllers
         /// </summary>
         /// <param name="userData"></param>
         /// <returns>JWT Auth token</returns>
+        [ProducesResponseType(typeof(ProblemDetails), 400)]
         [HttpPost, Route("RegisterNewAdminUser"), Authorize(Roles = "Admin"), Produces(typeof(UserTokens))]
         public async Task<IActionResult> RegisterNewAdminUser(RegisterUserDto userData)
         {
@@ -108,12 +108,7 @@ namespace SophieHR.Api.Controllers
             if (!ModelState.IsValid)
             {
                 _logger.LogError($"{nameof(AccountController)} Invalid form data passed in.");
-                //return BadRequest(userData);
-                return Problem(
-                    type: $"https://httpstatuses.com/400",
-                    title: "Invalid data",
-                    detail: string.Format("{0}", userData),
-                    statusCode: StatusCodes.Status400BadRequest);
+                return new JsonResult(new ValidationProblemDetails(ModelState)) { StatusCode = 400 };
             }
 
             var user = new ApplicationUser
@@ -126,46 +121,63 @@ namespace SophieHR.Api.Controllers
             var existingUser = await _userManager.FindByEmailAsync(user.Email);
             if (existingUser != null)
             {
-                //return BadRequest("A User with that email address already exists in the system.");
-                return Problem(
-                    type: $"https://httpstatuses.com/400",
-                    title: "Existing User",
-                    detail: "A User with that email address already exists in the system.",
-                    statusCode: StatusCodes.Status400BadRequest);
-            }
-            try
-            {
-                var result = await _userManager.CreateAsync(user, userData.Password);
-                if (result == IdentityResult.Success)
+                var pd = new ProblemDetails
                 {
-                    var token = JwtHelpers.JwtHelpers.GenTokenkey(new UserTokens()
+                    Title = "Existing User",
+                    Detail = "A User with that email address already exists in the system.",
+                    Status = StatusCodes.Status400BadRequest,
+                    Instance = HttpContext.Request.Path
+                };
+
+                return new JsonResult(pd) { StatusCode = pd.Status };
+            }
+
+            var result = await _userManager.CreateAsync(user, userData.Password);
+            if (result == IdentityResult.Success)
+            {
+                // Add the newly created user to the Admin role
+                var addRoleResult = await _userManager.AddToRoleAsync(user, "Admin");
+                if (!addRoleResult.Succeeded)
+                {
+                    var pd = new ProblemDetails
                     {
-                        Email = user.Email,
-                        UserName = user.UserName,
-                        Id = user.Id,
-                    }, jwtSettings);
-                    await _emailSender.SendEmailAsync(user.Email, "New User Registered", "You have had a user registered with this email address. Gratz!");
-                    return Ok(token);
+                        Title = "Role assignment failed",
+                        Detail = string.Join("; ", addRoleResult.Errors.Select(e => e.Description)),
+                        Status = StatusCodes.Status500InternalServerError,
+                        Instance = HttpContext.Request.Path
+                    };
+
+                    return new JsonResult(pd) { StatusCode = pd.Status };
                 }
-                else
+
+                // Generate token including the role. Admin users won't have a CompanyId.
+                var token = JwtHelpers.JwtHelpers.GenTokenkey(new UserTokens()
                 {
-                    //return BadRequest(result.Errors.Select(x => x.Description).ToList());
-                    return Problem(
-                    type: $"https://httpstatuses.com/400",
-                    title: "Existing User",
-                    detail: result.Errors.Select(x => x.Description).ToList().ToString(),
-                    statusCode: StatusCodes.Status400BadRequest);
-                }
+                    Email = user.Email,
+                    UserName = user.UserName,
+                    Id = user.Id,
+                    Role = "Admin",
+                    CompanyId = null
+                }, jwtSettings);
+
+                await _emailSender.SendEmailAsync(user.Email, "New User Registered", 
+                    "You have had a user registered with this email address. Gratz!");
+                
+                return CreatedAtAction(nameof(GetToken), new { userName = user.UserName }, token);
             }
-            catch (Exception ex)
+            else
             {
-                //return BadRequest(ex.Message);
-                return Problem(
-                    type: $"https://httpstatuses.com/500",
-                    title: "Something went wrong our end",
-                    detail: ex.Message,
-                    statusCode: StatusCodes.Status500InternalServerError);
+                var pd = new ProblemDetails
+                {   
+                    Title = "Existing User",
+                    Detail = "A User with that email address already exists in the system.",
+                    Status = StatusCodes.Status400BadRequest,
+                    Instance = HttpContext.Request.Path
+                };
+
+                return new JsonResult(pd) { StatusCode = pd.Status };
             }
+
         }
 
         /// <summary>

@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+﻿using System.Net;
 using System.Net.Mail;
 
 namespace SophieHR.Api.Services
@@ -31,32 +31,52 @@ namespace SophieHR.Api.Services
             mail.Subject = subject;
             mail.Body = htmlMessage;
 
-            if (_environment.IsDevelopment())
+            // Determine SMTP host/port. Allow overrides via environment variables.
+            var smtpHost = Environment.GetEnvironmentVariable("SMTP_HOST");
+            var smtpPortEnv = Environment.GetEnvironmentVariable("SMTP_PORT");
+
+            if (string.IsNullOrWhiteSpace(smtpHost))
             {
-                await StartSMTP4Dev();
-
-                //send the message
-                SmtpClient smtp = new SmtpClient("localhost");
-                smtp.UseDefaultCredentials = true;
-
-                await smtp.SendMailAsync(mail);
+                // If running inside a container, use the smtp4dev service name. Otherwise use localhost mapped port.
+                var inContainer = string.Equals(Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER"), "true", StringComparison.OrdinalIgnoreCase);
+                smtpHost = inContainer ? "smtp4dev" : "localhost";
             }
 
-            // TODO: Implement a live smtp server...
-        }
-
-        private async Task StartSMTP4Dev()
-        {
-            await Task.Run(() =>
+            int smtpPort = 0;
+            if (!int.TryParse(smtpPortEnv, out smtpPort))
             {
-                // Fire up smtp4dev:
-                var desktop = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-                Process p = new Process();
-                var fileName = Path.Combine(desktop, "SMTP4Dev.bat");
-                p.StartInfo = new ProcessStartInfo(fileName);
-                p.StartInfo.UseShellExecute = true;
-                p.Start();
-            });
+                var inContainer = string.Equals(Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER"), "true", StringComparison.OrdinalIgnoreCase);
+                smtpPort = inContainer ? 25 : 5025;
+            }
+
+            _logger.LogInformation("Using SMTP host {SmtpHost} and port {SmtpPort}", smtpHost, smtpPort);
+
+            try
+            {
+                using (var smtp = new SmtpClient(smtpHost, smtpPort))
+                {
+                    smtp.EnableSsl = false;
+                    smtp.DeliveryMethod = SmtpDeliveryMethod.Network;
+                    smtp.UseDefaultCredentials = false;
+
+                    // If you need credentials, set them via env vars (not required for smtp4dev)
+                    var user = Environment.GetEnvironmentVariable("SMTP_USER");
+                    var pass = Environment.GetEnvironmentVariable("SMTP_PASS");
+                    if (!string.IsNullOrEmpty(user) && !string.IsNullOrEmpty(pass))
+                    {
+                        smtp.Credentials = new NetworkCredential(user, pass);
+                    }
+
+                    await smtp.SendMailAsync(mail);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send email to {Email}", email);
+                throw;
+            }
+
+            // TODO: Implement a live smtp server configuration for production
         }
     }
 }

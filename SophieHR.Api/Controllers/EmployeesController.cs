@@ -232,7 +232,9 @@ namespace SophieHR.Api.Controllers
             {
                 var employee = await _context.CreateEmployee(employeeDto, manager, role);
 
-                return Ok(employee);
+                return CreatedAtAction("GetEmployee", new { id = employee.Id }, employee);
+
+                //return Ok(employee);
             }
             catch (Exception ex)
             {

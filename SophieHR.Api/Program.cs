@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -118,6 +119,20 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
   .AddEntityFrameworkStores<ApplicationDbContext>();
 
 builder.Services.AddTransient<DataSeeder>();
+
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+    options.InvalidModelStateResponseFactory = context =>
+    {
+        var pd = new ValidationProblemDetails(context.ModelState)
+        {
+            Title = "One or more validation errors occurred.",
+            Status = StatusCodes.Status400BadRequest,
+            Instance = context.HttpContext.Request.Path
+        };
+        return new JsonResult(pd) { StatusCode = StatusCodes.Status400BadRequest };
+    };
+});
 
 builder.Services.AddHttpClient("autosuggestHereApiClient", client =>
 {

@@ -9,15 +9,21 @@ namespace SophieHR.Api.JwtHelpers
     {
         public static IEnumerable<Claim> GetClaims(this UserTokens userAccounts, Guid Id)
         {
-            IEnumerable<Claim> claims = [
+            var claims = new List<Claim>
+            {
                 new Claim("Id", userAccounts.Id.ToString()),
-                    new Claim(ClaimTypes.Name, userAccounts.UserName),
-                    new Claim(ClaimTypes.Email, userAccounts.Email),
-                    new Claim(ClaimTypes.PrimarySid, userAccounts.CompanyId.ToString()),
-                    new Claim(ClaimTypes.NameIdentifier, Id.ToString()),
-                    new Claim(ClaimTypes.Role, userAccounts.Role),
-                    new Claim(ClaimTypes.Expiration, DateTime.UtcNow.AddDays(1).ToString("MMM ddd dd yyyy HH:mm:ss tt"))
-            ];
+                new Claim(ClaimTypes.Name, userAccounts.UserName ?? string.Empty),
+                new Claim(ClaimTypes.Email, userAccounts.Email ?? string.Empty),
+                new Claim(ClaimTypes.NameIdentifier, Id.ToString()),
+                new Claim(ClaimTypes.Role, userAccounts.Role ?? string.Empty),
+                new Claim(ClaimTypes.Expiration, DateTime.UtcNow.AddDays(1).ToString("MMM ddd dd yyyy HH:mm:ss tt"))
+            };
+
+            if (userAccounts.CompanyId.HasValue)
+            {
+                claims.Add(new Claim(ClaimTypes.PrimarySid, userAccounts.CompanyId.Value.ToString()));
+            }
+
             return claims;
         }
 

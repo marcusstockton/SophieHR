@@ -151,6 +151,21 @@ services:
       - docker-network
       - monitoring
 
+  smtp4dev:
+    image: rnwood/smtp4dev:latest
+    container_name: smtp4dev
+    ports:
+      - "5025:25"   # SMTP
+      - "5000:80"   # Web UI
+    networks:
+      - docker-network
+    mem_limit: 128m
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:80" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 networks:
   docker-network:
     driver: bridge
