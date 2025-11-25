@@ -62,6 +62,8 @@ namespace SophieHR.Api.Data
                 b.Property(x => x.EmployeeId).IsRequired();
                 b.Property(x => x.Comments).HasMaxLength(250);
                 b.Property(x => x.LeaveType).HasConversion<int>().IsRequired();
+
+                b.HasIndex(nameof(LeaveRequest.Id), nameof(LeaveRequest.EmployeeId));
             });
 
             builder.Entity<Address>(b =>
@@ -72,6 +74,8 @@ namespace SophieHR.Api.Data
                 b.Property(x => x.Line4).HasMaxLength(50);
                 b.Property(x => x.County).HasMaxLength(50);
                 b.Property(x => x.Postcode).IsRequired().HasMaxLength(8);
+
+                b.HasIndex(nameof(Address.Id), nameof(Address.Postcode));
             });
 
             builder.Entity<Department>(b =>
@@ -110,7 +114,9 @@ namespace SophieHR.Api.Data
                 b.HasOne(x => x.Department).WithMany().HasForeignKey(x => x.DepartmentId).OnDelete(DeleteBehavior.Restrict);
                 b.HasOne(x => x.Manager).WithMany().HasForeignKey(x => x.ManagerId).OnDelete(DeleteBehavior.Restrict);
                 b.HasOne(x => x.Address).WithOne();
-                //b.HasMany<Note>().WithOne().HasForeignKey(x => x.EmployeeId);
+
+                b.HasIndex(nameof(Employee.Id), nameof(Employee.WorkEmailAddress)).IsUnique();
+                b.HasIndex(nameof(Employee.CompanyId), nameof(Employee.DepartmentId), nameof(Employee.ManagerId));
             });
 
             base.OnModelCreating(builder);

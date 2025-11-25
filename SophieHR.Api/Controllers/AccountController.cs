@@ -57,29 +57,8 @@ namespace SophieHR.Api.Controllers
             }
             _logger.LogInformation($"User found...getting roles.");
             var roles = await _userManager.GetRolesAsync(user);
-            var _passwordHasher = new PasswordHasher<ApplicationUser>();
-            if (_passwordHasher.VerifyHashedPassword(user, user.PasswordHash, userLogins.Password) == PasswordVerificationResult.Success)
+            if (!await _userManager.CheckPasswordAsync(user, userLogins.Password))
             {
-                _logger.LogInformation($"{nameof(AccountController)} User authentication passed. Generating JWT Payload...");
-                var userExtra = await _context.Employees
-                    .Where(x => x.Id == user.Id)
-                    .Select(x => new { x.CompanyId, x.DepartmentId })
-                    .FirstOrDefaultAsync();
-
-                Token = JwtHelpers.JwtHelpers.GenTokenkey(new UserTokens()
-                {
-                    Email = user.Email,
-                    UserName = user.UserName,
-                    Id = user.Id,
-                    Role = roles.First(),
-                    CompanyId = userExtra?.CompanyId,
-                    DepartmentId = userExtra?.DepartmentId
-                }, jwtSettings);
-            }
-            else
-            {
-                _logger.LogWarning("{nameof} Attempt made to log in to valid username {username} with bad password {password}", nameof(AccountController), user.UserName, userLogins.Password);
-                
                 var pd = new ProblemDetails
                 {
                     Title = "Invalid Username or password",
@@ -90,6 +69,24 @@ namespace SophieHR.Api.Controllers
 
                 return new JsonResult(pd) { StatusCode = pd.Status };
             }
+
+            _logger.LogInformation($"{nameof(AccountController)} User authentication passed. Generating JWT Payload...");
+            var userExtra = await _context.Employees
+                .Where(x => x.Id == user.Id)
+                .Select(x => new { x.CompanyId, x.DepartmentId })
+                .FirstOrDefaultAsync();
+
+            Token = JwtHelpers.JwtHelpers.GenTokenkey(new UserTokens()
+            {
+                Email = user.Email,
+                UserName = user.UserName,
+                Id = user.Id,
+                Role = roles.First(),
+                CompanyId = userExtra?.CompanyId,
+                DepartmentId = userExtra?.DepartmentId
+            }, jwtSettings);
+
+
             _logger.LogInformation($"{nameof(AccountController)} Payload generated for {Token.UserName}...returning.");
             return Ok(Token);
 
@@ -189,7 +186,7 @@ namespace SophieHR.Api.Controllers
         [Authorize(Roles = "Admin, Manager")]
         public async Task<IActionResult> GetListAsync()
         {
-            var users = _context.Employees.AsEnumerable();
+            var query = _context.Employees.AsNoTracking().AsQueryable();
             if (User.IsInRole("Manager"))
             {
                 // Only retrieve employees the manager can access:
@@ -202,21 +199,22 @@ namespace SophieHR.Api.Controllers
                 var use = await _userManager.FindByEmailAsync(User.Identity.Name);
 
                 var managerId = _userManager.GetUserId(User);
-                //users = users.Where(x => x.Manager != null && x.Manager?.Id == managerId);
+                query = query.Where(x => x.Manager != null && x.Manager.Id == Guid.Parse(managerId));
             }
-            var results = users.Select(x => new EmployeeListDto
+            var results = await query.Select(x => new EmployeeListDto
             {
                 Id = x.Id,
                 FirstName = x.FirstName,
                 LastName = x.LastName,
                 WorkEmailAddress = x.WorkEmailAddress,
-                DepartmentId = x.Department.Id,
+                DepartmentId = x.Department == null ? Guid.Empty : x.Department.Id,
                 CompanyId = x.CompanyId,
-                Company = new Models.DTOs.Company.CompanyIdNameDto                 {
+                Company = x.Company == null ? null : new Models.DTOs.Company.CompanyIdNameDto
+                {
                     Id = x.Company.Id,
                     Name = x.Company.Name
                 },
-                Address = new EmployeeAddress
+                Address = x.Address == null ? null : new EmployeeAddress
                 {
                     Line1 = x.Address.Line1,
                     Line2 = x.Address.Line2,
@@ -231,7 +229,8 @@ namespace SophieHR.Api.Controllers
                 PersonalMobileNumber = x.PersonalMobileNumber,
                 WorkMobileNumber = x.WorkMobileNumber,
                 WorkPhoneNumber = x.WorkPhoneNumber
-            }).ToList();
+            }).ToListAsync();
+
             return Ok(results);
         }
 
