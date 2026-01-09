@@ -122,7 +122,7 @@ namespace SophieHR.Api.Controllers
                 PersonalEmailAddress = employee.PersonalEmailAddress,
                 PersonalMobileNumber = employee.PersonalMobileNumber,
                 StartOfEmployment = employee.StartOfEmployment,
-                Title = employee.JobTitle,
+                Title = employee.Title.ToString(),
                 UserName = employee.UserName,
                 WorkMobileNumber = employee.WorkMobileNumber,
                 WorkPhoneNumber = employee.WorkPhoneNumber

@@ -95,7 +95,7 @@ namespace SophieHR.UnitTests.Services
             };
 
             // Act
-            await Assert.ThrowsExceptionAsync<ArgumentException>(() =>
+            await Assert.ThrowsAsync<ArgumentException>(() =>
             {
                 return _service.CreateEmployee(employeeDto);
             });
