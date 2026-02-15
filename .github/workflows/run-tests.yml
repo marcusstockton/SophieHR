@@ -12,10 +12,10 @@ jobs:
       - name: 🛠️ Checkout Repository
         uses: actions/checkout@v4
 
-      - name: ⚙️ Setup .NET 9 SDK
+      - name: ⚙️ Setup .NET 10 SDK
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 9.x
+          dotnet-version: 10.x
 
       - name: 📦 Restore API Dependencies
         run: dotnet restore ./SophieHR.Api/SophieHR.Api.csproj
