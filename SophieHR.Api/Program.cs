@@ -8,9 +8,10 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using NSwag;
-using NSwag.Generation.Processors.Security;
+//using NSwag;
+//using NSwag.Generation.Processors.Security;
 using Prometheus;
 using Serilog;
 using Serilog.Exceptions;
@@ -44,23 +45,8 @@ builder.Services.AddMemoryCache();
 builder.Services.AddControllers().AddJsonOptions(x => x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 builder.Services.AddEndpointsApiExplorer();
 
-// Register the Swagger services
-builder.Services.AddOpenApiDocument(document =>
-{
-    document.Title = "SophieHR";
-    document.Version = "1.0";
-    document.AddSecurity("JWT", Enumerable.Empty<string>(), new OpenApiSecurityScheme
-    {
-        Type = OpenApiSecuritySchemeType.ApiKey,
-        Name = "Authorization",
-        In = OpenApiSecurityApiKeyLocation.Header,
-        Description = "Type into the textbox: Bearer {your JWT token}."
-    });
-
-    document.OperationProcessors.Add(
-        new AspNetCoreOperationSecurityScopeProcessor("JWT"));
-}
-);
+// Replace NSwag AddOpenApiDocument with built-in AddOpenApi()
+builder.Services.AddOpenApi();
 
 builder.Services.AddResponseCompression(options =>
 {
@@ -133,7 +119,6 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
         return new JsonResult(pd) { StatusCode = StatusCodes.Status400BadRequest };
     };
 });
-
 builder.Services.AddHttpClient("autosuggestHereApiClient", client =>
 {
     var url = builder.Configuration.GetSection("ThirdPartyClients:HereApi").GetValue<string>("BaseUrl");
