@@ -12,7 +12,9 @@
         "elasticsearch": "StartWithoutDebugging",
         "grafana": "StartWithoutDebugging",
         "kibana": "StartWithoutDebugging",
-        "prometheus": "StartWithoutDebugging"
+        "prometheus": "StartWithoutDebugging",
+        "redis_cache": "StartWithoutDebugging",
+        "smtp4dev": "StartWithoutDebugging"
       }
     }
   }

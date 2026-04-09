@@ -8,11 +8,13 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
+//using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.OpenApi;
 //using NSwag;
 //using NSwag.Generation.Processors.Security;
 using Prometheus;
+using Scalar.AspNetCore;
 using Serilog;
 using Serilog.Exceptions;
 using SophieHR.Api;
@@ -47,6 +49,10 @@ builder.Services.AddEndpointsApiExplorer();
 
 // Replace NSwag AddOpenApiDocument with built-in AddOpenApi()
 builder.Services.AddOpenApi();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
+});
 
 builder.Services.AddResponseCompression(options =>
 {
@@ -75,7 +81,8 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("CorsPolicy",
         builder => builder
-        .WithOrigins("http://localhost:4200")
+        //.WithOrigins("http://localhost:4200")
+        .AllowAnyOrigin()
         .AllowAnyMethod()
         .AllowAnyHeader());
 });
@@ -169,7 +176,6 @@ var app = builder.Build();
 
 // Register the Swagger generator and the Swagger UI middlewares
 app.UseOpenApi();
-app.UseSwaggerUi();
 
 app.UseMetricServer();
 
@@ -185,6 +191,32 @@ app.Use((context, next) =>
 
 app.UseCors("CorsPolicy");
 app.UseHttpsRedirection();
+
+if (app.Environment.IsDevelopment())
+{
+    if (builder.Configuration.GetValue<bool>("ReseedDummyData"))
+    {
+        using (var scope = app.Services.CreateScope())
+        {
+            Log.Information("Reseeding the database");
+            var services = scope.ServiceProvider;
+            var context = services.GetRequiredService<ApplicationDbContext>();
+            await context.Database.EnsureCreatedAsync();
+            await DataSeeder.Initialize(services);
+        }
+    }
+    app.MapOpenApi(); // maps to /openapi/v1.json
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+    });
+//    app.MapScalarApiReference(option =>
+//    {
+//        option.Title = "SophieHR API";
+//        //option.AddDocument("v1", "API Version 1.0", "/openapi/v1.json", isDefault: true);
+//    }); // maps to /scalar
+//}
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -207,20 +239,7 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-if (app.Environment.IsDevelopment())
-{
-    if (builder.Configuration.GetValue<bool>("ReseedDummyData"))
-    {
-        using (var scope = app.Services.CreateScope())
-        {
-            Log.Information("Reseeding the database");
-            var services = scope.ServiceProvider;
-            var context = services.GetRequiredService<ApplicationDbContext>();
-            await context.Database.EnsureCreatedAsync();
-            await DataSeeder.Initialize(services);
-        }
-    }
-}
+
 
 app.Run();
 
