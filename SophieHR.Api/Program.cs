@@ -8,11 +8,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
-//using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.OpenApi;
-//using NSwag;
-//using NSwag.Generation.Processors.Security;
 using Prometheus;
 using Scalar.AspNetCore;
 using Serilog;
@@ -211,38 +208,37 @@ if (app.Environment.IsDevelopment())
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
     });
-//    app.MapScalarApiReference(option =>
-//    {
-//        option.Title = "SophieHR API";
-//        //option.AddDocument("v1", "API Version 1.0", "/openapi/v1.json", isDefault: true);
-//    }); // maps to /scalar
-//}
+    //    app.MapScalarApiReference(option =>
+    //    {
+    //        option.Title = "SophieHR API";
+    //        //option.AddDocument("v1", "API Version 1.0", "/openapi/v1.json", isDefault: true);
+    //    }); // maps to /scalar
+    //}
 
-app.UseAuthentication();
-app.UseAuthorization();
+    app.UseAuthentication();
+    app.UseAuthorization();
 
-app.UseResponseCompression();
+    app.UseResponseCompression();
 
-app.UseExceptionHandler();
+    app.UseExceptionHandler();
 
-app.MapControllers();
+    app.MapControllers();
 
-// Apply any migrations to the docker image
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-
-    var context = services.GetRequiredService<ApplicationDbContext>();
-    if (context.Database.GetPendingMigrations().Any())
+    // Apply any migrations to the docker image
+    using (var scope = app.Services.CreateScope())
     {
-        context.Database.Migrate();
+        var services = scope.ServiceProvider;
+
+        var context = services.GetRequiredService<ApplicationDbContext>();
+        if (context.Database.GetPendingMigrations().Any())
+        {
+            context.Database.Migrate();
+        }
     }
+
+    app.Run();
+
 }
-
-
-
-app.Run();
-
 void ConfigureLogging()
 {
     var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
