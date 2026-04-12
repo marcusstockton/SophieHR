@@ -32,9 +32,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.5" />
-    <!--<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.5" />-->
     <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="10.0.5" />
-    <!--<PackageReference Include="Microsoft.Extensions.Options" Version="10.0.5" />-->
     <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.17.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="10.0.2" />
     <PackageReference Include="NSwag.AspNetCore" Version="14.6.3" />

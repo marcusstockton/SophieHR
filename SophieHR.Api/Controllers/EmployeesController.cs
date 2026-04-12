@@ -147,7 +147,7 @@ namespace SophieHR.Api.Controllers
         [Consumes("multipart/form-data")]
         [Produces(typeof(EmployeeAvatar)), ProducesResponseType(StatusCodes.Status200OK), ProducesResponseType(StatusCodes.Status404NotFound)]
         [RequestFormLimits(MultipartBodyLengthLimit = 5000000)] // Limit to 5mb
-        public async Task<ActionResult<EmployeeAvatar>> UploadAvatar(Guid id, [FromForm] IFormFile avatar)
+        public async Task<ActionResult<EmployeeAvatar>> UploadAvatar(Guid id, IFormFile avatar)
         {
             _logger.LogInformation($"{nameof(EmployeesController)} > {nameof(UploadAvatar)} Uploading avatar for employee id {id}");
             if (avatar != null)

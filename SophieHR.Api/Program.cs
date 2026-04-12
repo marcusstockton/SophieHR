@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.OpenApi;
 using Prometheus;
 using Scalar.AspNetCore;
 using Serilog;
@@ -46,10 +45,6 @@ builder.Services.AddEndpointsApiExplorer();
 
 // Replace NSwag AddOpenApiDocument with built-in AddOpenApi()
 builder.Services.AddOpenApi();
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
-});
 
 builder.Services.AddResponseCompression(options =>
 {
@@ -170,8 +165,6 @@ builder.Services.AddProblemDetails(options =>
 
 var app = builder.Build();
 
-
-// Register the Swagger generator and the Swagger UI middlewares
 app.UseOpenApi();
 
 app.UseMetricServer();
@@ -189,6 +182,13 @@ app.Use((context, next) =>
 app.UseCors("CorsPolicy");
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.UseResponseCompression();
+
+app.UseExceptionHandler();
+
 if (app.Environment.IsDevelopment())
 {
     if (builder.Configuration.GetValue<bool>("ReseedDummyData"))
@@ -202,43 +202,38 @@ if (app.Environment.IsDevelopment())
             await DataSeeder.Initialize(services);
         }
     }
-    app.MapOpenApi(); // maps to /openapi/v1.json
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
-    });
-    //    app.MapScalarApiReference(option =>
-    //    {
-    //        option.Title = "SophieHR API";
-    //        //option.AddDocument("v1", "API Version 1.0", "/openapi/v1.json", isDefault: true);
-    //    }); // maps to /scalar
-    //}
-
-    app.UseAuthentication();
-    app.UseAuthorization();
-
-    app.UseResponseCompression();
-
-    app.UseExceptionHandler();
-
+    // Map controllers first so the OpenAPI generator can discover endpoints
     app.MapControllers();
 
-    // Apply any migrations to the docker image
-    using (var scope = app.Services.CreateScope())
+    // Map the OpenAPI document endpoint and allow anonymous access so the dev-only
+    // OpenAPI JSON can be fetched without authentication (fallback policy requires auth).
+    var openApiEndpoint = app.MapOpenApi(); // maps to /openapi/v1.json
+    openApiEndpoint?.AllowAnonymous();
+
+    var scalarendpoint = app.MapScalarApiReference(option =>
     {
-        var services = scope.ServiceProvider;
-
-        var context = services.GetRequiredService<ApplicationDbContext>();
-        if (context.Database.GetPendingMigrations().Any())
-        {
-            context.Database.Migrate();
-        }
-    }
-
-    app.Run();
+        option.Title = "SophieHR API";
+        option.AddDocument("v1", "API Version 1.0", "/openapi/v1.json", isDefault: true);
+    });
+    scalarendpoint?.AllowAnonymous(); // maps to /scalar
 
 }
+
+// Apply any migrations to the docker image
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+
+    var context = services.GetRequiredService<ApplicationDbContext>();
+    if (context.Database.GetPendingMigrations().Any())
+    {
+        context.Database.Migrate();
+    }
+}
+
+app.Run();
+
+
 void ConfigureLogging()
 {
     var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
