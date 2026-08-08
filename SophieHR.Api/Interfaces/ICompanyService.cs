@@ -9,10 +9,10 @@ namespace SophieHR.Api.Interfaces
         Task<ICollection<KeyValuePair<Guid, string>>> GetCompanyNamesAsync(string username, bool isManager = false);
         Task<CompanyDetailDto> GetCompanyById(Guid id);
         Task<Company> FindCompanyByIdAsync(Guid id);
-        Task<HttpResponseMessage> UpdateCompanyAsync(Guid id, CompanyDetailNoLogo companyDetail);
+        Task<(bool, string)> UpdateCompanyAsync(Guid id, CompanyDetailNoLogo companyDetail);
         Task<HttpResponseMessage> UploadLogoForCompanyAsync(Guid id, IFormFile logo);
         Task<CompanyDetailDto> CreateNewCompanyAsync(CompanyCreateDto companyDto);
-        Task<HttpResponseMessage> DeleteCompanyAsync(Guid companyId);
+        Task<(bool, string)> DeleteCompanyAsync(Guid companyId);
         Task<string> GetAutoSuggestion(string search);
         Task<string> GetMapFromLatLong(decimal lat, decimal lon, int zoomLevel = 15, int width = 2048, int height = 200);
         Task<string[]> PostcodeAutoComplete(string postcode);

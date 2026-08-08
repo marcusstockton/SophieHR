@@ -111,13 +111,14 @@ namespace SophieHR.Api.Services
             return await _context.Companies.FindAsync(id);
         }
 
-        public async Task<HttpResponseMessage> UpdateCompanyAsync(Guid id, CompanyDetailNoLogo companyDetail)
+        public async Task<(bool, string)> UpdateCompanyAsync(Guid id, CompanyDetailNoLogo companyDetail)
         {
             _logger.LogInformation("{nameof} called", nameof(UpdateCompanyAsync));
             if (companyDetail.Id != id)
             {
-                return new HttpResponseMessage(System.Net.HttpStatusCode.NotFound) { Content = new StringContent($"Id's do not match!") };
+                return (false, $"Id's do not match!");
             }
+            
             var originalCompany = await _context.Companies
                 //.Include(x => x.CompanyConfig)
                 .Include(x => x.Address)
@@ -127,10 +128,7 @@ namespace SophieHR.Api.Services
             if (originalCompany == null)
             {
                 _logger.LogWarning($"{nameof(UpdateCompanyAsync)} Unable to find company with id {id}");
-                return new HttpResponseMessage(System.Net.HttpStatusCode.NotFound) 
-                { 
-                    Content = new StringContent($"Unable to find company with id {id}") 
-                };
+                return (false, $"Unable to find company with id {id}");
             }
 
             try
@@ -141,7 +139,7 @@ namespace SophieHR.Api.Services
                 _context.Entry(originalCompany.Address).State = EntityState.Modified;
 
                 await _context.SaveChangesAsync();
-                return new HttpResponseMessage(System.Net.HttpStatusCode.NoContent);
+                return (true, "Company updated successfully");
             }
             catch (DbUpdateException ex)
             {
@@ -151,10 +149,7 @@ namespace SophieHR.Api.Services
             {
                 _logger.LogError(ex, $"An exception was thrown when trying to update Company id {id}");
             }
-            return new HttpResponseMessage(System.Net.HttpStatusCode.InternalServerError) 
-            { 
-                Content = new StringContent($"An error occured updating company {companyDetail.Name}") 
-            };
+            return (false, "An error occurred while updating the company");
         }
 
         public async Task<HttpResponseMessage> UploadLogoForCompanyAsync(Guid id, IFormFile logo)
@@ -250,19 +245,19 @@ namespace SophieHR.Api.Services
             }
         }
 
-        public async Task<HttpResponseMessage> DeleteCompanyAsync(Guid companyId)
+        public async Task<(bool, string)> DeleteCompanyAsync(Guid companyId)
         {
             _logger.LogInformation($"{nameof(DeleteCompanyAsync)} called");
             var company = await _context.Companies.FindAsync(companyId);
             if (company == null)
             {
                 _logger.LogWarning("Unable to find company with id {companyId}", companyId);
-                return new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest) { Content = new StringContent($"Unable to find company with id {companyId}") };
+                return (false, $"Unable to find company with id {companyId}");
             }
 
             _context.Companies.Remove(company);
             await _context.SaveChangesAsync();
-            return new HttpResponseMessage(System.Net.HttpStatusCode.NoContent);
+            return (true, "Company deleted successfully");
         }
 
         public async Task<string> GetAutoSuggestion(string search)

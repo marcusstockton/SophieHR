@@ -125,14 +125,14 @@ namespace SophieHR.Api.Controllers
         // PUT: api/Companies/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}"), Authorize(Policy = "CompanyManagement")]
-        public async Task<HttpResponseMessage> PutCompany(Guid id, CompanyDetailNoLogo companyDetail)
+        public async Task<IActionResult> PutCompany(Guid id, CompanyDetailNoLogo companyDetail)
         {
             _logger.LogInformation($"{nameof(CompaniesController)} Updating company with id {id}");
             await _cache.RemoveAsync("companies");
             await _cache.RemoveAsync("companyNames");
             await _cache.RemoveAsync($"company:{id}");
             
-            return await _companyService.UpdateCompanyAsync(id, companyDetail);
+            return Ok(await _companyService.UpdateCompanyAsync(id, companyDetail));
         }
 
         // POST: api/Companies
@@ -164,13 +164,18 @@ namespace SophieHR.Api.Controllers
 
         // DELETE: api/Companies/5
         [HttpDelete("{id}"), Authorize(Roles = "Admin")]
-        public async Task<HttpResponseMessage> DeleteCompany(Guid id)
+        public async Task<IActionResult> DeleteCompany(Guid id)
         {
             _logger.LogInformation($"{nameof(CompaniesController)} Deleting company with id {id}");
             await _cache.RemoveAsync("companies");
             await _cache.RemoveAsync("companyNames");
             await _cache.RemoveAsync($"company:{id}");
-            return await _companyService.DeleteCompanyAsync(id);
+            var (isSuccess, message) = await _companyService.DeleteCompanyAsync(id);
+            if (isSuccess)
+            {
+                return Ok(message);
+            }
+            return BadRequest(message);
         }
 
         [HttpGet, Route("get-location-autosuggestion")]

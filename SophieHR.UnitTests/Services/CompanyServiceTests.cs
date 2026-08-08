@@ -107,7 +107,7 @@ namespace SophieHR.Api.Services.Tests
             };
 
             var result = await _service.UpdateCompanyAsync(_id2, companyUpdate);
-            Assert.AreEqual(HttpStatusCode.NoContent, result.StatusCode);
+            Assert.IsTrue(result.Item1);
             var updatedCompany = await _service.GetCompanyById(_id2);
             Assert.AreEqual("Updated Company Name Two", updatedCompany.Name);
             Assert.AreEqual("Devon", updatedCompany.Address.County);
@@ -131,9 +131,8 @@ namespace SophieHR.Api.Services.Tests
             };
 
             var result = await _service.UpdateCompanyAsync(_id2, companyUpdate);
-            Assert.AreEqual(HttpStatusCode.NotFound, result.StatusCode);
-            var resultContent = await result.Content.ReadAsStringAsync();
-            Assert.AreEqual("Id's do not match!", resultContent);
+            Assert.IsFalse(result.Item1);
+            Assert.AreEqual("Id's do not match!", result.Item2);
         }
 
         [TestMethod]
@@ -150,9 +149,8 @@ namespace SophieHR.Api.Services.Tests
             };
 
             var result = await _service.UpdateCompanyAsync(unknownId, companyUpdate);
-            Assert.AreEqual(HttpStatusCode.NotFound, result.StatusCode);
-            var resultContent = await result.Content.ReadAsStringAsync();
-            Assert.AreEqual($"Unable to find company with id {unknownId}", resultContent);
+            Assert.IsFalse(result.Item1);
+            Assert.AreEqual($"Unable to find company with id {unknownId}", result.Item2);
         }
 
         [TestMethod]
@@ -205,7 +203,7 @@ namespace SophieHR.Api.Services.Tests
         {
             var result = await _service.DeleteCompanyAsync(_id2);
 
-            Assert.AreEqual(HttpStatusCode.NoContent, result.StatusCode);
+            Assert.IsTrue(result.Item1);
         }
 
         [TestMethod]
@@ -213,7 +211,8 @@ namespace SophieHR.Api.Services.Tests
         {
             var result = await _service.DeleteCompanyAsync(Guid.NewGuid());
 
-            Assert.AreEqual(HttpStatusCode.BadRequest, result.StatusCode);
+            Assert.IsFalse(result.Item1);
+            Assert.AreEqual("Company not found", result.Item2);
         }
 
         [TestMethod]
