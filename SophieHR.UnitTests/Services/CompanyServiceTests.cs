@@ -209,10 +209,11 @@ namespace SophieHR.Api.Services.Tests
         [TestMethod]
         public async Task DeleteCompanyAsyncTestFailsCorrectlyAsync()
         {
-            var result = await _service.DeleteCompanyAsync(Guid.NewGuid());
+            var unknownId = Guid.NewGuid();
+            var result = await _service.DeleteCompanyAsync(unknownId);
 
             Assert.IsFalse(result.Item1);
-            Assert.AreEqual("Company not found", result.Item2);
+            Assert.AreEqual($"Unable to find company with id {unknownId}", result.Item2);
         }
 
         [TestMethod]
