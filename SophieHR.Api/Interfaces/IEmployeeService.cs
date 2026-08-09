@@ -12,15 +12,15 @@ namespace SophieHR.Api.Interfaces
 
         Task<ICollection<EmployeeListDto>> GetEmployeesForManager(Guid managerId);
 
-        Task<Employee> GetEmployeeById(Guid employeeId, ClaimsPrincipal user);
+        Task<EmployeeDetailDto> GetEmployeeById(Guid employeeId, ClaimsPrincipal user);
 
-        Task<Employee> GetEmployeeByUsername(string username);
+        Task<EmployeeDetailDto> GetEmployeeByUsername(string username);
 
         Task<EmployeeAvatar> UploadAvatarToEmployee(Guid id, IFormFile avatar);
 
         Task<EmployeeDetailDto> UpdateEmployee(EmployeeDetailDto employeeDto);
 
-        Task<Employee> CreateEmployee(EmployeeCreateDto employeeDto, Employee? manager = null, string role = "User");
+        Task<EmployeeDetailDto> CreateEmployee(EmployeeCreateDto employeeDto, EmployeeDetailDto? manager = null, string role = "User");
 
         Task DeleteEmployee(Guid employeeId);
 

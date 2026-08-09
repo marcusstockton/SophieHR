@@ -5,6 +5,7 @@ using SophieHR.Api.Interfaces;
 using SophieHR.Api.Models;
 using SophieHR.Api.Models.DTOs.Address;
 using SophieHR.Api.Models.DTOs.Employee;
+using SophieHR.Api.Models.DTOs.Employee.EmployeeAvatar;
 using System.Data;
 using System.Security.Claims;
 
@@ -25,7 +26,7 @@ namespace SophieHR.Api.Services
             _logger = logger;
         }
 
-        public async Task<Employee> CreateEmployee(EmployeeCreateDto employeeDto, Employee? manager = null, string role = "User")
+        public async Task<EmployeeDetailDto> CreateEmployee(EmployeeCreateDto employeeDto, EmployeeDetailDto? manager = null, string role = "User")
         {
             _logger.LogInformation($"{nameof(CreateEmployee)} called.");
             var employee = MapToEmployee(employeeDto);
@@ -64,7 +65,7 @@ namespace SophieHR.Api.Services
                     }
 
                     await _context.SaveChangesAsync();
-                    return employee;
+                    return MapToEmployeeDetailDto(employee);
                 }
                 catch (Exception ex)
                 {
@@ -92,11 +93,11 @@ namespace SophieHR.Api.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task<Employee> GetEmployeeById(Guid employeeId, ClaimsPrincipal user)
+        public async Task<EmployeeDetailDto> GetEmployeeById(Guid employeeId, ClaimsPrincipal user)
         {
             _logger.LogInformation($"{nameof(GetEmployeeById)} called.");
 
-            return await _context.Employees
+            var employee = await _context.Employees
                .Include(x => x.Avatar)
                .Include(x => x.Address)
                .Include(x => x.Department)
@@ -106,12 +107,14 @@ namespace SophieHR.Api.Services
                .FirstOrDefaultAsync(x =>
                     user.IsInRole("User") ? x.UserName == user.Identity.Name
                     : x.Id == employeeId);
+
+            return MapToEmployeeDetailDto(employee);
         }
 
-        public async Task<Employee> GetEmployeeByUsername(string username)
+        public async Task<EmployeeDetailDto> GetEmployeeByUsername(string username)
         {
             _logger.LogInformation($"{nameof(GetEmployeeByUsername)} called.");
-            return await _context.Employees
+            var employee = await _context.Employees
                .Include(x => x.Avatar)
                .Include(x => x.Address)
                .Include(x => x.Department)
@@ -120,6 +123,8 @@ namespace SophieHR.Api.Services
                .Include(x => x.Notes)
                .AsNoTracking()
                .SingleOrDefaultAsync(x => x.UserName == username);
+
+            return MapToEmployeeDetailDto(employee);
         }
 
         public async Task<ICollection<EmployeeListDto>> GetEmployeesForCompanyId(Guid companyId)
@@ -357,8 +362,25 @@ namespace SophieHR.Api.Services
                 AddressId = employee.AddressId,
                 ManagerId = employee.ManagerId,
                 CompanyId = employee.CompanyId,
+                Company = employee.Company != null ? new Models.DTOs.Company.CompanyIdNameDto
+                {
+                    Id = employee.Company.Id,
+                    Name = employee.Company.Name
+                } : null,
                 DepartmentId = employee.DepartmentId,
-                EmployeeAvatarId = employee.EmployeeAvatarId
+                Department = employee.Department != null ? new Models.DTOs.Department.DepartmentIdNameDto
+                {
+                    Id = employee.Department.Id,
+                    Name = employee.Department.Name
+                } : null,
+                EmployeeAvatarId = employee.EmployeeAvatarId,
+                Avatar = employee.Avatar != null ? new EmployeeAvatarDetail
+                {
+                    Avatar = Convert.ToBase64String(employee?.Avatar?.Avatar),
+                    Id = employee.Avatar.Id,
+                    CreatedDate = employee.Avatar.CreatedDate,
+                    UpdatedDate = employee.Avatar.UpdatedDate
+                } : null
             };
         }
 

@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 using SophieHR.Api.Interfaces;
 using SophieHR.Api.Models;
 using SophieHR.Api.Models.DTOs.Employee;
-using SophieHR.Api.Models.DTOs.Employee.EmployeeAvatar;
 using SophieHR.Api.Services;
 using System.Globalization;
 using System.Security.Claims;
@@ -89,58 +88,7 @@ namespace SophieHR.Api.Controllers
                 return Problem(detail: "No employee found by id {id}", statusCode: StatusCodes.Status404NotFound);
             }
 
-            var result = new EmployeeDetailDto
-            {
-                Id = employee.Id,
-                FirstName = employee.FirstName,
-                LastName = employee.LastName,
-                WorkEmailAddress = employee.Email,
-                JobTitle = employee.JobTitle,
-                DepartmentId = employee.DepartmentId,
-                ManagerId = employee.ManagerId,
-                Address = employee.Address,
-                PhoneNumber = employee.PhoneNumber,
-                Company = new Models.DTOs.Company.CompanyIdNameDto
-                {
-                    Id = employee.Company.Id,
-                    Name = employee.Company.Name
-                },
-                DateOfBirth = employee.DateOfBirth,
-                Department = new Models.DTOs.Department.DepartmentIdNameDto
-                {
-                    Id = employee.Department.Id,
-                    Name = employee.Department.Name
-                },
-                Gender = employee.Gender.ToString(),
-                HolidayAllowance = employee.HolidayAllowance,
-                AddressId = employee.AddressId,
-                CompanyId = employee.CompanyId,
-                EndOfEmployment = employee.EndOfEmployment,
-                MiddleName = employee.MiddleName,
-                NationalInsuranceNumber = employee.NationalInsuranceNumber,
-                PassportNumber = employee.PassportNumber,
-                PersonalEmailAddress = employee.PersonalEmailAddress,
-                PersonalMobileNumber = employee.PersonalMobileNumber,
-                StartOfEmployment = employee.StartOfEmployment,
-                Title = employee.Title.ToString(),
-                UserName = employee.UserName,
-                WorkMobileNumber = employee.WorkMobileNumber,
-                WorkPhoneNumber = employee.WorkPhoneNumber
-            };
-
-            if (employee.Avatar != null)
-            {
-                result.EmployeeAvatarId = employee.Avatar?.Id;
-                result.Avatar = new EmployeeAvatarDetail
-                {
-                    Avatar = Convert.ToBase64String(employee?.Avatar?.Avatar),
-                    Id = employee.Avatar.Id,
-                    CreatedDate = employee.Avatar.CreatedDate,
-                    UpdatedDate = employee.Avatar.UpdatedDate
-                };
-            }
-
-            return Ok(result);
+            return Ok(employee);
         }
 
         [HttpPost("{id}/upload-avatar")]
@@ -191,7 +139,7 @@ namespace SophieHR.Api.Controllers
         public async Task<ActionResult<EmployeeDetailDto>> CreateEmployee(EmployeeCreateDto employeeDto, string role = "User")
         {
             _logger.LogInformation($"{nameof(EmployeesController)} > {nameof(CreateEmployee)} creating employee {employeeDto}");
-            Employee manager = null;
+            EmployeeDetailDto manager = null;
             
             if (role.ToLower() == "user" && !(User.IsInRole("Manager") || User.IsInRole("CompanyAdmin")))
             {

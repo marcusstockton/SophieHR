@@ -85,13 +85,14 @@ namespace SophieHR.UnitTests.Services
         public async Task CreateEmployee_ThrowsException_When_Existing_Username_Passed_In()
         {
             // Arrange
-            var employeeDto = new EmployeeCreateDto { 
-                FirstName = "Damien", 
-                LastName = "Rice", 
-                WorkEmailAddress = "test@test.com", 
-                Title = Title.Mr.ToString(), 
-                Gender = Gender.Male.ToString(), 
-                ManagerId = Guid.NewGuid().ToString() 
+            var employeeDto = new EmployeeCreateDto
+            {
+                FirstName = "Damien",
+                LastName = "Rice",
+                WorkEmailAddress = "test@test.com",
+                Title = Title.Mr.ToString(),
+                Gender = Gender.Male.ToString(),
+                ManagerId = Guid.NewGuid().ToString()
             };
 
             // Act
@@ -105,17 +106,19 @@ namespace SophieHR.UnitTests.Services
         public async Task CreateEmployee_Creates_New_Employee_When_Valid_Username_Passed_In()
         {
             // Arrange
-            EmployeeCreateDto employeeDto = new EmployeeCreateDto { 
-                FirstName = "Damien", 
-                LastName = "Rice", 
-                WorkEmailAddress = "test2@test.com", 
+            EmployeeCreateDto employeeDto = new EmployeeCreateDto
+            {
+                FirstName = "Damien",
+                LastName = "Rice",
+                WorkEmailAddress = "test2@test.com",
                 Address = new AddressCreateDto { Line1 = "Line 1", Line2 = "Line 2", Postcode = "EX11EX" },
                 Title = Title.Mr.ToString(),
                 Gender = Gender.Male.ToString(),
-                ManagerId = Guid.NewGuid().ToString()
+                ManagerId = Guid.NewGuid().ToString(),
+                CompanyId = Guid.NewGuid(),
             };
 
-            _userManagerMock.Setup(x=>x.CreateAsync(It.IsAny<ApplicationUser>(), "P@55w0rd1")).ReturnsAsync(IdentityResult.Success);
+            _userManagerMock.Setup(x => x.CreateAsync(It.IsAny<ApplicationUser>(), "P@55w0rd1")).ReturnsAsync(IdentityResult.Success);
 
             _service = new EmployeeService(_context, _userManagerMock.Object, _roleManagerMock.Object, _loggerMock.Object);
             // Act
@@ -123,8 +126,7 @@ namespace SophieHR.UnitTests.Services
 
             // Assert
             Assert.IsNotNull(result);
-            //Assert.IsTrue(result.Id != Guid.Empty);
-            Assert.AreEqual("test2@test.com", result.Email);
+            Assert.AreEqual("test2@test.com", result.WorkEmailAddress);
         }
 
         [TestMethod]
@@ -135,13 +137,13 @@ namespace SophieHR.UnitTests.Services
 
             // Act
             var before = await _service.GetEmployeesForCompanyId(_companyId1);
-            Assert.AreEqual(before.Count, 1);
+            Assert.AreEqual(1, before.Count);
 
             await _service.DeleteEmployee(employeeId);
 
             // Assert
             var after = await _service.GetEmployeesForCompanyId(_companyId1);
-            Assert.AreEqual(after.Count, 0);
+            Assert.AreEqual(0, after.Count);
         }
 
         [TestMethod]
@@ -160,7 +162,7 @@ namespace SophieHR.UnitTests.Services
                 user);
 
             // Assert
-            Assert.AreEqual(result.UserName, "test@test.com");
+            Assert.AreEqual("test@test.com", result.UserName);
         }
 
         [TestMethod]
@@ -180,7 +182,7 @@ namespace SophieHR.UnitTests.Services
                 user);
 
             // Assert
-            Assert.AreEqual(result.UserName, "test1@test.com");
+            Assert.AreEqual("test1@test.com", result.UserName);
         }
     }
 }

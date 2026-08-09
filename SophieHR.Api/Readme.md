@@ -8,9 +8,10 @@ HereApi seems to have introduced a new payment platform so need to find a new ap
 
 ## TODO:
 
-Replace all DTO's with Records.  
-Remove automapper - do it my self seems to be the preferred way currently.
+[]Replace all DTO's with Records.  
+[x]Remove automapper - do it my self seems to be the preferred way currently.
 
+[]Swap in Postgres for SQL Server.
 
 ## Ideas:
 
