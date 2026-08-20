@@ -7,23 +7,23 @@ namespace SophieHR.Api.Data
 {
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>
     {
-        public ApplicationDbContext() { }
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
         }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            if (!optionsBuilder.IsConfigured)
-            {
-                IConfigurationRoot configuration = new ConfigurationBuilder()
-                    .SetBasePath(Directory.GetCurrentDirectory())
-                    .AddJsonFile("appsettings.json")
-                    .Build();
-                var connectionString = configuration.GetConnectionString("DefaultConnection");
-                optionsBuilder.UseSqlServer(connectionString);
-            }
-        }
+        //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        //{
+        //    if (!optionsBuilder.IsConfigured)
+        //    {
+        //        IConfigurationRoot configuration = new ConfigurationBuilder()
+        //            .SetBasePath(Directory.GetCurrentDirectory())
+        //            .AddJsonFile("appsettings.json")
+        //            .Build();
+        //        var connectionString = configuration.GetConnectionString("DefaultConnection");
+        //        //optionsBuilder.UseSqlServer(connectionString);
+        //        optionsBuilder.UseNpgsql(connectionString);
+        //    }
+        //}
 
         public DbSet<Company> Companies { get; set; }
         public DbSet<CompanyConfig> CompanyConfigs { get; set; }
@@ -45,7 +45,7 @@ namespace SophieHR.Api.Data
             builder.Entity<Company>(b =>
             {
                 b.Property(x => x.Name).IsRequired().HasMaxLength(200);
-                b.HasMany(x => x.Employees).WithOne(x => x.Company).HasForeignKey(x => x.CompanyId).OnDelete(DeleteBehavior.Cascade);
+                //b.HasMany(x => x.Employees).WithOne(x => x.Company).HasForeignKey(x => x.CompanyId).OnDelete(DeleteBehavior.Cascade);
                 b.HasIndex(nameof(Company.Id), nameof(Company.Name)).IsUnique();
             });
 
@@ -88,7 +88,14 @@ namespace SophieHR.Api.Data
 
             builder.Entity<EmployeeAvatar>(b =>
             {
-                b.HasOne(x => x.Employee).WithOne(x => x.Avatar).HasForeignKey<Employee>(x => x.EmployeeAvatarId);
+                b.HasKey(x => x.Id);
+
+                b.HasOne(x => x.Employee)
+                    .WithOne(x => x.Avatar)
+                    .HasForeignKey<EmployeeAvatar>(x => x.EmployeeId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                b.HasIndex(x => x.EmployeeId).IsUnique();
             });
 
             builder.Entity<Note>(b =>
@@ -109,7 +116,7 @@ namespace SophieHR.Api.Data
                 b.Property(x => x.NationalInsuranceNumber).HasMaxLength(9);
                 b.Property(x => x.Title).HasConversion<string>().HasMaxLength(10); // .HasConversion(x => (int)x, x => (Title)x);
                 b.Property(x => x.Gender).HasConversion<string>().HasMaxLength(10); // .HasConversion(x => (int)x, x => (Gender)x);
-                b.HasOne(x => x.Avatar).WithOne(x => x.Employee).HasForeignKey<EmployeeAvatar>(x => x.EmployeeId);
+                //b.HasOne(x => x.Avatar).WithOne(x => x.Employee).HasForeignKey<EmployeeAvatar>(x => x.EmployeeId);
                 b.HasOne(x => x.Company).WithMany(x => x.Employees).HasForeignKey(x => x.CompanyId).OnDelete(DeleteBehavior.Restrict);
                 b.HasOne(x => x.Department).WithMany().HasForeignKey(x => x.DepartmentId).OnDelete(DeleteBehavior.Restrict);
                 b.HasOne(x => x.Manager).WithMany().HasForeignKey(x => x.ManagerId).OnDelete(DeleteBehavior.Restrict);
@@ -134,12 +141,12 @@ namespace SophieHR.Api.Data
             {
                 if (entityEntry.State == EntityState.Modified)
                 {
-                    ((Base)entityEntry.Entity).UpdatedDate = DateTime.Now;
+                    ((Base)entityEntry.Entity).UpdatedDate = DateTime.UtcNow;
                 }
                 if (entityEntry.State == EntityState.Added)
                 {
-                    ((Base)entityEntry.Entity).CreatedDate = DateTime.Now;
-                    ((Base)entityEntry.Entity).UpdatedDate = DateTime.Now;
+                    ((Base)entityEntry.Entity).CreatedDate = DateTime.UtcNow;
+                    ((Base)entityEntry.Entity).UpdatedDate = DateTime.UtcNow;
                 }
             }
 
@@ -158,13 +165,13 @@ namespace SophieHR.Api.Data
             {
                 if (entityEntry.State == EntityState.Modified)
                 {
-                    ((Base)entityEntry.Entity).UpdatedDate = DateTime.Now;
+                    ((Base)entityEntry.Entity).UpdatedDate = DateTime.UtcNow;
                 }
 
                 if (entityEntry.State == EntityState.Added)
                 {
-                    ((Base)entityEntry.Entity).CreatedDate = DateTime.Now;
-                    ((Base)entityEntry.Entity).UpdatedDate = DateTime.Now;
+                    ((Base)entityEntry.Entity).CreatedDate = DateTime.UtcNow;
+                    ((Base)entityEntry.Entity).UpdatedDate = DateTime.UtcNow;
                 }
             }
 

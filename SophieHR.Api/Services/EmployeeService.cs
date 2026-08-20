@@ -373,7 +373,7 @@ namespace SophieHR.Api.Services
                     Id = employee.Department.Id,
                     Name = employee.Department.Name
                 } : null,
-                EmployeeAvatarId = employee.EmployeeAvatarId,
+                //EmployeeAvatarId = employee.EmployeeAvatarId,
                 Avatar = employee.Avatar != null ? new EmployeeAvatarDetail
                 {
                     Avatar = Convert.ToBase64String(employee?.Avatar?.Avatar),
