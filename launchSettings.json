@@ -8,7 +8,7 @@
       "composeLaunchUrl": "{Scheme}://localhost:{ServicePort}/scalar",
       "serviceActions": {
         "sophiehr.api": "StartDebugging",
-        "db": "StartWithoutDebugging",
+        "sophiehr.db": "StartWithoutDebugging",
         "elasticsearch": "StartWithoutDebugging",
         "grafana": "StartWithoutDebugging",
         "kibana": "StartWithoutDebugging",

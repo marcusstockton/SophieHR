@@ -63,6 +63,8 @@ namespace SophieHR.Api.Data
                     .RuleFor(x => x.Line2, f => f.Address.StreetAddress())
                     .RuleFor(x => x.Line3, f => f.Address.SecondaryAddress())
                     .RuleFor(x => x.County, f => f.Address.County())
+                    .RuleFor(x => x.Lat, f => f.Address.Latitude())
+                    .RuleFor(x => x.Lon, f => f.Address.Longitude())
                     .RuleFor(x => x.Postcode, f => f.Address.ZipCode());
 
                 var employeeAddressFaker = new Faker<EmployeeAddress>("en_GB")
@@ -80,7 +82,7 @@ namespace SophieHR.Api.Data
                     .RuleFor(x => x.Logo, f => f.PickRandom(logos))
                     .RuleFor(x => x.Name, f => f.Company.CompanyName())
                     //.RuleFor(x => x.CompanyConfig, companyConfigFaker.Generate(1).First())
-                    .RuleFor(x => x.CreatedDate, f => f.Date.Past());
+                    .RuleFor(x => x.CreatedDate, f => f.Date.Past().ToUniversalTime());
 
                 var companies = companyFaker.Generate(15);
                 await context.Companies.AddRangeAsync(companies);
@@ -120,7 +122,7 @@ namespace SophieHR.Api.Data
                         Title = Title.Mrs,
                         Address = employeeAddressFaker.Generate(1).First(),
                         DepartmentId = hrDept.Id,
-                        StartOfEmployment = DateTime.Now,
+                        StartOfEmployment = DateTime.UtcNow,
                         HolidayAllowance = 21,
                         NormalizedUserName = $"HR@{Regex.Replace(company.Name.Replace(" ", ""), "[^A-Za-z0-9 -]", "")}.biz".ToUpper(),
                         Email = $"HR@{Regex.Replace(company.Name.Replace(" ", ""), "[^A-Za-z0-9 -]", "")}.biz",
@@ -226,7 +228,7 @@ namespace SophieHR.Api.Data
         private static async Task<List<Employee>> CreateUsers(ApplicationDbContext context, ILogger<DataSeeder> _logger, Company company1, Department company1deptIT, List<byte[]> demoImages, List<Employee> comp1deptITEmployeeManagers)
         {
             var notesFaker = new Faker<Note>("en_GB")
-                .RuleFor(x => x.CreatedDate, f => f.Date.Recent(365))
+                .RuleFor(x => x.CreatedDate, f => f.Date.Recent(365).ToUniversalTime())
                 .RuleFor(x => x.Title, f => f.WaffleTitle())
                 .RuleFor(x => x.Content, f => f.WaffleText(paragraphs: f.Random.Int(1, 3), false));
 
@@ -236,11 +238,11 @@ namespace SophieHR.Api.Data
                 .RuleFor(bp => bp.FirstName, (f, u) => f.Name.FirstName((Bogus.DataSets.Name.Gender)u.Gender))
                 .RuleFor(bp => bp.LastName, (f, u) => f.Name.LastName((Bogus.DataSets.Name.Gender)u.Gender))
                 .RuleFor(bp => bp.CompanyId, f => company1.Id)
-                .RuleFor(bp => bp.StartOfEmployment, (f, u) => f.Date.Recent(4600))
-                .RuleFor(bp => bp.EndOfEmployment, (f, u) => f.Date.Future(f.Random.Int(1, 6), u.StartOfEmployment).OrNull(f))
+                .RuleFor(bp => bp.StartOfEmployment, (f, u) => f.Date.Recent(4600).ToUniversalTime())
+                .RuleFor(bp => bp.EndOfEmployment, (f, u) => f.Date.Future(f.Random.Int(1, 6), u.StartOfEmployment).ToUniversalTime().OrNull(f))
                 .RuleFor(bp => bp.DepartmentId, f => company1deptIT.Id)
                 .RuleFor(bp => bp.NationalInsuranceNumber, f => f.Finance.Nino().Replace(" ", ""))
-                //.RuleFor(bp => bp.PassportNumber, f => DateTime.UtcNow.Ticks.ToString().Substring(9))
+                .RuleFor(bp => bp.PassportNumber, f => DateTime.UtcNow.Ticks.ToString().Substring(9))
                 .RuleFor(bp => bp.Notes, f => notesFaker.Generate(f.Random.Number(2, 5)))
                 .RuleFor(bp => bp.Address, f => new EmployeeAddress
                 {
@@ -248,9 +250,9 @@ namespace SophieHR.Api.Data
                     Line1 = f.Address.BuildingNumber() + " " + f.Address.StreetName(),
                     Line2 = f.Address.SecondaryAddress(),
                     Line3 = f.Address.StreetSuffix(),
-                    Postcode = f.Address.ZipCode()
+                    Postcode = f.Address.ZipCode(),
                 })
-                .RuleFor(bp => bp.DateOfBirth, f => f.Person.DateOfBirth)
+                .RuleFor(bp => bp.DateOfBirth, f => f.Person.DateOfBirth.ToUniversalTime())
                 .RuleFor(bp => bp.WorkEmailAddress, (f, u) => f.Internet.Email(u.FirstName, u.LastName))
                 .RuleFor(bp => bp.UserName, (f, u) => f.Internet.Email(u.FirstName, u.LastName))
                 .RuleFor(bp => bp.Email, (f, u) => f.Internet.Email(u.FirstName, u.LastName))
@@ -266,8 +268,8 @@ namespace SophieHR.Api.Data
             await context.Employees.AddRangeAsync(users);
 
             var leaveFaker = new Faker<LeaveRequest>("en_GB")
-                .RuleFor(x => x.StartDate, f => f.Date.Future())
-                .RuleFor(x => x.EndDate, (f, u) => f.Date.Soon(1, u.StartDate.Date))
+                .RuleFor(x => x.StartDate, f => f.Date.Future().ToUniversalTime())
+                .RuleFor(x => x.EndDate, (f, u) => f.Date.Soon(1, u.StartDate.Date).ToUniversalTime())
                 .RuleFor(x => x.Hours, f => f.PickRandom(1,8))
                 .RuleFor(x => x.NormalHoursPerDay, f => f.PickRandom(8,10))
                 .RuleFor(x => x.EmployeeId, f => f.PickRandom(users.Select(x => x.Id)))
@@ -279,7 +281,7 @@ namespace SophieHR.Api.Data
         private static async Task<List<Employee>> CreateManagers(ApplicationDbContext context, ILogger<DataSeeder> _logger, Company company1, Department company1deptIT, List<byte[]> demoImages)
         {
             var notesFaker = new Faker<Note>("en_GB")
-                .RuleFor(x => x.CreatedDate, f => f.Date.Recent(365))
+                .RuleFor(x => x.CreatedDate, f => f.Date.Recent(365).ToUniversalTime())
                 .RuleFor(x => x.Title, f => f.WaffleTitle())
                 .RuleFor(x => x.Content, f => f.WaffleText(paragraphs: f.Random.Int(1, 3), false));
 
@@ -289,9 +291,9 @@ namespace SophieHR.Api.Data
                 .RuleFor(bp => bp.FirstName, (f, u) => f.Name.FirstName((Bogus.DataSets.Name.Gender)u.Gender))
                 .RuleFor(bp => bp.LastName, (f, u) => f.Name.LastName((Bogus.DataSets.Name.Gender)u.Gender))
                 .RuleFor(bp => bp.NationalInsuranceNumber, f => f.Finance.Nino().Replace(" ", ""))
-                //.RuleFor(bp => bp.PassportNumber, f => DateTime.UtcNow.Ticks.ToString().Substring(9))
+                .RuleFor(bp => bp.PassportNumber, f => DateTime.UtcNow.Ticks.ToString().Substring(9))
                 .RuleFor(bp => bp.CompanyId, f => company1.Id)
-                .RuleFor(bp => bp.StartOfEmployment, (f, u) => f.Date.Recent(4600))
+                .RuleFor(bp => bp.StartOfEmployment, (f, u) => f.Date.Recent(4600).ToUniversalTime())
                 //.RuleFor(bp=>bp.EndOfEmployment, (f,u)=>f.Date.Future(f.Random.Int(1, 6), u.StartOfEmployment).OrNull(f))
                 .RuleFor(bp => bp.DepartmentId, f => company1deptIT.Id)
                 .RuleFor(bp => bp.Notes, f => notesFaker.Generate(f.Random.Number(2, 5)))
@@ -303,7 +305,7 @@ namespace SophieHR.Api.Data
                     Line3 = f.Address.StreetSuffix(),
                     Postcode = f.Address.ZipCode()
                 })
-                .RuleFor(bp => bp.DateOfBirth, f => f.Person.DateOfBirth)
+                .RuleFor(bp => bp.DateOfBirth, f => f.Person.DateOfBirth.ToUniversalTime())
                 .RuleFor(bp => bp.WorkEmailAddress, (f, u) => f.Internet.Email(u.FirstName, u.LastName))
                 .RuleFor(bp => bp.UserName, (f, u) => f.Internet.Email(u.FirstName, u.LastName))
                 .RuleFor(bp => bp.Email, (f, u) => f.Internet.Email(u.FirstName, u.LastName))

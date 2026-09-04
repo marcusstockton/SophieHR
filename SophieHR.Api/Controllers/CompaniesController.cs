@@ -1,6 +1,4 @@
 ﻿#nullable disable
-
-using Azure;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;

@@ -1,12 +1,13 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
 namespace SophieHR.Api.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -15,20 +16,20 @@ namespace SophieHR.Api.Migrations
                 name: "Address",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Line1 = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Line2 = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    Line3 = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    Line4 = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    Postcode = table.Column<string>(type: "nvarchar(8)", maxLength: 8, nullable: false),
-                    County = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    Lat = table.Column<double>(type: "float", nullable: false),
-                    Lon = table.Column<double>(type: "float", nullable: false),
-                    AddressType = table.Column<int>(type: "int", nullable: false),
-                    Discriminator = table.Column<string>(type: "nvarchar(21)", maxLength: 21, nullable: false),
-                    MapImage = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Line1 = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    Line2 = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    Line3 = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    Line4 = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    Postcode = table.Column<string>(type: "character varying(8)", maxLength: 8, nullable: false),
+                    County = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    Lat = table.Column<double>(type: "double precision", nullable: false),
+                    Lon = table.Column<double>(type: "double precision", nullable: false),
+                    AddressType = table.Column<int>(type: "integer", nullable: false),
+                    Discriminator = table.Column<string>(type: "character varying(21)", maxLength: 21, nullable: false),
+                    MapImage = table.Column<string>(type: "text", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -39,10 +40,10 @@ namespace SophieHR.Api.Migrations
                 name: "AspNetRoles",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    NormalizedName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    NormalizedName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -53,20 +54,18 @@ namespace SophieHR.Api.Migrations
                 name: "LeaveRequests",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    EmployeeId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ApprovedById = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    StartDate = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    EndDate = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    StartDateFirstHalf = table.Column<bool>(type: "bit", nullable: false),
-                    StartDateSecondHalf = table.Column<bool>(type: "bit", nullable: false),
-                    EndDateFirstHalf = table.Column<bool>(type: "bit", nullable: false),
-                    EndDateSecondHalf = table.Column<bool>(type: "bit", nullable: false),
-                    Approved = table.Column<bool>(type: "bit", nullable: false),
-                    Comments = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: true),
-                    LeaveType = table.Column<int>(type: "int", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    EmployeeId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ApprovedById = table.Column<Guid>(type: "uuid", nullable: true),
+                    StartDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    EndDate = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    Hours = table.Column<int>(type: "integer", nullable: false),
+                    NormalHoursPerDay = table.Column<int>(type: "integer", nullable: false),
+                    Approved = table.Column<bool>(type: "boolean", nullable: false),
+                    Comments = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: true),
+                    LeaveType = table.Column<int>(type: "integer", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -77,12 +76,12 @@ namespace SophieHR.Api.Migrations
                 name: "Companies",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    Logo = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
-                    AddressId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Logo = table.Column<byte[]>(type: "bytea", nullable: true),
+                    AddressId = table.Column<Guid>(type: "uuid", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -98,11 +97,11 @@ namespace SophieHR.Api.Migrations
                 name: "AspNetRoleClaims",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    RoleId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ClaimType = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ClaimValue = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    RoleId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ClaimType = table.Column<string>(type: "text", nullable: true),
+                    ClaimValue = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -119,11 +118,12 @@ namespace SophieHR.Api.Migrations
                 name: "CompanyConfigs",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CompanyId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    GdprRetentionPeriodInYears = table.Column<int>(type: "int", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CompanyId = table.Column<Guid>(type: "uuid", nullable: false),
+                    GdprRetentionPeriodInYears = table.Column<int>(type: "integer", nullable: false),
+                    YearEnd = table.Column<int>(type: "integer", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -140,11 +140,11 @@ namespace SophieHR.Api.Migrations
                 name: "Departments",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    CompanyId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    CompanyId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -161,44 +161,43 @@ namespace SophieHR.Api.Migrations
                 name: "AspNetUsers",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    FirstName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    LastName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    Discriminator = table.Column<string>(type: "nvarchar(21)", maxLength: 21, nullable: false),
-                    Title = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: true),
-                    Gender = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: true),
-                    MiddleName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
-                    WorkEmailAddress = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
-                    PersonalEmailAddress = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
-                    WorkPhoneNumber = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    WorkMobileNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PersonalMobileNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    JobTitle = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    HolidayAllowance = table.Column<double>(type: "float", nullable: true),
-                    DateOfBirth = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    StartOfEmployment = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    EndOfEmployment = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    AddressId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    PassportNumber = table.Column<string>(type: "nvarchar(9)", maxLength: 9, nullable: true),
-                    NationalInsuranceNumber = table.Column<string>(type: "nvarchar(9)", maxLength: 9, nullable: true),
-                    DepartmentId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    CompanyId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    EmployeeAvatarId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    ManagerId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    NormalizedEmail = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    EmailConfirmed = table.Column<bool>(type: "bit", nullable: false),
-                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    SecurityStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PhoneNumberConfirmed = table.Column<bool>(type: "bit", nullable: false),
-                    TwoFactorEnabled = table.Column<bool>(type: "bit", nullable: false),
-                    LockoutEnd = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    LockoutEnabled = table.Column<bool>(type: "bit", nullable: false),
-                    AccessFailedCount = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    FirstName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    LastName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    Discriminator = table.Column<string>(type: "character varying(21)", maxLength: 21, nullable: false),
+                    Title = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: true),
+                    Gender = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: true),
+                    MiddleName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    WorkEmailAddress = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    PersonalEmailAddress = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    WorkPhoneNumber = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    WorkMobileNumber = table.Column<string>(type: "text", nullable: true),
+                    PersonalMobileNumber = table.Column<string>(type: "text", nullable: true),
+                    JobTitle = table.Column<string>(type: "text", nullable: true),
+                    HolidayAllowance = table.Column<double>(type: "double precision", nullable: true),
+                    DateOfBirth = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    StartOfEmployment = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    EndOfEmployment = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    AddressId = table.Column<Guid>(type: "uuid", nullable: true),
+                    PassportNumber = table.Column<string>(type: "character varying(9)", maxLength: 9, nullable: true),
+                    NationalInsuranceNumber = table.Column<string>(type: "character varying(9)", maxLength: 9, nullable: true),
+                    DepartmentId = table.Column<Guid>(type: "uuid", nullable: true),
+                    CompanyId = table.Column<Guid>(type: "uuid", nullable: true),
+                    ManagerId = table.Column<Guid>(type: "uuid", nullable: true),
+                    UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    NormalizedUserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    NormalizedEmail = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    EmailConfirmed = table.Column<bool>(type: "boolean", nullable: false),
+                    PasswordHash = table.Column<string>(type: "text", nullable: true),
+                    SecurityStamp = table.Column<string>(type: "text", nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: "text", nullable: true),
+                    PhoneNumber = table.Column<string>(type: "text", nullable: true),
+                    PhoneNumberConfirmed = table.Column<bool>(type: "boolean", nullable: false),
+                    TwoFactorEnabled = table.Column<bool>(type: "boolean", nullable: false),
+                    LockoutEnd = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    LockoutEnabled = table.Column<bool>(type: "boolean", nullable: false),
+                    AccessFailedCount = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -233,11 +232,11 @@ namespace SophieHR.Api.Migrations
                 name: "AspNetUserClaims",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ClaimType = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ClaimValue = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ClaimType = table.Column<string>(type: "text", nullable: true),
+                    ClaimValue = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -254,10 +253,10 @@ namespace SophieHR.Api.Migrations
                 name: "AspNetUserLogins",
                 columns: table => new
                 {
-                    LoginProvider = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ProviderKey = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ProviderDisplayName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    LoginProvider = table.Column<string>(type: "text", nullable: false),
+                    ProviderKey = table.Column<string>(type: "text", nullable: false),
+                    ProviderDisplayName = table.Column<string>(type: "text", nullable: true),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -274,8 +273,8 @@ namespace SophieHR.Api.Migrations
                 name: "AspNetUserRoles",
                 columns: table => new
                 {
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    RoleId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    RoleId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -298,10 +297,10 @@ namespace SophieHR.Api.Migrations
                 name: "AspNetUserTokens",
                 columns: table => new
                 {
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    LoginProvider = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Value = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    LoginProvider = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Value = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -318,11 +317,11 @@ namespace SophieHR.Api.Migrations
                 name: "EmployeeAvatars",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    EmployeeId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Avatar = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
-                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    EmployeeId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Avatar = table.Column<byte[]>(type: "bytea", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -339,13 +338,13 @@ namespace SophieHR.Api.Migrations
                 name: "Notes",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    EmployeeId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Title = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: true),
-                    Content = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    NoteType = table.Column<int>(type: "int", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    EmployeeId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Title = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: true),
+                    Content = table.Column<string>(type: "text", nullable: true),
+                    NoteType = table.Column<int>(type: "integer", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -359,6 +358,11 @@ namespace SophieHR.Api.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_Address_Id_Postcode",
+                table: "Address",
+                columns: new[] { "Id", "Postcode" });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
                 column: "RoleId");
@@ -367,8 +371,7 @@ namespace SophieHR.Api.Migrations
                 name: "RoleNameIndex",
                 table: "AspNetRoles",
                 column: "NormalizedName",
-                unique: true,
-                filter: "[NormalizedName] IS NOT NULL");
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetUserClaims_UserId",
@@ -394,13 +397,12 @@ namespace SophieHR.Api.Migrations
                 name: "IX_AspNetUsers_AddressId",
                 table: "AspNetUsers",
                 column: "AddressId",
-                unique: true,
-                filter: "[AddressId] IS NOT NULL");
+                unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_AspNetUsers_CompanyId",
+                name: "IX_AspNetUsers_CompanyId_DepartmentId_ManagerId",
                 table: "AspNetUsers",
-                column: "CompanyId");
+                columns: new[] { "CompanyId", "DepartmentId", "ManagerId" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetUsers_DepartmentId",
@@ -413,6 +415,12 @@ namespace SophieHR.Api.Migrations
                 columns: new[] { "Id", "Email", "UserName" });
 
             migrationBuilder.CreateIndex(
+                name: "IX_AspNetUsers_Id_WorkEmailAddress",
+                table: "AspNetUsers",
+                columns: new[] { "Id", "WorkEmailAddress" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_AspNetUsers_ManagerId",
                 table: "AspNetUsers",
                 column: "ManagerId");
@@ -421,8 +429,7 @@ namespace SophieHR.Api.Migrations
                 name: "UserNameIndex",
                 table: "AspNetUsers",
                 column: "NormalizedUserName",
-                unique: true,
-                filter: "[NormalizedUserName] IS NOT NULL");
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Companies_AddressId",
@@ -461,6 +468,11 @@ namespace SophieHR.Api.Migrations
                 name: "IX_LeaveRequests_EmployeeId",
                 table: "LeaveRequests",
                 column: "EmployeeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_LeaveRequests_Id_EmployeeId",
+                table: "LeaveRequests",
+                columns: new[] { "Id", "EmployeeId" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Notes_EmployeeId",

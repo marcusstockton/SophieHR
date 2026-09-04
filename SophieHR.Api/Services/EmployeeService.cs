@@ -373,13 +373,27 @@ namespace SophieHR.Api.Services
                     Id = employee.Department.Id,
                     Name = employee.Department.Name
                 } : null,
-                EmployeeAvatarId = employee.EmployeeAvatarId,
+                //EmployeeAvatarId = employee.EmployeeAvatarId,
                 Avatar = employee.Avatar != null ? new EmployeeAvatarDetail
                 {
                     Avatar = Convert.ToBase64String(employee?.Avatar?.Avatar),
                     Id = employee.Avatar.Id,
                     CreatedDate = employee.Avatar.CreatedDate,
                     UpdatedDate = employee.Avatar.UpdatedDate
+                } : null,
+                Address = employee.Address != null ? new EmployeeAddress
+                {
+                    County = employee.Address.County,
+                    AddressType = employee.Address.AddressType,
+                    CreatedDate = employee.Address.CreatedDate,
+                    Id = employee.Address.Id,
+                    Lat = employee.Address.Lat,
+                    Lon = employee.Address.Lon,
+                    Line1 = employee.Address.Line1,
+                    Line2 = employee.Address.Line2,
+                    Line3 = employee.Address.Line3,
+                    Line4 = employee.Address.Line4,
+                    Postcode = employee.Address.Postcode,
                 } : null
             };
         }
