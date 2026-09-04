@@ -63,6 +63,8 @@ namespace SophieHR.Api.Data
                     .RuleFor(x => x.Line2, f => f.Address.StreetAddress())
                     .RuleFor(x => x.Line3, f => f.Address.SecondaryAddress())
                     .RuleFor(x => x.County, f => f.Address.County())
+                    .RuleFor(x => x.Lat, f => f.Address.Latitude())
+                    .RuleFor(x => x.Lon, f => f.Address.Longitude())
                     .RuleFor(x => x.Postcode, f => f.Address.ZipCode());
 
                 var employeeAddressFaker = new Faker<EmployeeAddress>("en_GB")
@@ -240,7 +242,7 @@ namespace SophieHR.Api.Data
                 .RuleFor(bp => bp.EndOfEmployment, (f, u) => f.Date.Future(f.Random.Int(1, 6), u.StartOfEmployment).ToUniversalTime().OrNull(f))
                 .RuleFor(bp => bp.DepartmentId, f => company1deptIT.Id)
                 .RuleFor(bp => bp.NationalInsuranceNumber, f => f.Finance.Nino().Replace(" ", ""))
-                //.RuleFor(bp => bp.PassportNumber, f => DateTime.UtcNow.Ticks.ToString().Substring(9))
+                .RuleFor(bp => bp.PassportNumber, f => DateTime.UtcNow.Ticks.ToString().Substring(9))
                 .RuleFor(bp => bp.Notes, f => notesFaker.Generate(f.Random.Number(2, 5)))
                 .RuleFor(bp => bp.Address, f => new EmployeeAddress
                 {
@@ -248,7 +250,7 @@ namespace SophieHR.Api.Data
                     Line1 = f.Address.BuildingNumber() + " " + f.Address.StreetName(),
                     Line2 = f.Address.SecondaryAddress(),
                     Line3 = f.Address.StreetSuffix(),
-                    Postcode = f.Address.ZipCode()
+                    Postcode = f.Address.ZipCode(),
                 })
                 .RuleFor(bp => bp.DateOfBirth, f => f.Person.DateOfBirth.ToUniversalTime())
                 .RuleFor(bp => bp.WorkEmailAddress, (f, u) => f.Internet.Email(u.FirstName, u.LastName))
@@ -289,7 +291,7 @@ namespace SophieHR.Api.Data
                 .RuleFor(bp => bp.FirstName, (f, u) => f.Name.FirstName((Bogus.DataSets.Name.Gender)u.Gender))
                 .RuleFor(bp => bp.LastName, (f, u) => f.Name.LastName((Bogus.DataSets.Name.Gender)u.Gender))
                 .RuleFor(bp => bp.NationalInsuranceNumber, f => f.Finance.Nino().Replace(" ", ""))
-                //.RuleFor(bp => bp.PassportNumber, f => DateTime.UtcNow.Ticks.ToString().Substring(9))
+                .RuleFor(bp => bp.PassportNumber, f => DateTime.UtcNow.Ticks.ToString().Substring(9))
                 .RuleFor(bp => bp.CompanyId, f => company1.Id)
                 .RuleFor(bp => bp.StartOfEmployment, (f, u) => f.Date.Recent(4600).ToUniversalTime())
                 //.RuleFor(bp=>bp.EndOfEmployment, (f,u)=>f.Date.Future(f.Random.Int(1, 6), u.StartOfEmployment).OrNull(f))

@@ -41,22 +41,6 @@ services:
     networks:
       - docker-network
 
-  # sophiehr.db:
-  #   # container_name: sophiehr.db
-  #   image: mcr.microsoft.com/mssql/server:2022-latest
-  #   environment:
-  #     - ACCEPT_EULA=Y
-  #     - SA_PASSWORD=${SQL_Password}
-  #     - MSSQL_SA_PASSWORD=${SQL_Password}
-  #     - MSSQL_PID=Developer
-  #   ports:
-  #     - 1433:1433
-  #   mem_limit: 2g
-  #   volumes:
-  #     - sqlserver_data:/var/opt/mssql
-  #   networks:
-  #     - docker-network
-
   sophiehr.db:
     image: postgres:18
     environment:
@@ -163,7 +147,7 @@ services:
     cpus: "0.5"
     cpuset: "1"
     environment:
-      - GF_SECURITY_ADMIN_PASSWORD=AwkX512Xkcd
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
       - GF_USERS_ALLOW_SIGN_UP=false
     networks:
       - docker-network
@@ -193,7 +177,6 @@ networks:
 volumes:
   elasticsearch-data:
     driver: local
-  #sqlserver_data:
   postgres_data:
   prometheus_data:
   grafana_data:

@@ -1,6 +1,3 @@
-using Elastic.Ingest.Elasticsearch;
-using Elastic.Ingest.Elasticsearch.DataStreams;
-using Elastic.Serilog.Sinks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Features;
@@ -12,7 +9,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Prometheus;
 using Scalar.AspNetCore;
 using Serilog;
-using Serilog.Exceptions;
 using SophieHR.Api;
 using SophieHR.Api.Data;
 using SophieHR.Api.Extensions;
@@ -22,13 +18,12 @@ using SophieHR.Api.Services;
 using StackExchange.Redis;
 using System.Diagnostics;
 using System.IO.Compression;
-using System.Reflection;
 using System.Text.Json.Serialization;
 
 
 var builder = WebApplication.CreateBuilder(args);
 
-ConfigureLogging();
+builder.ConfigureLogging();
 builder.Host.UseSerilog();
 
 // Add services to the container.
@@ -44,8 +39,7 @@ builder.Services.AddMemoryCache();
 builder.Services.AddControllers().AddJsonOptions(x => x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 builder.Services.AddEndpointsApiExplorer();
 
-// Replace NSwag AddOpenApiDocument with built-in AddOpenApi()
-builder.Services.AddOpenApi();
+builder.Services.AddCustomOpenApi();
 
 builder.Services.AddResponseCompression(options =>
 {
@@ -74,8 +68,8 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("CorsPolicy",
         builder => builder
-        //.WithOrigins("http://localhost:4200")
-        .AllowAnyOrigin()
+        .WithOrigins("http://localhost:4200")
+        //.AllowAnyOrigin()
         .AllowAnyMethod()
         .AllowAnyHeader());
 });
@@ -92,7 +86,6 @@ builder.Services.AddAuthorization(options =>
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
-    //options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
@@ -182,7 +175,10 @@ app.Use((context, next) =>
 });
 
 app.UseCors("CorsPolicy");
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -207,8 +203,6 @@ if (app.Environment.IsDevelopment())
     // Map controllers first so the OpenAPI generator can discover endpoints
     app.MapControllers();
 
-    // Map the OpenAPI document endpoint and allow anonymous access so the dev-only
-    // OpenAPI JSON can be fetched without authentication (fallback policy requires auth).
     var openApiEndpoint = app.MapOpenApi(); // maps to /openapi/v1.json
     openApiEndpoint?.AllowAnonymous();
 
@@ -234,33 +228,3 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.Run();
-
-
-void ConfigureLogging()
-{
-    var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-    var configuration = new ConfigurationBuilder()
-        .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-        .AddJsonFile(
-            $"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}.json",
-            optional: true)
-        .Build();
-
-    Log.Logger = new LoggerConfiguration()
-        .Enrich.FromLogContext()
-        .Enrich.WithExceptionDetails()
-        .Enrich.WithEnvironmentName()
-        .Enrich.WithMachineName()
-        .WriteTo.Debug()
-        //.WriteTo.Console()
-        .WriteTo.Elasticsearch(new[] { new Uri(configuration["ElasticConfiguration:Uri"]) }, opts =>
-        {
-            opts.DataStream = new DataStreamName($"{Assembly.GetExecutingAssembly().GetName().Name.ToLower().Replace(".", "-")}", $"{environment?.ToLower().Replace(".", "-")}");
-            opts.BootstrapMethod = BootstrapMethod.Failure;
-        }, transport =>
-        {
-        })
-        .Enrich.WithProperty("Environment", environment)
-        .ReadFrom.Configuration(configuration)
-        .CreateLogger();
-}
