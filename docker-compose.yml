@@ -1,48 +1,80 @@
+# Use an .env file for developer-specific values (POSTGRES_PASSWORD, HERE_Maps_API_Key, GRAFANA_PASSWORD, etc.)
 services:
-  # sophiehr.ui:
-  #   container_name: sophiehr.ui
-  #   image: ${DOCKER_REGISTRY-}sophiehr_ui
-  #   build:
-  #     context: ../sophieHR-angular-material
-  #     dockerfile: dockerfile
-  #   ports:
-  #     - 4200:80
-  #   depends_on:
-  #     - sophiehr.api
-  #   mem_limit: 256m
-  #   mem_reservation: 128m
-  #   memswap_limit: 256m
-  #   cpus: "0.5"
-  #   cpuset: "1"
-
+  # Compatibility stubs for Visual Studio launch profile that reference the
+  # legacy dotted service names. These are placed on the `visualstudio`
+  # profile so they are not started by default by plain `docker-compose up`.
   sophiehr.api:
-    # container_name: sophiehr.api
     image: ${DOCKER_REGISTRY-}sophiehr_api
     build:
       context: .
       dockerfile: SophieHR.Api/Dockerfile
+    profiles:
+      - visualstudio
+
+  sophiehr.db:
+    image: postgres:18
+    profiles:
+      - visualstudio
+  sophiehr-ui:
+    container_name: sophiehr-ui
+    image: ${DOCKER_REGISTRY-}sophiehr_ui
+    build:
+      context: ../sophieHR-angular-material
+      dockerfile: dockerfile
+    restart: unless-stopped
+    ports:
+      - "4200:80"
+    depends_on:
+      - sophiehr-api
+    mem_limit: 256m
+    mem_reservation: 128m
+    memswap_limit: 256m
+    cpus: "0.5"
+    cpuset: "1"
+    networks:
+      - frontend
+
+  sophiehr-api:
+    image: ${DOCKER_REGISTRY-}sophiehr_api
+    build:
+      context: .
+      dockerfile: SophieHR.Api/Dockerfile
+    restart: unless-stopped
     environment:
       HERE_Maps_API_Key: ${HERE_Maps_API_Key}
-      ConnectionStrings__DefaultConnection: "Host=sophiehr.db;Port=5432;Database=SophieHR;Username=postgres;Password=${POSTGRES_PASSWORD}"
+      # Provide a sane default connection string that points at the local postgres service
+      # If you set ConnectionStrings__DefaultConnection in a .env file it will override this.
+      ConnectionStrings__DefaultConnection: ${ConnectionStrings__DefaultConnection:-Host=sophiehr-db;Port=5432;Database=SophieHR;Username=postgres;Password=${POSTGRES_PASSWORD}}
+      # Wait-for list can be overridden. Default checks postgres, elasticsearch, redis
+      WAIT_FOR: "${WAIT_FOR:-sophiehr-db:5432 elasticsearch:9200 redis_cache:6379}"
+      TIMEOUT: ${WAIT_TIMEOUT:-60}
     ports:
-      - 7189:443
-      - 7188:80
+      - "7189:443"
+      - "7188:80"
     expose:
       - "443"
       - "80"
     mem_limit: 2g
     depends_on:
-      sophiehr.db:
-        condition: service_started
-      elasticsearch:
-        condition: service_healthy
-      redis_cache:
-        condition: service_healthy
+      - sophiehr-db
+      - elasticsearch
+      - redis_cache
     networks:
-      - docker-network
+      frontend:
+        aliases:
+          - sophiehr.api
+      backend:
+        aliases:
+          - sophiehr.api
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:80/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  sophiehr.db:
+  sophiehr-db:
     image: postgres:18
+    restart: unless-stopped
     environment:
       POSTGRES_DB: SophieHR
       POSTGRES_USER: postgres
@@ -51,9 +83,14 @@ services:
       - "5433:5432"
     mem_limit: 2g
     volumes:
+      # For Postgres 18+ the recommended mount is the parent directory so
+      # Postgres can create versioned subdirectories (e.g. /var/lib/postgresql/<major>). 
       - postgres_data:/var/lib/postgresql
     networks:
-      - docker-network
+      backend:
+        aliases:
+          - sophiehr.db
+          - sophiehr_db
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d SophieHR"]
       interval: 5s
@@ -61,12 +98,12 @@ services:
       retries: 10
 
   redis_cache:
-    image: redis:latest
-    # container_name: redis_cache
+    image: redis:7.2
+    restart: unless-stopped
     ports:
       - "6379:6379"
     networks:
-      - docker-network
+      - backend
     mem_limit: 128m
     mem_reservation: 128m
     memswap_limit: 128m
@@ -79,10 +116,10 @@ services:
       retries: 5
 
   elasticsearch:
-    # container_name: elasticsearch
     image: docker.elastic.co/elasticsearch/elasticsearch:9.4.4
+    restart: unless-stopped
     ports:
-      - 9200:9200
+      - "9200:9200"
     volumes:
       - elasticsearch-data:/usr/share/elasticsearch/data
     environment:
@@ -91,41 +128,39 @@ services:
       - node.name=es-node
       - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
     networks:
-      - docker-network
+      - backend
     healthcheck:
-      test: curl -s http://elasticsearch:9200 >/dev/null || exit 1
+      test: ["CMD-SHELL", "curl -s http://localhost:9200 >/dev/null || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 50
     mem_limit: 4g
 
   kibana:
-    # container_name: kibana
     image: docker.elastic.co/kibana/kibana:9.4.4
+    restart: unless-stopped
     ports:
-      - 5601:5601
+      - "5601:5601"
     depends_on:
       - elasticsearch
     mem_limit: 2g
     environment:
-        elasticsearch.hosts: 'http://elasticsearch:9200'
+      - elasticsearch.hosts=http://elasticsearch:9200
     networks:
-      - docker-network
+      - backend
 
   prometheus:
     image: quay.io/prometheus/prometheus:latest
+    restart: unless-stopped
     ports:
       - "9090:9090"
-    configs:
-      - source: prometheus_config
-        target: /etc/prometheus/prometheus.yml
     volumes:
       - ./prometheus/:/etc/prometheus/
       - prometheus_data:/prometheus
     depends_on:
-      - sophiehr.api
+      - sophiehr-api
     networks:
-      - docker-network
+      - backend
       - monitoring
     mem_limit: 256m
     mem_reservation: 128m
@@ -134,7 +169,8 @@ services:
     cpuset: "1"
 
   grafana:
-    image: grafana/grafana
+    image: grafana/grafana:10.1.4
+    restart: unless-stopped
     depends_on:
       - prometheus
     ports:
@@ -150,17 +186,16 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
       - GF_USERS_ALLOW_SIGN_UP=false
     networks:
-      - docker-network
       - monitoring
 
   smtp4dev:
     image: rnwood/smtp4dev:latest
-    # container_name: smtp4dev
+    restart: unless-stopped
     ports:
       - "5025:25"   # SMTP
       - "5000:80"   # Web UI
     networks:
-      - docker-network
+      - backend
     mem_limit: 128m
     healthcheck:
       test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:80" ]
@@ -169,10 +204,12 @@ services:
       retries: 5
 
 networks:
-  docker-network:
+  frontend:
+    driver: bridge
+  backend:
     driver: bridge
   monitoring:
-    
+    driver: bridge
 
 volumes:
   elasticsearch-data:
@@ -181,6 +218,8 @@ volumes:
   prometheus_data:
   grafana_data:
 
-configs:
-  prometheus_config:
-    file: prometheus.yml
+# Notes:
+# - Use .env (not checked into source control) for sensitive data such as POSTGRES_PASSWORD, GRAFANA_PASSWORD, and HERE_Maps_API_Key.
+# - Consider using Docker secrets or an external secret manager for production deployments.
+# - The API container should include a startup/wait script (e.g., wait-for) if you need stricter ordering based on service health.
+# - Pin image tags in CI/CD to specific patch versions for reproducibility.

@@ -6,15 +6,16 @@
     <ProjectGuid>d930f92e-6c12-4cfe-a1cb-f85f5140549a</ProjectGuid>
     <DockerLaunchAction>LaunchBrowser</DockerLaunchAction>
     <DockerServiceUrl>{Scheme}://localhost:{ServicePort}/scalar</DockerServiceUrl>
-    <DockerServiceName>sophiehr.api</DockerServiceName>
+    <DockerServiceName>sophiehr-api</DockerServiceName>
   </PropertyGroup>
   <ItemGroup>
     <None Include=".env" />
+    <None Include=".env.example" />
     <None Include="docker-compose.override.yml">
       <DependentUpon>docker-compose.yml</DependentUpon>
     </None>
-    <None Include="docker-compose.yml" />
     <None Include=".dockerignore" />
+    <None Include="docker-compose.yml" />
     <None Include="prometheus.yml" />
   </ItemGroup>
 </Project>

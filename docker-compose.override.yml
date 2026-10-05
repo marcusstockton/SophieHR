@@ -1,11 +1,11 @@
 services:
-  sophiehr.api:
+  sophiehr-api:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=https://+:443;http://+:80
+      # Run containerized API on HTTP only to avoid missing developer HTTPS cert inside the container.
+      - ASPNETCORE_URLS=http://+:80
     ports:
-      - "80"
-      - "443"
+      # Map container HTTP port 80 to host port used by compose (keep original mappings in docker-compose.yml)
+      - "7188:80"
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
-      - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
