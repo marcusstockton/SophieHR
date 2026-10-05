@@ -84,9 +84,45 @@ builder.Services.AddAuthorization(options =>
         .Build();
 });
 
+// Ensure a connection string is provided; fail-fast if missing so misconfiguration is obvious
+var defaultConnection = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrWhiteSpace(defaultConnection))
+{
+    throw new InvalidOperationException("Connection string 'DefaultConnection' is not configured. Set the ConnectionStrings__DefaultConnection environment variable or provide it in configuration.");
+}
+
+// Diagnostic: parse host(s) from the connection string and verify DNS resolution early with clear logging.
+try
+{
+    var npg = new Npgsql.NpgsqlConnectionStringBuilder(defaultConnection);
+    var hosts = (npg.Host ?? string.Empty).Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+    foreach (var host in hosts)
+    {
+        try
+        {
+            var addrs = System.Net.Dns.GetHostAddresses(host);
+            Log.Information("Resolved DB host '{Host}' to {Addresses}", host, string.Join(",", addrs.Select(a => a.ToString())));
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Failed to resolve DB host '{Host}' during startup diagnostics", host);
+            throw new InvalidOperationException($"Unable to resolve DB host '{host}'. Ensure the service name is correct and both containers share a network.", ex);
+        }
+    }
+}
+catch (InvalidOperationException)
+{
+    // rethrow configuration errors
+    throw;
+}
+catch (Exception ex)
+{
+    Log.Error(ex, "Unexpected error parsing DB connection string during startup diagnostics");
+}
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
+    options.UseNpgsql(defaultConnection);
 });
 
 builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
