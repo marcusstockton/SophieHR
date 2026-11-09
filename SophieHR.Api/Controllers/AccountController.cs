@@ -22,14 +22,16 @@ namespace SophieHR.Api.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IEmailSender _emailSender;
         private readonly ILogger<AccountController> _logger;
+        private readonly IWebHostEnvironment _environment;
 
-        public AccountController(JwtSettings jwtSettings, UserManager<ApplicationUser> userManager, ApplicationDbContext context, IEmailSender emailSender, ILogger<AccountController> logger)
+        public AccountController(JwtSettings jwtSettings, UserManager<ApplicationUser> userManager, ApplicationDbContext context, IEmailSender emailSender, ILogger<AccountController> logger, IWebHostEnvironment environment)
         {
             this.jwtSettings = jwtSettings;
             _userManager = userManager;
             _context = context;
             _emailSender = emailSender;
             _logger = logger;
+            _environment = environment;
         }
 
         [HttpPost]
@@ -239,6 +241,11 @@ namespace SophieHR.Api.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> GetListOfManagersAsync()
         {
+            if (!_environment.IsDevelopment())
+            {
+                return NotFound();
+            }
+
             _logger.LogInformation($"{nameof(GetListOfManagersAsync)} Called");
             var managers = await _userManager.GetUsersInRoleAsync("Manager");
 
@@ -252,6 +259,11 @@ namespace SophieHR.Api.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> GetListOfCompanyAdminsAsync()
         {
+            if (!_environment.IsDevelopment())
+            {
+                return NotFound();
+            }
+
             _logger.LogInformation($"{nameof(GetListOfCompanyAdminsAsync)} Called");
             var companyAdmins = await _userManager.GetUsersInRoleAsync("CompanyAdmin");
 
